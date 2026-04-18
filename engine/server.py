@@ -23,6 +23,8 @@ import json
 import os
 import sys
 import re
+import io
+import zipfile
 import shutil
 import argparse
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -41,6 +43,8 @@ DASHBOARD_DIR = os.path.join(PROJECT_DIR, "dashboard")
 LANDING_PATH = os.path.join(DASHBOARD_DIR, "index.html")
 DASHBOARD_PATH = os.path.join(DASHBOARD_DIR, "ToyLand_Dashboard.html")
 TUTORIAL_TOYLAND_PATH = os.path.join(DASHBOARD_DIR, "tutorial_toyland.html")
+COWORK_PROMPT_PATH = os.path.join(DASHBOARD_DIR, "cowork-prompt.md")
+SIM_EXCEL_DIR = os.path.join(PROJECT_DIR, "sim_excel")
 
 from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
 from job_runner import JobRunner
@@ -94,6 +98,48 @@ class SimHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _serve_markdown_download(self, path, filename):
+        if not os.path.isfile(path):
+            return self._json_error(404, "File not found")
+        with open(path, "rb") as f:
+            body = f.read()
+        self.send_response(200)
+        self._cors_headers()
+        self.send_header("Content-Type", "text/markdown; charset=utf-8")
+        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_excel_zip(self):
+        """Zip every .xlsx in sim_excel/ and return it as a download."""
+        if not os.path.isdir(SIM_EXCEL_DIR):
+            return self._json_error(
+                404,
+                "No excel files yet. Run a simulation first, then try again."
+            )
+        xlsx_files = [f for f in os.listdir(SIM_EXCEL_DIR) if f.endswith(".xlsx")]
+        if not xlsx_files:
+            return self._json_error(
+                404,
+                "No excel files yet. Run a simulation first, then try again."
+            )
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for name in sorted(xlsx_files):
+                zf.write(os.path.join(SIM_EXCEL_DIR, name), arcname=name)
+        body = buf.getvalue()
+
+        self.send_response(200)
+        self._cors_headers()
+        self.send_header("Content-Type", "application/zip")
+        self.send_header("Content-Disposition",
+                         'attachment; filename="toyland-excel.zip"')
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def log_message(self, format, *args):
         pass  # Suppress default logging
 
@@ -121,6 +167,12 @@ class SimHandler(BaseHTTPRequestHandler):
 
         elif path == "/toyland/tutorial":
             self._serve_html(TUTORIAL_TOYLAND_PATH)
+
+        elif path == "/toyland/cowork-prompt.md":
+            self._serve_markdown_download(COWORK_PROMPT_PATH, "toyland-analysis.md")
+
+        elif path == "/toyland/download-excel":
+            self._serve_excel_zip()
 
         elif self.path == "/healthz":
             self._json_ok({"ok": True})

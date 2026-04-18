@@ -23,6 +23,7 @@
     --blue: #60a5fa;
     --purple: #c084fc;
     --pink: #f472b6;
+    --orange: #fb923c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -41,10 +42,8 @@
     pointer-events: none;
     z-index: 100;
   }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
 
-  .container { max-width: 980px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
-
-  /* NAV */
   nav {
     display: flex;
     justify-content: space-between;
@@ -52,40 +51,17 @@
     padding: 24px 0;
     border-bottom: 1px solid var(--border);
   }
-  .logo {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    color: var(--text-bright);
-    text-decoration: none;
-  }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 16px; color: var(--text-bright); text-decoration: none; }
   .logo .dot { color: var(--accent); }
-  .back {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-decoration: none;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    transition: color 0.15s;
-  }
+  .back { font-size: 12px; color: var(--text-dim); text-decoration: none; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.15s; }
   .back:hover { color: var(--accent); }
 
-  /* Breadcrumb / Title */
-  header.page {
-    padding: 80px 0 40px;
-    border-bottom: 1px solid var(--border);
-  }
-  .crumb {
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
+  header.page { padding: 80px 0 40px; border-bottom: 1px solid var(--border); }
+  .crumb { font-size: 11px; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; margin-bottom: 16px; }
   .crumb::before { content: '// '; }
   header.page h1 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(40px, 7vw, 80px);
+    font-size: clamp(40px, 7vw, 84px);
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 0.95;
@@ -95,83 +71,179 @@
   header.page .lede {
     font-size: 18px;
     color: var(--text);
-    max-width: 620px;
+    max-width: 720px;
     line-height: 1.6;
   }
   header.page .lede .dim { color: var(--text-dim); }
 
-  /* Main content */
-  main { padding: 60px 0; }
-  section.chunk { padding-bottom: 72px; }
-  section.chunk h2 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text-bright);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-  }
-  section.chunk h2 .num {
-    color: var(--accent);
-    font-size: 18px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  section.chunk .sub {
-    color: var(--text-dim);
-    margin-bottom: 32px;
-    font-size: 13px;
-  }
-
-  p { margin-bottom: 16px; color: var(--text); }
-  p.dim { color: var(--text-dim); }
-
-  /* Paths/lists */
-  .paths {
+  /* Journey map */
+  .journey {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .path {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 48px 0 0;
+    padding: 24px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    padding: 24px;
-    transition: all 0.15s;
   }
-  .path:hover { border-color: var(--border-bright); }
-  .path .tag {
-    display: inline-block;
+  .journey-step {
+    border-left: 3px solid var(--border-bright);
+    padding: 8px 16px;
+    transition: all 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+  .journey-step:hover { border-left-color: var(--accent); }
+  .journey-step .js-label {
     font-size: 10px;
     letter-spacing: 0.2em;
-    padding: 3px 8px;
-    border: 1px solid currentColor;
-    margin-bottom: 14px;
+    color: var(--text-dim);
     text-transform: uppercase;
-    font-weight: 700;
   }
-  .path.easy .tag { color: var(--good); }
-  .path.mid .tag  { color: var(--blue); }
-  .path.hard .tag { color: var(--purple); }
-  .path h4 {
+  .journey-step .js-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text-bright);
-    margin-bottom: 8px;
     letter-spacing: -0.01em;
+    margin-top: 4px;
   }
-  .path p {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin: 0;
-    line-height: 1.6;
+  @media (max-width: 860px) {
+    .journey { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .journey { grid-template-columns: 1fr; }
   }
 
-  /* Code blocks */
+  /* Stage sections */
+  main { padding: 80px 0; }
+  section.stage {
+    padding-bottom: 100px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+    scroll-margin-top: 60px;
+  }
+  section.stage:last-child { border-bottom: none; }
+
+  .stage-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .stage-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 80px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+  .stage-title-wrap { flex: 1; min-width: 280px; }
+  .stage-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    padding: 3px 10px;
+    border: 1px solid var(--border-bright);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h2.stage-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text-bright);
+    line-height: 1.05;
+  }
+  .stage-sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+  }
+  .stage-body {
+    max-width: 820px;
+    margin-top: 32px;
+  }
+  .stage-body > p {
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .stage-body > p.dim { color: var(--text-dim); }
+  .stage-body b { color: var(--text-bright); font-weight: 700; }
+  .stage-body .hl { color: var(--accent); font-weight: 500; }
+
+  /* Steps list */
+  ol.steps {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0;
+    counter-reset: step;
+  }
+  ol.steps > li {
+    position: relative;
+    padding: 20px 24px 20px 72px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    margin-bottom: 10px;
+    counter-increment: step;
+  }
+  ol.steps > li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 24px;
+    top: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 16px;
+  }
+  ol.steps > li .title {
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+    font-size: 15px;
+  }
+  ol.steps > li .body {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  ol.steps > li .body code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    color: var(--accent);
+    font-size: 12px;
+  }
+  ol.steps > li .body a {
+    color: var(--accent);
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+  }
+
+  /* Callouts */
+  .callout {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    padding: 18px 22px;
+    background: var(--bg-card);
+    margin: 24px 0;
+    font-size: 13px;
+  }
+  .callout b { color: var(--blue); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 11px; }
+  .callout.warn { border-left-color: var(--orange); }
+  .callout.warn b { color: var(--orange); }
+  .callout.good { border-left-color: var(--good); }
+  .callout.good b { color: var(--good); }
+
+  /* Code */
   pre {
     background: var(--bg-code);
     border: 1px solid var(--border);
@@ -179,9 +251,9 @@
     padding: 20px 24px;
     overflow-x: auto;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.7;
-    margin-bottom: 24px;
+    margin: 20px 0;
     position: relative;
   }
   pre::before {
@@ -194,15 +266,11 @@
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
-  pre code { color: var(--text); }
   .tok-k  { color: var(--pink); }
   .tok-s  { color: var(--good); }
-  .tok-n  { color: var(--blue); }
   .tok-c  { color: var(--text-dim); font-style: italic; }
   .tok-f  { color: var(--purple); }
-  .tok-b  { color: var(--accent); font-weight: 500; }
-
-  /* Inline code */
+  .tok-n  { color: var(--blue); }
   code.inline {
     background: var(--bg-code);
     border: 1px solid var(--border);
@@ -211,61 +279,100 @@
     color: var(--accent);
   }
 
-  /* Action table */
-  .actions {
+  /* Download card */
+  .download-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
   }
-  .action {
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    background: var(--bg-card);
+  .dl-card {
     border: 1px solid var(--border);
-    padding: 20px 24px;
-    gap: 20px;
+    background: var(--bg-card);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.15s;
+    text-decoration: none;
+    color: inherit;
   }
-  .action .name {
+  .dl-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-elev);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .dl-card .icon {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+  }
+  .dl-card .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .dl-card .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    flex: 1;
+    margin-bottom: 16px;
+  }
+  .dl-card .cta {
+    font-size: 11px;
     font-weight: 700;
     color: var(--accent);
-    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
-  .action .name small {
-    display: block;
-    color: var(--text-dim);
-    font-weight: 400;
+
+  /* Outcome box */
+  .outcome {
+    padding: 24px;
+    border: 1px dashed var(--accent);
+    background: rgba(250, 204, 21, 0.04);
+    margin: 32px 0 0;
+  }
+  .outcome .oh {
     font-size: 11px;
-    margin-top: 4px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
   }
-  .action .desc {
-    color: var(--text);
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  @media (max-width: 720px) {
-    .action { grid-template-columns: 1fr; gap: 8px; }
-  }
+  .outcome .body { color: var(--text); font-size: 14px; }
+  .outcome b { color: var(--text-bright); }
 
-  /* Callouts */
-  .note {
+  /* Flow diagram (ASCII) */
+  .flow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-dim);
+    padding: 24px;
+    background: var(--bg-code);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--blue);
-    padding: 16px 20px;
-    background: var(--bg-card);
-    margin-bottom: 24px;
-    font-size: 13px;
-    color: var(--text);
+    white-space: pre;
+    overflow-x: auto;
+    margin: 20px 0;
   }
-  .note b { color: var(--blue); font-weight: 700; letter-spacing: 0.05em; }
+  .flow .bright { color: var(--text-bright); }
+  .flow .yel { color: var(--accent); }
+  .flow .blu { color: var(--blue); }
+  .flow .grn { color: var(--good); }
 
-  /* CTA block */
+  /* CTA */
   .cta-block {
     background: var(--bg-card);
     border: 1px solid var(--border-bright);
-    padding: 48px;
+    padding: 56px 48px;
     text-align: center;
-    margin: 60px 0;
+    margin: 80px 0 0;
     position: relative;
     overflow: hidden;
   }
@@ -278,17 +385,13 @@
   }
   .cta-block h3 {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 36px;
+    font-size: 40px;
     font-weight: 900;
     color: var(--text-bright);
     margin-bottom: 16px;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
-  .cta-block p {
-    color: var(--text-dim);
-    margin-bottom: 28px;
-    font-size: 15px;
-  }
+  .cta-block p { color: var(--text-dim); margin-bottom: 28px; font-size: 15px; }
   .cta-btn {
     display: inline-flex;
     align-items: center;
@@ -298,7 +401,7 @@
     color: #000;
     text-decoration: none;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     border: 1px solid var(--accent);
@@ -311,7 +414,6 @@
     box-shadow: 4px 4px 0 var(--accent);
   }
 
-  /* Footer */
   footer {
     border-top: 1px solid var(--border);
     padding: 36px 0;
@@ -321,22 +423,23 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
+    margin-top: 80px;
   }
   footer a { color: var(--text-dim); text-decoration: none; }
   footer a:hover { color: var(--accent); }
 
-  ul.clean { list-style: none; padding: 0; margin-bottom: 24px; }
-  ul.clean li {
+  ul.inline-list { list-style: none; padding-left: 0; margin: 12px 0 20px; }
+  ul.inline-list li {
     padding: 6px 0;
     color: var(--text);
     font-size: 14px;
   }
-  ul.clean li::before {
+  ul.inline-list li::before {
     content: '▸ ';
     color: var(--accent);
     margin-right: 4px;
   }
-  ul.clean li b { color: var(--text-bright); font-weight: 500; }
+  ul.inline-list li b { color: var(--text-bright); font-weight: 500; }
 </style>
 </head>
 <body>
@@ -349,138 +452,277 @@
   </nav>
 
   <header class="page">
-    <div class="crumb">CHL-001 · Tutorial</div>
-    <h1>TOYLAND<br>DISTRIBUTION.</h1>
+    <div class="crumb">CHL-001 · Tutorial · The Journey</div>
+    <h1>FROM <span style="color:var(--accent)">DATA</span><br>TO AUTONOMY.</h1>
     <p class="lede">
-      You've got a toy distribution business. <span class="dim">Stock it. Ship it. Sell it. Do it better than the baseline and the leaderboard is yours. This page gets you from zero to running bot in under 20 minutes.</span>
+      A four-stage path from "I just ran a sim" to <b>"my AI bot runs the company end-to-end."</b> <span class="dim">You'll use Claude Cowork to build the tools you need, step by step. Our BizBotBash backend powers every simulation along the way.</span>
     </p>
+
+    <div class="journey">
+      <a href="#stage-1" class="journey-step"><div class="js-label">Stage 01</div><div class="js-title">Analyze</div></a>
+      <a href="#stage-2" class="journey-step"><div class="js-label">Stage 02</div><div class="js-title">Build ERP</div></a>
+      <a href="#stage-3" class="journey-step"><div class="js-label">Stage 03</div><div class="js-title">AI Copilot</div></a>
+      <a href="#stage-4" class="journey-step"><div class="js-label">Stage 04</div><div class="js-title">Autonomy</div></a>
+    </div>
   </header>
 
   <main>
 
-    <section class="chunk">
-      <h2><span class="num">01</span> The game</h2>
-      <p class="sub">What your bot is actually doing.</p>
-      <p>You run <b style="color:var(--text-bright)">ToyLand Distribution Co.</b> — 1 warehouse, 4 physical stores (Bangkok, Chiang Mai, Phuket), 2 online channels, and 12 product categories across 78 SKUs. Every simulated day, customers walk in, products sell, stock depletes. Your bot decides:</p>
-      <ul class="clean">
-        <li><b>What to order</b> from suppliers, and when</li>
-        <li><b>How to move stock</b> from the warehouse to stores (and between stores)</li>
-        <li><b>What goes on the A-shelves</b> (high-visibility, 1.8× conversion boost)</li>
-        <li><b>Whether to discount</b> slow movers (optional)</li>
-      </ul>
-      <p>The sim runs <b style="color:var(--text-bright)">12 to 60 months</b> of business in seconds. At the end you see revenue, profit, stockout rate, and shelf efficiency. Your goal: <b style="color:var(--accent)">beat the baseline bot.</b></p>
-    </section>
+    <!-- ══════════════ STAGE 1 ══════════════ -->
+    <section class="stage" id="stage-1">
+      <div class="stage-header">
+        <div class="stage-num">01</div>
+        <div class="stage-title-wrap">
+          <span class="stage-tag">Stage · Foundation</span>
+          <h2 class="stage-title">Analyze the data.</h2>
+          <div class="stage-sub">Get Claude to write your first analysis script</div>
+        </div>
+      </div>
 
-    <section class="chunk">
-      <h2><span class="num">02</span> Three ways to play</h2>
-      <p class="sub">Pick your difficulty.</p>
-      <div class="paths">
-        <div class="path easy">
-          <div class="tag">Easy</div>
-          <h4>Auto mode</h4>
-          <p>Zero code. Click Run and watch the built-in auto-operator run the company. Great for understanding the sim.</p>
+      <div class="stage-body">
+        <p>Before we build anything smart, we look at the data. <span class="hl">Run a simulation. Download the excel files. Hand them to Claude. Ask for insights.</span></p>
+        <p class="dim">You'll set up Claude Cowork on your machine, point it at a folder of excel files, drop in our analysis prompt, and watch it generate Python code that aggregates 60 months of sales, purchases, and stock data into clean insights.</p>
+
+        <div class="flow"><span class="bright">BizBotBash backend</span>  ──▶  <span class="yel">sim_excel/*.xlsx</span>  ──▶  <span class="blu">~/toyland-data/</span>  ──▶  <span class="grn">Claude Cowork</span>  ──▶  insights + charts</div>
+
+        <ol class="steps">
+          <li>
+            <div class="title">Run a simulation on the dashboard</div>
+            <div class="body">Open the <a href="/toyland">dashboard</a>, pick <code>Bizbotbash Champion</code>, set duration to 60 months, click <b>Run Simulation</b>. This calls our BizBotBash backend and produces a folder of excel files (one per calendar month).</div>
+          </li>
+          <li>
+            <div class="title">Download the excel bundle</div>
+            <div class="body">After the run finishes, click the <b>Download Excel</b> link in the dashboard (or grab it here: <a href="/toyland/download-excel">/toyland/download-excel</a>). You'll get a zip with <code>initial_state.xlsx</code> and <code>month_YYYY-MM.xlsx</code> files.</div>
+          </li>
+          <li>
+            <div class="title">Set up a folder</div>
+            <div class="body">Create <code>~/toyland-data/</code> on your machine. Unzip the excel files into it. The folder is now your "data warehouse."</div>
+          </li>
+          <li>
+            <div class="title">Install Claude Cowork</div>
+            <div class="body">Grab it from <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a> and point it at <code>~/toyland-data/</code>. Cowork gives Claude filesystem access so it can read your excel files and write Python scripts.</div>
+          </li>
+          <li>
+            <div class="title">Drop in the analysis prompt</div>
+            <div class="body">Download <a href="/toyland/cowork-prompt.md">toyland-analysis.md</a> and save it to the folder. Open Claude Cowork and say: <i>"Read toyland-analysis.md and do what it says."</i></div>
+          </li>
+          <li>
+            <div class="title">Let Claude cook</div>
+            <div class="body">Claude will build <code>aggregate.py</code> (reads all excel files into one dataframe), <code>analysis.py</code> (computes KPIs, trends, top movers), and <code>charts.py</code> (matplotlib plots). Run them. Read the output. Ask follow-up questions.</div>
+          </li>
+        </ol>
+
+        <div class="callout">
+          <b>Tip</b> &nbsp;&nbsp;Ask Claude: <i>"Which products had the highest revenue variance? What were the worst months for stockouts? Show me a heatmap of sales by location × category."</i> — specifics unlock specifics.
         </div>
-        <div class="path mid">
-          <div class="tag">Medium</div>
-          <h4>Pick a bot</h4>
-          <p>Run <code class="inline">Demo Baseline</code>, <code class="inline">Demo Smart</code>, <code class="inline">Champion</code>, or <code class="inline">Ai Genius</code> and compare. Study the source to learn tactics.</p>
+
+        <div class="download-grid">
+          <a href="/toyland/download-excel" class="dl-card">
+            <div class="icon">&gt; .XLSX</div>
+            <div class="name">Excel bundle</div>
+            <div class="desc">Zip of the most recent simulation's monthly excel files — ~1MB, drops straight into your folder.</div>
+            <div class="cta">Download ↓</div>
+          </a>
+          <a href="/toyland/cowork-prompt.md" class="dl-card">
+            <div class="icon">&gt; .MD</div>
+            <div class="name">Cowork prompt</div>
+            <div class="desc">The markdown file that tells Claude exactly what analysis scripts to build. Drop it in your folder and point Claude at it.</div>
+            <div class="cta">Download ↓</div>
+          </a>
         </div>
-        <div class="path hard">
-          <div class="tag">Hard</div>
-          <h4>Write your own</h4>
-          <p>Upload a Python file. Your bot gets state every day, returns actions, and runs the full sim. Beat all the presets.</p>
+
+        <div class="outcome">
+          <div class="oh">// End of Stage 01</div>
+          <div class="body">You have <b>a local data folder</b>, <b>Python scripts that aggregate and analyze</b>, and <b>a concrete sense of how the business behaves</b>. You know your top sellers, worst stockouts, seasonal peaks. This is your foundation.</div>
         </div>
       </div>
     </section>
 
-    <section class="chunk">
-      <h2><span class="num">03</span> Your bot, minimally</h2>
-      <p class="sub">Here's the smallest thing that works.</p>
-      <p>Every bot is a Python class with four public-info attributes and one <code class="inline">decide()</code> method. Each sim day, <code class="inline">decide()</code> gets the current state and returns a list of actions.</p>
-<pre data-lang="python"><code><span class="tok-k">class</span> <span class="tok-f">MyBot</span>:
-    <span class="tok-k">def</span> <span class="tok-f">__init__</span>(<span class="tok-n">self</span>):
-        <span class="tok-n">self</span>.catalog = {}           <span class="tok-c"># pid → product info</span>
-        <span class="tok-n">self</span>.suppliers = []
-        <span class="tok-n">self</span>.locations = []
-        <span class="tok-n">self</span>.physical_locs = []
-        <span class="tok-n">self</span>.product_supplier = {}  <span class="tok-c"># pid → best supplier_id</span>
-
-    <span class="tok-k">def</span> <span class="tok-f">decide</span>(<span class="tok-n">self</span>, state):
-        <span class="tok-c"># state[&quot;stock&quot;] = {(loc_id, pid): qty}</span>
-        <span class="tok-c"># state[&quot;date&quot;], state[&quot;day&quot;], state[&quot;cash&quot;], etc.</span>
-        commands = []
-
-        <span class="tok-c"># Example: reorder every product whose WH stock is low</span>
-        <span class="tok-k">for</span> pid, prod <span class="tok-k">in</span> <span class="tok-n">self</span>.catalog.items():
-            wh_stock = state[<span class="tok-s">&quot;stock&quot;</span>].get((<span class="tok-s">&quot;WH-01&quot;</span>, pid), <span class="tok-b">0</span>)
-            <span class="tok-k">if</span> wh_stock &lt; <span class="tok-b">30</span>:
-                commands.append({
-                    <span class="tok-s">&quot;action&quot;</span>: <span class="tok-s">&quot;issue_po&quot;</span>,
-                    <span class="tok-s">&quot;supplier_id&quot;</span>: <span class="tok-n">self</span>.product_supplier[pid],
-                    <span class="tok-s">&quot;product_id&quot;</span>: pid,
-                    <span class="tok-s">&quot;qty&quot;</span>: <span class="tok-b">100</span>,
-                })
-
-        <span class="tok-k">return</span> commands
-</code></pre>
-      <div class="note">
-        <b>HEADS UP</b> &nbsp; Your bot file cannot import <code class="inline">subprocess</code>, <code class="inline">socket</code>, <code class="inline">requests</code>, or call <code class="inline">eval</code>/<code class="inline">exec</code>/<code class="inline">open</code>. The sandbox blocks these. Full list: see <code class="inline">engine/server.py</code> on GitHub.
+    <!-- ══════════════ STAGE 2 ══════════════ -->
+    <section class="stage" id="stage-2">
+      <div class="stage-header">
+        <div class="stage-num">02</div>
+        <div class="stage-title-wrap">
+          <span class="stage-tag">Stage · Application</span>
+          <h2 class="stage-title">Build a real ERP.</h2>
+          <div class="stage-sub">Dashboard app that commands Excel</div>
+        </div>
       </div>
-    </section>
 
-    <section class="chunk">
-      <h2><span class="num">04</span> What actions you can take</h2>
-      <p class="sub">Return any mix of these from <code class="inline">decide()</code>.</p>
-      <div class="actions">
-        <div class="action">
-          <div class="name">issue_po<small>Order from supplier</small></div>
-          <div class="desc">Ship <code class="inline">qty</code> of <code class="inline">product_id</code> from <code class="inline">supplier_id</code> to WH-01. Arrives after the supplier's lead time (5–10 days typical). Reliability may partially fulfill.</div>
+      <div class="stage-body">
+        <p>Reading data is passive. <span class="hl">Writing data turns a dashboard into an ERP.</span> In Stage 02 you extend what Claude built into a full app that can <b>issue purchase orders, transfer stock, and rearrange shelves</b> — and have those decisions actually change the excel files.</p>
+        <p class="dim">You'll use Claude Cowork to build a local web dashboard (Flask, Streamlit, whatever) on top of your excel folder. When you click "issue PO" in your app, the underlying xlsx updates. When you query a report, it reads the latest state.</p>
+
+        <div class="flow">       ┌─── <span class="yel">your ERP UI</span> ───┐         ┌─── <span class="bright">BizBotBash backend</span> ───┐
+       │  · New PO          │         │  · Daily sales engine      │
+ YOU ──▶  · Stock transfer  │ ──xlsx─▶│  · PO / transfer execution │
+       │  · Shelf rearrange │         │  · Monthly excel export    │
+       └────────────────────┘         └────────────────────────────┘</div>
+
+        <ol class="steps">
+          <li>
+            <div class="title">Ask Claude to build a read/write layer</div>
+            <div class="body">Prompt: <i>"Extend aggregate.py so it can also WRITE. Add functions to append a new PO row, mark a transfer, update a shelf layout — each one modifies the relevant xlsx file and saves it back."</i></div>
+          </li>
+          <li>
+            <div class="title">Add a small local web UI</div>
+            <div class="body">Prompt: <i>"Build a Flask app with pages: Products, Purchase Orders, Transfers, Shelf Map. Each page has a form that calls the write functions from step 1."</i> Claude will scaffold this in minutes.</div>
+          </li>
+          <li>
+            <div class="title">Wire the UI to BizBotBash for simulation</div>
+            <div class="body">When you click <b>"Advance one month,"</b> your app calls our backend at <code>/run</code> or <code>/run-bot</code>, waits for the result, and re-exports the updated excel files into your folder. Everything stays in sync.</div>
+          </li>
+          <li>
+            <div class="title">Style it like BizBotBash</div>
+            <div class="body">Steal the black + yellow theme from this site. Claude will happily turn your Flask templates into a matching aesthetic. Looks matter when you're demoing to a boss.</div>
+          </li>
+        </ol>
+
+        <div class="callout warn">
+          <b>Reality check</b> &nbsp;&nbsp;Excel is a terrible transactional database. Fine for this tutorial. Don't ship it to a real business. When you're ready for production, replace xlsx with Postgres and keep the same interface.
         </div>
-        <div class="action">
-          <div class="name">transfer<small>Move stock</small></div>
-          <div class="desc">Move <code class="inline">qty</code> of <code class="inline">product_id</code> from <code class="inline">from_loc</code> to <code class="inline">to_loc</code>. Bangkok: 1 day. Upcountry: 2–3 days. Online stores fulfill from WH-01 directly.</div>
-        </div>
-        <div class="action">
-          <div class="name">set_discount<small>Cut the price</small></div>
-          <div class="desc"><code class="inline">discount_pct</code> is 0–1 (0.10 = 10% off). Omit <code class="inline">location_id</code> for global. Customers respond to discounts via a price-elasticity model.</div>
-        </div>
-        <div class="action">
-          <div class="name">set_shelf<small>Rearrange shelves</small></div>
-          <div class="desc">Place <code class="inline">product_id</code> on <code class="inline">shelf_grade</code> (A/B/C) at <code class="inline">location_id</code>. A-shelves give 1.8× demand weight. Used to be the Champion bot's secret sauce.</div>
+
+        <div class="outcome">
+          <div class="oh">// End of Stage 02</div>
+          <div class="body">You have a <b>working ERP</b> that reads from and writes to your excel folder. You can operate ToyLand by clicking buttons instead of writing Python. Every decision you make modifies the data. <b>You just built a small business application.</b></div>
         </div>
       </div>
     </section>
 
-    <section class="chunk">
-      <h2><span class="num">05</span> Upload and run</h2>
-      <p class="sub">Ship it.</p>
-      <ul class="clean">
-        <li>Save your bot as <code class="inline">my_bot.py</code></li>
-        <li>Open the <b>Play</b> page → <b>BizBot Bash</b> tab → <b>Submit Bot</b></li>
-        <li>Upload the file. The server sandboxes it, registers it, and drops it into the Mode dropdown</li>
-        <li>Pick it, set duration, hit <b>Run Simulation</b></li>
-        <li>Compare against Demo Baseline, Smart, Champion, Ai Genius</li>
-      </ul>
-      <div class="note">
-        <b>PRO TIP</b> &nbsp; The built-in bots are excellent starting points. Fork <code class="inline">demo_baseline_bot.py</code> for structure, or <code class="inline">bizbotbash_champion.py</code> if you want to see demand estimation, EWMA learning, and shelf optimization in one file.
+    <!-- ══════════════ STAGE 3 ══════════════ -->
+    <section class="stage" id="stage-3">
+      <div class="stage-header">
+        <div class="stage-num">03</div>
+        <div class="stage-title-wrap">
+          <span class="stage-tag">Stage · Copilot</span>
+          <h2 class="stage-title">Add an AI copilot.</h2>
+          <div class="stage-sub">Bot recommends. Human approves.</div>
+        </div>
+      </div>
+
+      <div class="stage-body">
+        <p>Your ERP works — but you're still the brain. <span class="hl">Stage 03 plugs in an AI bot that watches the state and suggests the next moves.</span> Not executing yet. Just recommending.</p>
+        <p class="dim">This is the "copilot" pattern: AI proposes, human disposes. You see each recommendation with an "Accept / Ignore" button. Accept → change hits the excel files. Ignore → nothing happens.</p>
+
+        <ol class="steps">
+          <li>
+            <div class="title">Upgrade your bot to emit recommendations</div>
+            <div class="body">Copy <code>bots/bizbotbash_champion.py</code> from the repo. Modify <code>decide()</code> to return actions as <b>suggestions with rationale</b> instead of executing directly: <code>{"action": "issue_po", "product": "PRD-014", "qty": 200, "why": "stockout imminent"}</code>.</div>
+          </li>
+          <li>
+            <div class="title">Add a "Recommendations" panel to your ERP</div>
+            <div class="body">Prompt Claude: <i>"Add a right-side panel that calls the bot once per day and lists its suggested actions. Each item has Accept / Ignore buttons and a short rationale."</i></div>
+          </li>
+          <li>
+            <div class="title">Wire Accept → real write</div>
+            <div class="body">When the user clicks Accept, reuse the write functions from Stage 02 to modify the xlsx files. When they click Ignore, log it so you can measure how often you disagreed with the bot.</div>
+          </li>
+          <li>
+            <div class="title">Measure the copilot's accuracy</div>
+            <div class="body">After a month of play, ask Claude: <i>"Compare my accept rate by action type. Which recommendations am I accepting more than 80% of the time? Those are candidates for auto-execution in Stage 04."</i></div>
+          </li>
+        </ol>
+
+        <div class="callout good">
+          <b>Why this matters</b> &nbsp;&nbsp;Real enterprises don't leap from spreadsheets to full autonomy. The copilot stage is where trust is built. It's also where you discover your bot's blind spots — on your terms, with a human safety net.
+        </div>
+
+        <div class="outcome">
+          <div class="oh">// End of Stage 03</div>
+          <div class="body">You have <b>an AI assistant inside your ERP</b>. You see what it wants to do and why. You approve or reject. The approved actions hit the excel files. You've also got a <b>log of your agreements and disagreements</b> — rich data for when you're ready to cut the cord.</div>
+        </div>
       </div>
     </section>
 
+    <!-- ══════════════ STAGE 4 ══════════════ -->
+    <section class="stage" id="stage-4">
+      <div class="stage-header">
+        <div class="stage-num">04</div>
+        <div class="stage-title-wrap">
+          <span class="stage-tag">Stage · Autonomy</span>
+          <h2 class="stage-title">Hit Run All.</h2>
+          <div class="stage-sub">Five years of business in 30 seconds</div>
+        </div>
+      </div>
+
+      <div class="stage-body">
+        <p>Stage 04 is the mic drop. <span class="hl">Click one button. Watch your bot run the company for five years, no human in the loop.</span></p>
+        <p class="dim">You hand control to your bot. It makes every decision: POs, transfers, shelves, discounts. The BizBotBash backend runs the 60-month simulation. At the end you get a final P&L, a complete excel archive, and a report comparing your bot to the baseline.</p>
+
+        <div class="flow">           <span class="yel">[Run All]</span>
+              │
+              ▼
+  ┌───────────────────────┐
+  │  <span class="bright">BizBotBash backend</span>    │  ◀──── your bot is called for every day
+  │  60 months × ~30 days │  ◀──── ~1800 decisions made autonomously
+  │  ≈ 30 seconds wall    │
+  └───────────┬───────────┘
+              ▼
+       <span class="grn">Final report + full excel archive</span></div>
+
+        <ol class="steps">
+          <li>
+            <div class="title">Flip the bot to autonomous mode</div>
+            <div class="body">Remove the "suggest, don't execute" wrapper from Stage 03. Your bot's <code>decide()</code> now returns actions directly. No approval loop.</div>
+          </li>
+          <li>
+            <div class="title">Upload the bot to BizBotBash</div>
+            <div class="body">In the dashboard's <b>BizBot Bash</b> tab, hit <b>Submit Bot</b>. Paste your bot code. The server sandboxes it and registers it. Ready to run.</div>
+          </li>
+          <li>
+            <div class="title">Hit Run All</div>
+            <div class="body">Select your bot in the Mode dropdown, set duration to 60 months, click <b>Run Simulation</b>. The backend runs the full 5-year simulation end-to-end.</div>
+          </li>
+          <li>
+            <div class="title">Review the autopsy</div>
+            <div class="body">Compare against <code>Demo Baseline</code>, <code>Champion</code>, and <code>Ai Genius</code>. Where did your bot beat them? Where did it lose? Iterate. Resubmit. Climb the leaderboard.</div>
+          </li>
+        </ol>
+
+        <div class="callout good">
+          <b>What you've proven</b> &nbsp;&nbsp;You took a business simulation, built a data pipeline, shipped an ERP, added a copilot, and then cut the human out entirely. That's the full arc of "AI for business" — not a slide, not a pitch deck, but a working system you built in a weekend.
+        </div>
+
+        <div class="outcome">
+          <div class="oh">// End of Stage 04</div>
+          <div class="body">You have <b>a fully autonomous bot</b> that runs a 5-year simulated business in 30 seconds. You know <b>exactly</b> how it performs, what it decides, and where it's weak. You understand AI-in-business not as a concept but as <b>a system you built with your own hands</b>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
     <div class="cta-block">
-      <h3>Enough reading.</h3>
-      <p>You know what to do.</p>
+      <h3>The journey starts with one sim.</h3>
+      <p>Go run it.</p>
       <a href="/toyland" class="cta-btn">▶ Open the dashboard</a>
     </div>
 
   </main>
 
   <footer>
-    <div>BIZBOTBASH<span style="color: var(--accent);">.</span> &nbsp;·&nbsp; Tutorial v1.0</div>
+    <div>BIZBOTBASH<span style="color: var(--accent);">.</span> &nbsp;·&nbsp; Tutorial v2.0</div>
     <div>
-      <a href="https://github.com/pooheamcharoenying/BizBotBash/blob/main/bots/API.md" target="_blank" rel="noopener">Full API docs →</a>
+      <a href="https://github.com/pooheamcharoenying/BizBotBash" target="_blank" rel="noopener">GitHub →</a>
+      &nbsp;&nbsp;
+      <a href="https://github.com/pooheamcharoenying/BizBotBash/blob/main/bots/API.md" target="_blank" rel="noopener">API docs →</a>
     </div>
   </footer>
 
 </div>
+
+<script>
+// Smooth scroll with offset
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
 </body>
 </html>
