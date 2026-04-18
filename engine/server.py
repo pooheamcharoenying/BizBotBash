@@ -48,6 +48,7 @@ SIM_EXCEL_DIR = os.path.join(PROJECT_DIR, "sim_excel")
 
 from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
 from job_runner import JobRunner
+from db import ping as db_ping, MONGO_DB_NAME
 
 
 # ── Global job runner instance ──
@@ -189,6 +190,15 @@ class SimHandler(BaseHTTPRequestHandler):
 
         elif self.path == "/healthz":
             self._json_ok({"ok": True})
+
+        elif self.path == "/healthz/db":
+            ok, info = db_ping()
+            payload = {"ok": ok}
+            if ok:
+                payload["mongo"] = info
+            else:
+                payload["error"] = info
+            self._json_ok(payload)
 
         elif self.path == "/runs":
             self._json_ok(list_runs())
