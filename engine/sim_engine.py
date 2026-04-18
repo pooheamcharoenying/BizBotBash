@@ -692,7 +692,12 @@ class SimulationEngine:
         self.current_date = date.fromisoformat(company["sim_start"])
         self.sim_months = company["sim_months"]
         self.working_days_set = set(company["working_days"])
-        self.end_date = self.current_date + timedelta(days=self.sim_months * 30 + 15)
+        # End on the last calendar day of the final target month so the last
+        # bucket in the Monthly Revenue chart isn't truncated to ~20 days.
+        _start = date.fromisoformat(company["sim_start"])
+        _final_year = _start.year + (_start.month - 1 + self.sim_months) // 12
+        _next_month = ((_start.month - 1 + self.sim_months) % 12) + 1
+        self.end_date = date(_final_year, _next_month, 1) - timedelta(days=1)
 
         # Separate RNG streams so bot-mode commands don't shift the sales sequence
         seed = company.get("random_seed", 2026)
