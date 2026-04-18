@@ -2576,8 +2576,8 @@ function renderLocationsTab() {
             const effectiveCustomers = (loc.traffic * loc.conv).toFixed(0);
 
             // Calculate revenue for this location
-            const locSales = filteredSales().filter(s => s.loc === loc.id);
-            const revenue = locSales.reduce((sum, s) => sum + (s.amt || 0), 0);
+            const locSales = filteredSales().filter(s => s.l === loc.id);
+            const revenue = locSales.reduce((sum, s) => sum + (s.r || 0), 0);
 
             // Build shelf layout
             let shelfLayoutHtml = '<div class="shelf-layout">';
@@ -2656,8 +2656,8 @@ function renderLocationsTab() {
         contentHtml += '<div style="margin-top: 30px;"><h3 style="margin-bottom: 20px;">Online Channels</h3><div class="location-grid">';
 
         onlineLocations.forEach(loc => {
-            const locSales = filteredSales().filter(s => s.loc === loc.id);
-            const revenue = locSales.reduce((sum, s) => sum + (s.amt || 0), 0);
+            const locSales = filteredSales().filter(s => s.l === loc.id);
+            const revenue = locSales.reduce((sum, s) => sum + (s.r || 0), 0);
 
             contentHtml += `
                 <div class="online-card">
