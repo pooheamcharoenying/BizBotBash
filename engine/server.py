@@ -479,11 +479,33 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 
+def bootstrap_default_run():
+    """Generate a 12-month baseline run at startup so users land on a
+    dashboard that's already populated with data instead of an empty
+    state. Skipped if any runs already exist (locally or after warm
+    restarts)."""
+    if list_runs():
+        return
+    print("Bootstrapping default 12-month baseline run...")
+    try:
+        cfg = load_config()
+        cfg["company"]["sim_months"] = 12
+        engine = SimulationEngine(cfg, mode="auto")
+        engine.run()
+        compact = build_compact(engine)
+        save_run(engine, label="welcome_baseline", compact_data=compact)
+        print("  ✓ Default run saved — dashboard will load with 12 months of data.")
+    except Exception as e:
+        print(f"  ⚠ Bootstrap failed (dashboard will start empty): {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="ToyLand Simulation Server")
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5055)))
     parser.add_argument("--host", default=os.environ.get("HOST", "0.0.0.0"))
     args = parser.parse_args()
+
+    bootstrap_default_run()
 
     server = ThreadingHTTPServer((args.host, args.port), SimHandler)
     print(f"ToyLand Simulation Server running on http://{args.host}:{args.port}")
