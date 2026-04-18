@@ -34,7 +34,8 @@ sys.path.insert(0, BASE_DIR)
 if BOTS_DIR not in sys.path:
     sys.path.insert(0, BOTS_DIR)
 
-from sim_engine import load_config, SimulationEngine, save_run, build_compact
+from sim_engine import load_config, SimulationEngine, build_compact
+import mongo_runs
 from bot_server import (public_products, public_locations, public_suppliers,
                         observable_stock, observable_pending_pos,
                         observable_pending_transfers, observable_active_discounts,
@@ -246,15 +247,22 @@ def execute_bot_run(bot_name, module_name, class_name, months, seed, label,
 
     # ── Build results ──
     compact = build_compact(engine)
-    run_dir = save_run(engine, label=label, compact_data=compact)
-    compact["run_folder"] = os.path.basename(run_dir)
+    try:
+        run_id = mongo_runs.save_run(
+            engine, label=label, compact_data=compact, bot_slug=bot_name
+        )
+        compact["run_folder"] = run_id
+    except Exception as e:
+        print(f"WARN: failed to save bot run to Mongo: {e}")
+        run_id = None
+        compact["run_folder"] = None
 
     elapsed = round(time.time() - start_time, 1)
 
     summary = compact.get("summary", {})
     return {
         "compact": compact,
-        "run_folder": os.path.basename(run_dir),
+        "run_folder": run_id,
         "total_days": engine.day_count,
         "total_revenue": round(engine.total_revenue, 2),
         "total_cogs": round(engine.total_cogs, 2),

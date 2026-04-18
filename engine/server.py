@@ -47,10 +47,11 @@ COWORK_PROMPT_PATH = os.path.join(DASHBOARD_DIR, "cowork-prompt.md")
 ADMIN_PATH = os.path.join(DASHBOARD_DIR, "admin.html")
 SIM_EXCEL_DIR = os.path.join(PROJECT_DIR, "sim_excel")
 
-from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
+from sim_engine import load_config, SimulationEngine, build_compact, DATA_DIR
 from job_runner import JobRunner
 from db import ping as db_ping, get_db, MONGO_DB_NAME
 from seed import seed_all
+import mongo_runs
 
 
 # ── Global job runner instance ──
@@ -115,8 +116,30 @@ class SimHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_excel_zip(self):
-        """Zip every .xlsx from the most recent saved run and serve it.
-        Falls back to sim_excel/ if there are no saved runs."""
+        """Serve the latest run's data as xlsx. Prefers Mongo — generates
+        the workbook on the fly from run_raw logs. Falls back to the
+        committed data/welcome_baseline_*/ folder (for legacy runs)."""
+        # ── Try Mongo first ──
+        try:
+            runs = mongo_runs.list_runs(limit=1)
+            if runs:
+                from mongo_excel import run_to_xlsx_bytes
+                body, filename = run_to_xlsx_bytes(runs[0]["folder"])
+                if body:
+                    self.send_response(200)
+                    self._cors_headers()
+                    self.send_header("Content-Type",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    self.send_header("Content-Disposition",
+                                     f'attachment; filename="{filename}"')
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+        except Exception as e:
+            print(f"WARN: Mongo xlsx generation failed, falling back: {e}")
+
+        # ── Fallback: filesystem ──
         source_dir = None
         if os.path.isdir(DATA_DIR):
             candidates = [os.path.join(DATA_DIR, d) for d in os.listdir(DATA_DIR)]
@@ -136,10 +159,7 @@ class SimHandler(BaseHTTPRequestHandler):
 
         xlsx_files = [f for f in os.listdir(source_dir) if f.endswith(".xlsx")]
         if not xlsx_files:
-            return self._json_error(
-                404,
-                "No excel files in the latest run. Run a simulation first."
-            )
+            return self._json_error(404, "No excel files found.")
 
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -206,10 +226,10 @@ class SimHandler(BaseHTTPRequestHandler):
             self._json_ok(payload)
 
         elif self.path == "/runs":
-            self._json_ok(list_runs())
+            self._json_ok(mongo_runs.list_runs())
 
         elif self.path == "/bots":
-            self._json_ok(runner.get_available_bots())
+            self._json_ok(mongo_runs.list_bots())
 
         elif self.path == "/jobs":
             self._json_ok(runner.list_jobs())
@@ -233,18 +253,12 @@ class SimHandler(BaseHTTPRequestHandler):
                 self._json_error(404, "Job not found")
 
         elif self.path.startswith("/runs/"):
-            folder = self.path[len("/runs/"):]
-            compact_path = os.path.join(DATA_DIR, folder, "compact.json")
-            if os.path.isfile(compact_path):
-                with open(compact_path) as f:
-                    data = f.read()
-                self.send_response(200)
-                self._cors_headers()
-                self.send_header("Content-Type", "application/json")
-                self.end_headers()
-                self.wfile.write(data.encode())
+            run_id = self.path[len("/runs/"):]
+            compact = mongo_runs.get_run_detail(run_id)
+            if compact is not None:
+                self._json_ok(compact)
             else:
-                self._json_error(404, "Run not found or no compact data")
+                self._json_error(404, "Run not found")
 
         else:
             self.send_response(404)
@@ -254,47 +268,20 @@ class SimHandler(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         if self.path == "/clear-all-runs":
-            # Delete ALL saved runs and sim_excel files
-            deleted_runs = 0
-            deleted_excel = 0
-
-            # Clear data/ folder (run results)
-            if os.path.isdir(DATA_DIR):
-                for name in os.listdir(DATA_DIR):
-                    run_dir = os.path.join(DATA_DIR, name)
-                    if os.path.isdir(run_dir):
-                        shutil.rmtree(run_dir)
-                        deleted_runs += 1
-
-            # Clear sim_excel/ folder (last-run excel files)
-            sim_excel_dir = os.path.join(PROJECT_DIR, "sim_excel")
-            if os.path.isdir(sim_excel_dir):
-                for name in os.listdir(sim_excel_dir):
-                    fpath = os.path.join(sim_excel_dir, name)
-                    if os.path.isfile(fpath):
-                        os.remove(fpath)
-                        deleted_excel += 1
-
-            # Clear job history from runner
+            deleted = mongo_runs.delete_all_runs()
             with runner.lock:
                 runner.jobs.clear()
-
-            print(f"  Cleared all: {deleted_runs} run folders, {deleted_excel} excel files")
+            print(f"  Cleared all: {deleted} runs removed from Mongo")
             self._json_ok({
                 "cleared": True,
-                "deleted_runs": deleted_runs,
-                "deleted_excel_files": deleted_excel,
+                "deleted_runs": deleted,
             })
 
         elif self.path.startswith("/runs/"):
-            folder = self.path[len("/runs/"):]
-            if "/" in folder or ".." in folder or not folder:
-                return self._json_error(400, "Invalid folder name")
-            run_dir = os.path.join(DATA_DIR, folder)
-            if os.path.isdir(run_dir):
-                shutil.rmtree(run_dir)
-                print(f"  Deleted run: {folder}")
-                self._json_ok({"deleted": folder})
+            run_id = self.path[len("/runs/"):]
+            if mongo_runs.delete_run(run_id):
+                print(f"  Deleted run: {run_id}")
+                self._json_ok({"deleted": run_id})
             else:
                 self._json_error(404, "Run not found")
         else:
@@ -323,8 +310,14 @@ class SimHandler(BaseHTTPRequestHandler):
             engine.run()
 
             compact = build_compact(engine)
-            run_dir = save_run(engine, label=label, compact_data=compact)
-            compact["run_folder"] = os.path.basename(run_dir)
+            try:
+                run_id = mongo_runs.save_run(
+                    engine, label=label, compact_data=compact, bot_slug="auto"
+                )
+                compact["run_folder"] = run_id
+            except Exception as e:
+                print(f"  WARN: failed to save run to Mongo: {e}")
+                compact["run_folder"] = None
 
             self._json_ok(compact)
             print(f"  ✓ Auto simulation complete, sent to dashboard")
@@ -455,6 +448,19 @@ class SimHandler(BaseHTTPRequestHandler):
         # ── Register ──
         module_name = bot_name  # Python module name = filename without .py
         runner.register_bot(bot_name, module_name, class_name)
+
+        # ── Persist to Mongo so the bot survives redeploys ──
+        try:
+            mongo_runs.save_bot(
+                slug=bot_name,
+                name=bot_name.replace("_", " ").title(),
+                code=code,
+                description=f"User-submitted bot ({class_name})",
+                bot_type="user",
+                author_user_id=None,  # wire to Clerk user id once auth ships
+            )
+        except Exception as e:
+            print(f"  WARN: failed to save bot to Mongo: {e}")
 
         self._json_ok({
             "bot_name": bot_name,

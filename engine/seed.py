@@ -192,6 +192,37 @@ def ensure_indexes(db):
     return {"count": len(created), "names": created}
 
 
+def seed_welcome_run(db, challenge_id):
+    """Run a fresh 12-month auto-mode sim and persist it to runs +
+    run_detail + run_raw, so the dashboard has something to show on
+    first load. Skipped if a run with label 'welcome_baseline' already
+    exists."""
+    if db.runs.find_one({"challenge_id": challenge_id, "label": "welcome_baseline"}):
+        return {"status": "skipped", "reason": "already exists"}
+
+    # Lazy imports: these pull heavy deps, skip unless we actually need them
+    from sim_engine import load_config, SimulationEngine, build_compact
+    from mongo_runs import save_run
+
+    cfg = load_config()
+    cfg["company"]["sim_months"] = 12
+    engine = SimulationEngine(cfg, mode="auto")
+    engine.run()
+    compact = build_compact(engine)
+    run_id = save_run(
+        engine,
+        label="welcome_baseline",
+        compact_data=compact,
+        bot_slug="auto",
+    )
+    return {
+        "status": "inserted",
+        "run_id": run_id,
+        "months": 12,
+        "total_revenue": round(engine.total_revenue, 2),
+    }
+
+
 def seed_all(db):
     """Run all seed steps. Returns a structured result dict."""
     result = {}
@@ -200,6 +231,7 @@ def seed_all(db):
     result["challenge_config"] = seed_challenge_config(db, challenge_id)
     result["bots"] = seed_bots(db, challenge_id)
     result["indexes"] = ensure_indexes(db)
+    result["welcome_run"] = seed_welcome_run(db, challenge_id)
     result["collections"] = {
         name: db[name].count_documents({})
         for name in sorted(db.list_collection_names())
