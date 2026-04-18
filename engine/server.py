@@ -37,7 +37,10 @@ BOTS_DIR = os.path.join(PROJECT_DIR, "bots")
 if BOTS_DIR not in sys.path:
     sys.path.insert(0, BOTS_DIR)
 
-DASHBOARD_PATH = os.path.join(PROJECT_DIR, "dashboard", "ToyLand_Dashboard.html")
+DASHBOARD_DIR = os.path.join(PROJECT_DIR, "dashboard")
+LANDING_PATH = os.path.join(DASHBOARD_DIR, "index.html")
+DASHBOARD_PATH = os.path.join(DASHBOARD_DIR, "ToyLand_Dashboard.html")
+TUTORIAL_TOYLAND_PATH = os.path.join(DASHBOARD_DIR, "tutorial_toyland.html")
 
 from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
 from job_runner import JobRunner
@@ -79,10 +82,10 @@ class SimHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
-    def _serve_dashboard(self):
-        if not os.path.isfile(DASHBOARD_PATH):
-            return self._json_error(404, "Dashboard not found")
-        with open(DASHBOARD_PATH, "rb") as f:
+    def _serve_html(self, path):
+        if not os.path.isfile(path):
+            return self._json_error(404, "Page not found")
+        with open(path, "rb") as f:
             body = f.read()
         self.send_response(200)
         self._cors_headers()
@@ -105,8 +108,19 @@ class SimHandler(BaseHTTPRequestHandler):
     # ── GET endpoints ──
 
     def do_GET(self):
-        if self.path == "/" or self.path == "/index.html":
-            self._serve_dashboard()
+        # Strip trailing slash for comparison (but keep "/" itself)
+        path = self.path
+        if len(path) > 1 and path.endswith("/"):
+            path = path[:-1]
+
+        if path == "/" or path == "/index.html":
+            self._serve_html(LANDING_PATH)
+
+        elif path == "/toyland":
+            self._serve_html(DASHBOARD_PATH)
+
+        elif path == "/toyland/tutorial":
+            self._serve_html(TUTORIAL_TOYLAND_PATH)
 
         elif self.path == "/healthz":
             self._json_ok({"ok": True})

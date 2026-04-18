@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ToyLand Tutorial — BizBotBash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --bg-elev: #0a0a0a;
+    --bg-card: #0e0e0e;
+    --bg-code: #0b0b0b;
+    --border: #1f1f1f;
+    --border-bright: #333333;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --text-bright: #ffffff;
+    --accent: #facc15;
+    --good: #4ade80;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .container { max-width: 980px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* NAV */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    color: var(--text-bright);
+    text-decoration: none;
+  }
+  .logo .dot { color: var(--accent); }
+  .back {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .back:hover { color: var(--accent); }
+
+  /* Breadcrumb / Title */
+  header.page {
+    padding: 80px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .crumb {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .crumb::before { content: '// '; }
+  header.page h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(40px, 7vw, 80px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--text-bright);
+    margin-bottom: 20px;
+  }
+  header.page .lede {
+    font-size: 18px;
+    color: var(--text);
+    max-width: 620px;
+    line-height: 1.6;
+  }
+  header.page .lede .dim { color: var(--text-dim); }
+
+  /* Main content */
+  main { padding: 60px 0; }
+  section.chunk { padding-bottom: 72px; }
+  section.chunk h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  section.chunk h2 .num {
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  section.chunk .sub {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+
+  p { margin-bottom: 16px; color: var(--text); }
+  p.dim { color: var(--text-dim); }
+
+  /* Paths/lists */
+  .paths {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .path {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    transition: all 0.15s;
+  }
+  .path:hover { border-color: var(--border-bright); }
+  .path .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .path.easy .tag { color: var(--good); }
+  .path.mid .tag  { color: var(--blue); }
+  .path.hard .tag { color: var(--purple); }
+  .path h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .path p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  pre::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  pre code { color: var(--text); }
+  .tok-k  { color: var(--pink); }
+  .tok-s  { color: var(--good); }
+  .tok-n  { color: var(--blue); }
+  .tok-c  { color: var(--text-dim); font-style: italic; }
+  .tok-f  { color: var(--purple); }
+  .tok-b  { color: var(--accent); font-weight: 500; }
+
+  /* Inline code */
+  code.inline {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  /* Action table */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .action {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    gap: 20px;
+  }
+  .action .name {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 13px;
+  }
+  .action .name small {
+    display: block;
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .action .desc {
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  @media (max-width: 720px) {
+    .action { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  /* Callouts */
+  .note {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    padding: 16px 20px;
+    background: var(--bg-card);
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .note b { color: var(--blue); font-weight: 700; letter-spacing: 0.05em; }
+
+  /* CTA block */
+  .cta-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    padding: 48px;
+    text-align: center;
+    margin: 60px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .cta-block h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--text-bright);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .cta-block p {
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    font-size: 15px;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 40px;
+    background: var(--accent);
+    color: #000;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    transition: all 0.15s;
+  }
+  .cta-btn:hover {
+    background: transparent;
+    color: var(--accent);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 36px 0;
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a { color: var(--text-dim); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+
+  ul.clean { list-style: none; padding: 0; margin-bottom: 24px; }
+  ul.clean li {
+    padding: 6px 0;
+    color: var(--text);
+    font-size: 14px;
+  }
+  ul.clean li::before {
+    content: '▸ ';
+    color: var(--accent);
+    margin-right: 4px;
+  }
+  ul.clean li b { color: var(--text-bright); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <nav>
+    <a href="/" class="logo">BIZBOTBASH<span class="dot">.</span></a>
+    <a href="/" class="back">← Back to challenges</a>
+  </nav>
+
+  <header class="page">
+    <div class="crumb">CHL-001 · Tutorial</div>
+    <h1>TOYLAND<br>DISTRIBUTION.</h1>
+    <p class="lede">
+      You've got a toy distribution business. <span class="dim">Stock it. Ship it. Sell it. Do it better than the baseline and the leaderboard is yours. This page gets you from zero to running bot in under 20 minutes.</span>
+    </p>
+  </header>
+
+  <main>
+
+    <section class="chunk">
+      <h2><span class="num">01</span> The game</h2>
+      <p class="sub">What your bot is actually doing.</p>
+      <p>You run <b style="color:var(--text-bright)">ToyLand Distribution Co.</b> — 1 warehouse, 4 physical stores (Bangkok, Chiang Mai, Phuket), 2 online channels, and 12 product categories across 78 SKUs. Every simulated day, customers walk in, products sell, stock depletes. Your bot decides:</p>
+      <ul class="clean">
+        <li><b>What to order</b> from suppliers, and when</li>
+        <li><b>How to move stock</b> from the warehouse to stores (and between stores)</li>
+        <li><b>What goes on the A-shelves</b> (high-visibility, 1.8× conversion boost)</li>
+        <li><b>Whether to discount</b> slow movers (optional)</li>
+      </ul>
+      <p>The sim runs <b style="color:var(--text-bright)">12 to 60 months</b> of business in seconds. At the end you see revenue, profit, stockout rate, and shelf efficiency. Your goal: <b style="color:var(--accent)">beat the baseline bot.</b></p>
+    </section>
+
+    <section class="chunk">
+      <h2><span class="num">02</span> Three ways to play</h2>
+      <p class="sub">Pick your difficulty.</p>
+      <div class="paths">
+        <div class="path easy">
+          <div class="tag">Easy</div>
+          <h4>Auto mode</h4>
+          <p>Zero code. Click Run and watch the built-in auto-operator run the company. Great for understanding the sim.</p>
+        </div>
+        <div class="path mid">
+          <div class="tag">Medium</div>
+          <h4>Pick a bot</h4>
+          <p>Run <code class="inline">Demo Baseline</code>, <code class="inline">Demo Smart</code>, <code class="inline">Champion</code>, or <code class="inline">Ai Genius</code> and compare. Study the source to learn tactics.</p>
+        </div>
+        <div class="path hard">
+          <div class="tag">Hard</div>
+          <h4>Write your own</h4>
+          <p>Upload a Python file. Your bot gets state every day, returns actions, and runs the full sim. Beat all the presets.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="chunk">
+      <h2><span class="num">03</span> Your bot, minimally</h2>
+      <p class="sub">Here's the smallest thing that works.</p>
+      <p>Every bot is a Python class with four public-info attributes and one <code class="inline">decide()</code> method. Each sim day, <code class="inline">decide()</code> gets the current state and returns a list of actions.</p>
+<pre data-lang="python"><code><span class="tok-k">class</span> <span class="tok-f">MyBot</span>:
+    <span class="tok-k">def</span> <span class="tok-f">__init__</span>(<span class="tok-n">self</span>):
+        <span class="tok-n">self</span>.catalog = {}           <span class="tok-c"># pid → product info</span>
+        <span class="tok-n">self</span>.suppliers = []
+        <span class="tok-n">self</span>.locations = []
+        <span class="tok-n">self</span>.physical_locs = []
+        <span class="tok-n">self</span>.product_supplier = {}  <span class="tok-c"># pid → best supplier_id</span>
+
+    <span class="tok-k">def</span> <span class="tok-f">decide</span>(<span class="tok-n">self</span>, state):
+        <span class="tok-c"># state[&quot;stock&quot;] = {(loc_id, pid): qty}</span>
+        <span class="tok-c"># state[&quot;date&quot;], state[&quot;day&quot;], state[&quot;cash&quot;], etc.</span>
+        commands = []
+
+        <span class="tok-c"># Example: reorder every product whose WH stock is low</span>
+        <span class="tok-k">for</span> pid, prod <span class="tok-k">in</span> <span class="tok-n">self</span>.catalog.items():
+            wh_stock = state[<span class="tok-s">&quot;stock&quot;</span>].get((<span class="tok-s">&quot;WH-01&quot;</span>, pid), <span class="tok-b">0</span>)
+            <span class="tok-k">if</span> wh_stock &lt; <span class="tok-b">30</span>:
+                commands.append({
+                    <span class="tok-s">&quot;action&quot;</span>: <span class="tok-s">&quot;issue_po&quot;</span>,
+                    <span class="tok-s">&quot;supplier_id&quot;</span>: <span class="tok-n">self</span>.product_supplier[pid],
+                    <span class="tok-s">&quot;product_id&quot;</span>: pid,
+                    <span class="tok-s">&quot;qty&quot;</span>: <span class="tok-b">100</span>,
+                })
+
+        <span class="tok-k">return</span> commands
+</code></pre>
+      <div class="note">
+        <b>HEADS UP</b> &nbsp; Your bot file cannot import <code class="inline">subprocess</code>, <code class="inline">socket</code>, <code class="inline">requests</code>, or call <code class="inline">eval</code>/<code class="inline">exec</code>/<code class="inline">open</code>. The sandbox blocks these. Full list: see <code class="inline">engine/server.py</code> on GitHub.
+      </div>
+    </section>
+
+    <section class="chunk">
+      <h2><span class="num">04</span> What actions you can take</h2>
+      <p class="sub">Return any mix of these from <code class="inline">decide()</code>.</p>
+      <div class="actions">
+        <div class="action">
+          <div class="name">issue_po<small>Order from supplier</small></div>
+          <div class="desc">Ship <code class="inline">qty</code> of <code class="inline">product_id</code> from <code class="inline">supplier_id</code> to WH-01. Arrives after the supplier's lead time (5–10 days typical). Reliability may partially fulfill.</div>
+        </div>
+        <div class="action">
+          <div class="name">transfer<small>Move stock</small></div>
+          <div class="desc">Move <code class="inline">qty</code> of <code class="inline">product_id</code> from <code class="inline">from_loc</code> to <code class="inline">to_loc</code>. Bangkok: 1 day. Upcountry: 2–3 days. Online stores fulfill from WH-01 directly.</div>
+        </div>
+        <div class="action">
+          <div class="name">set_discount<small>Cut the price</small></div>
+          <div class="desc"><code class="inline">discount_pct</code> is 0–1 (0.10 = 10% off). Omit <code class="inline">location_id</code> for global. Customers respond to discounts via a price-elasticity model.</div>
+        </div>
+        <div class="action">
+          <div class="name">set_shelf<small>Rearrange shelves</small></div>
+          <div class="desc">Place <code class="inline">product_id</code> on <code class="inline">shelf_grade</code> (A/B/C) at <code class="inline">location_id</code>. A-shelves give 1.8× demand weight. Used to be the Champion bot's secret sauce.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chunk">
+      <h2><span class="num">05</span> Upload and run</h2>
+      <p class="sub">Ship it.</p>
+      <ul class="clean">
+        <li>Save your bot as <code class="inline">my_bot.py</code></li>
+        <li>Open the <b>Play</b> page → <b>BizBot Bash</b> tab → <b>Submit Bot</b></li>
+        <li>Upload the file. The server sandboxes it, registers it, and drops it into the Mode dropdown</li>
+        <li>Pick it, set duration, hit <b>Run Simulation</b></li>
+        <li>Compare against Demo Baseline, Smart, Champion, Ai Genius</li>
+      </ul>
+      <div class="note">
+        <b>PRO TIP</b> &nbsp; The built-in bots are excellent starting points. Fork <code class="inline">demo_baseline_bot.py</code> for structure, or <code class="inline">bizbotbash_champion.py</code> if you want to see demand estimation, EWMA learning, and shelf optimization in one file.
+      </div>
+    </section>
+
+    <div class="cta-block">
+      <h3>Enough reading.</h3>
+      <p>You know what to do.</p>
+      <a href="/toyland" class="cta-btn">▶ Open the dashboard</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div>BIZBOTBASH<span style="color: var(--accent);">.</span> &nbsp;·&nbsp; Tutorial v1.0</div>
+    <div>
+      <a href="https://github.com/pooheamcharoenying/BizBotBash/blob/main/bots/API.md" target="_blank" rel="noopener">Full API docs →</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

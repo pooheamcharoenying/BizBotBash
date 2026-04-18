@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BizBotBash — code bots, break businesses, learn AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --bg-elev: #0a0a0a;
+    --bg-card: #0e0e0e;
+    --border: #1f1f1f;
+    --border-bright: #333333;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --text-bright: #ffffff;
+    --accent: #facc15;
+    --accent-dim: #a16207;
+    --good: #4ade80;
+    --bad: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Subtle CRT scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.015) 0,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: var(--text-bright);
+  }
+  .logo .dot { color: var(--accent); }
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.15s;
+    position: relative;
+  }
+  .nav-links a:hover { color: var(--text-bright); }
+  .nav-links a:hover::before {
+    content: '> ';
+    position: absolute;
+    left: -14px;
+    color: var(--accent);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 100px 0 60px;
+    position: relative;
+  }
+  .hero-label {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-label::before { content: '// '; }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(56px, 13vw, 180px);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    color: var(--text-bright);
+    margin-bottom: 24px;
+  }
+  .hero h1 .yellow { color: var(--accent); }
+  .hero h1 .cursor {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.85em;
+    background: var(--accent);
+    margin-left: 0.1em;
+    vertical-align: baseline;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text);
+    max-width: 620px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  .hero-sub .dim { color: var(--text-dim); }
+  .cta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .cta.primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .cta.primary:hover {
+    background: transparent;
+    color: var(--accent);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .cta.secondary {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-bright);
+  }
+  .cta.secondary:hover {
+    border-color: var(--text-bright);
+    color: var(--text-bright);
+  }
+  .cta .arrow { transition: transform 0.15s; }
+  .cta:hover .arrow { transform: translateX(4px); }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0;
+    margin-top: 80px;
+  }
+  .stat {
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ─── SECTIONS ─── */
+  section.block {
+    padding: 100px 0;
+    position: relative;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .section-tag {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  /* ─── STORY ─── */
+  .story {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .story p {
+    font-size: 20px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+  .story .lead {
+    font-size: 24px;
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+  .story .hl { color: var(--accent); }
+  .story-aside {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    font-size: 13px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .story-aside::before {
+    content: '$ ./whoami';
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 10px;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+  .story-aside ul {
+    list-style: none;
+    padding: 0;
+  }
+  .story-aside li {
+    padding: 6px 0;
+    color: var(--text-dim);
+  }
+  .story-aside li::before {
+    content: '▸ ';
+    color: var(--accent);
+    margin-right: 4px;
+  }
+  .story-aside li b {
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+  @media (max-width: 760px) {
+    .story { grid-template-columns: 1fr; }
+  }
+
+  /* ─── CHALLENGES ─── */
+  .challenges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .card.open:hover::before { width: 100%; }
+  .card.open:hover {
+    border-color: var(--border-bright);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .card.locked { opacity: 0.4; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .card-id {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+  }
+  .card-status {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    padding: 4px 10px;
+    border: 1px solid currentColor;
+    font-weight: 700;
+  }
+  .card.open .card-status { color: var(--good); }
+  .card.locked .card-status { color: var(--text-dim); }
+
+  .card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+  .card .subtitle {
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .card .desc {
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .card .desc b { color: var(--text); font-weight: 500; }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px 0;
+    margin-bottom: 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-item { font-size: 11px; }
+  .meta-item .key {
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .meta-item .val {
+    color: var(--text-bright);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px 16px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    transition: all 0.15s;
+    cursor: pointer;
+    background: transparent;
+  }
+  .btn.primary {
+    background: var(--text-bright);
+    color: #000;
+    border-color: var(--text-bright);
+  }
+  .btn.primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn:hover {
+    border-color: var(--text-bright);
+    color: var(--text-bright);
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+  }
+  .step {
+    padding: 28px;
+    border: 1px solid var(--border);
+    position: relative;
+    background: var(--bg-card);
+  }
+  .step-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--border-bright);
+    margin-bottom: 16px;
+  }
+  .step h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .step p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 0;
+    margin-top: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  footer a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  footer a:hover { color: var(--accent); }
+  footer .foot-links { display: flex; gap: 24px; }
+
+  /* ─── ASCII DECOR ─── */
+  .ascii-decor {
+    position: absolute;
+    font-size: 10px;
+    color: var(--border-bright);
+    white-space: pre;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.5;
+  }
+
+  /* tiny helpers */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <nav>
+    <div class="logo">BIZBOTBASH<span class="dot">.</span></div>
+    <div class="nav-links">
+      <a href="#story">Story</a>
+      <a href="#challenges">Challenges</a>
+      <a href="#how">How</a>
+      <a href="https://github.com/pooheamcharoenying/BizBotBash" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-label">v0.1 · open beta</div>
+    <h1>CODE<br>BOTS.<br><span class="yellow">BREAK</span><br>BUSINESS.<span class="cursor"></span></h1>
+    <p class="hero-sub">
+      Everyone's talking about <b>"AI for business."</b> <span class="dim">Almost nobody's writing code that proves it works. So we built a sandbox. You write the bot. The sim runs the company. Five years pass in 30 seconds.</span>
+    </p>
+    <div class="cta-row">
+      <a href="#challenges" class="cta primary">Pick a challenge <span class="arrow">→</span></a>
+      <a href="#story" class="cta secondary">What is this?</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">1</div>
+        <div class="stat-label">Dataset live</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">78</div>
+        <div class="stat-label">Product SKUs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">60</div>
+        <div class="stat-label">Max sim months</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">∞</div>
+        <div class="stat-label">Ways to lose</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="story">
+    <div class="section-head">
+      <div class="section-tag">01 · Story</div>
+    </div>
+    <div class="story">
+      <div>
+        <p class="lead">We ran 47 simulations before lunch. Only 3 broke even.</p>
+        <p>BizBotBash is a playground for people who want to <span class="hl">actually understand</span> how AI reasons about business decisions — inventory, pricing, supply chains, shelf space — instead of reading another thought-leadership essay about it.</p>
+        <p>Pick a dataset. Write a bot in Python. Watch it win, lose, or do something <span class="hl">genuinely weird</span>. Every decision has consequences. Every bug costs revenue.</p>
+      </div>
+      <div class="story-aside">
+        <ul>
+          <li><b>Who</b> — Builders at Project Lab, exploring AI.</li>
+          <li><b>Why</b> — Theory is cheap. Simulation is cheaper.</li>
+          <li><b>For</b> — Devs, analysts, students, curious humans.</li>
+          <li><b>Cost</b> — Free. Open source. Bring your own bugs.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="challenges">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">02 · Challenges</div>
+        <div class="section-title">Pick your poison.</div>
+      </div>
+    </div>
+    <div class="challenges">
+
+      <div class="card open">
+        <div class="card-header">
+          <div class="card-id">CHL-001</div>
+          <div class="card-status">● LIVE</div>
+        </div>
+        <h3>TOYLAND<br>DISTRIBUTION</h3>
+        <div class="subtitle">Retail · Supply chain · Shelf optimization</div>
+        <div class="desc">
+          You're running a toy distributor in Bangkok. <b>12 products, 4 stores, 1 warehouse.</b> Your bot decides purchase orders, stock transfers, and which products go on the A-shelves. Run it for 5 years. See if your bot outsmarts the market — or gets eaten by it.
+        </div>
+        <div class="card-meta">
+          <div class="meta-item">
+            <span class="key">Duration</span>
+            <span class="val">12–60 mo</span>
+          </div>
+          <div class="meta-item">
+            <span class="key">Difficulty</span>
+            <span class="val">★★★☆☆</span>
+          </div>
+          <div class="meta-item">
+            <span class="key">SKUs</span>
+            <span class="val">78</span>
+          </div>
+          <div class="meta-item">
+            <span class="key">Locations</span>
+            <span class="val">4 + online</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="/toyland" class="btn primary">▶ Play</a>
+          <a href="/toyland/tutorial" class="btn">Tutorial</a>
+        </div>
+      </div>
+
+      <div class="card locked">
+        <div class="card-header">
+          <div class="card-id">CHL-002</div>
+          <div class="card-status">○ DRAFT</div>
+        </div>
+        <h3>COMING<br>SOON™</h3>
+        <div class="subtitle">Your suggestion here</div>
+        <div class="desc">
+          More datasets are in the oven. Restaurants, SaaS, logistics — we're taking requests. Drop an idea in the issues tab and we'll consider it (probably).
+        </div>
+        <div class="card-meta">
+          <div class="meta-item">
+            <span class="key">Status</span>
+            <span class="val">Incoming</span>
+          </div>
+          <div class="meta-item">
+            <span class="key">ETA</span>
+            <span class="val">Soon-ish</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="https://github.com/pooheamcharoenying/BizBotBash/issues/new" target="_blank" rel="noopener" class="btn">Suggest one</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="section-head">
+      <div>
+        <div class="section-tag">03 · How it works</div>
+        <div class="section-title">Four steps. No slide deck.</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Pick a challenge</h4>
+        <p>Each challenge is a simulated company with real mechanics — customers, inventory, cash flow, the works.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Read the tutorial</h4>
+        <p>Short, code-heavy. You'll know enough to ship a working bot in under 20 minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Write your bot</h4>
+        <p>Python. Upload via the dashboard. Or fork the baseline and iterate from there.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Break things</h4>
+        <p>Run the sim. Compare runs side-by-side. Find the edge. Learn what AI in business actually looks like.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>BIZBOTBASH<span style="color: var(--accent);">.</span> &nbsp;·&nbsp; <span class="mono">build · break · learn</span></div>
+    <div class="foot-links">
+      <a href="https://github.com/pooheamcharoenying/BizBotBash" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/pooheamcharoenying/BizBotBash/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="#hero">Top ↑</a>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
