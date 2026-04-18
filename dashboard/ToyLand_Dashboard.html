@@ -1028,7 +1028,7 @@ function populateProductSelect() {
 
 // Load saved runs from server, then initialize
 async function loadAvailableBots() {
-    const SIM_SERVER = 'http://127.0.0.1:5055';
+    const SIM_SERVER = (window.location.protocol === 'file:' ? 'http://127.0.0.1:5055' : window.location.origin);
     try {
         const resp = await fetch(SIM_SERVER + '/bots');
         if (!resp.ok) return;
@@ -1050,7 +1050,7 @@ async function loadAvailableBots() {
 }
 
 async function loadRunsFromServer() {
-    const SIM_SERVER = 'http://127.0.0.1:5055';
+    const SIM_SERVER = (window.location.protocol === 'file:' ? 'http://127.0.0.1:5055' : window.location.origin);
 
     const runsResp = await fetch(SIM_SERVER + '/runs');
     if (!runsResp.ok) throw new Error('Server returned ' + runsResp.status);
@@ -1630,7 +1630,7 @@ function renderExpensesTab() {
 // BizBot Bash — Leaderboard, Bot Upload, Active Jobs
 // ═══════════════════════════════════════════════════════════
 
-const BIZBOTBASH_SERVER = 'http://127.0.0.1:5055';
+const BIZBOTBASH_SERVER = (window.location.protocol === 'file:' ? 'http://127.0.0.1:5055' : window.location.origin);
 
 function renderBizBotBashTab() {
     refreshLeaderboard();
@@ -2904,7 +2904,7 @@ function renderSuppliersTab() {
 // ============================================
 // RUN MANAGER SIDEBAR
 // ============================================
-const SIM_SERVER_URL = 'http://127.0.0.1:5055';
+const SIM_SERVER_URL = (window.location.protocol === 'file:' ? 'http://127.0.0.1:5055' : window.location.origin);
 
 function toggleCustomDuration(sel) {
     const customInput = document.getElementById('customDurationInput');
@@ -3321,7 +3321,7 @@ initializeFromRAW();
     };
     
     // Simulation server URL (start with: python engine/server.py)
-    const SIM_SERVER = 'http://127.0.0.1:5055';
+    const SIM_SERVER = (window.location.protocol === 'file:' ? 'http://127.0.0.1:5055' : window.location.origin);
 
     // Mode selector — auto-fill label when mode changes
     const modeSelector = document.getElementById('modeSelector');

@@ -37,6 +37,8 @@ BOTS_DIR = os.path.join(PROJECT_DIR, "bots")
 if BOTS_DIR not in sys.path:
     sys.path.insert(0, BOTS_DIR)
 
+DASHBOARD_PATH = os.path.join(PROJECT_DIR, "dashboard", "ToyLand_Dashboard.html")
+
 from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
 from job_runner import JobRunner
 
@@ -77,6 +79,18 @@ class SimHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
+    def _serve_dashboard(self):
+        if not os.path.isfile(DASHBOARD_PATH):
+            return self._json_error(404, "Dashboard not found")
+        with open(DASHBOARD_PATH, "rb") as f:
+            body = f.read()
+        self.send_response(200)
+        self._cors_headers()
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def log_message(self, format, *args):
         pass  # Suppress default logging
 
@@ -91,7 +105,13 @@ class SimHandler(BaseHTTPRequestHandler):
     # ── GET endpoints ──
 
     def do_GET(self):
-        if self.path == "/runs":
+        if self.path == "/" or self.path == "/index.html":
+            self._serve_dashboard()
+
+        elif self.path == "/healthz":
+            self._json_ok({"ok": True})
+
+        elif self.path == "/runs":
             self._json_ok(list_runs())
 
         elif self.path == "/bots":
@@ -395,11 +415,12 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
 
 def main():
     parser = argparse.ArgumentParser(description="ToyLand Simulation Server")
-    parser.add_argument("--port", type=int, default=5055)
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5055)))
+    parser.add_argument("--host", default=os.environ.get("HOST", "0.0.0.0"))
     args = parser.parse_args()
 
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), SimHandler)
-    print(f"ToyLand Simulation Server running on http://127.0.0.1:{args.port}")
+    server = ThreadingHTTPServer((args.host, args.port), SimHandler)
+    print(f"ToyLand Simulation Server running on http://{args.host}:{args.port}")
     print(f"Dashboard will call POST /run or POST /run-bot to trigger simulations.")
     print(f"Available bots: {', '.join(runner.bot_registry.keys())}")
     print(f"Excel files → {os.path.join(PROJECT_DIR, 'sim_excel')}/")
