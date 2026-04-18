@@ -1,7 +1,11 @@
 # Generated simulation output
 sim_output.json
 sim_excel/
-data/
+
+# Ignore everything in data/ EXCEPT the welcome_baseline runs that
+# ship with the repo (so fresh deploys land on a populated dashboard).
+data/*
+!data/welcome_baseline_*/
 
 # Generated Excel exports
 output/

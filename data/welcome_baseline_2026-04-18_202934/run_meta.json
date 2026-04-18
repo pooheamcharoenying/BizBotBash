@@ -1,0 +1,16 @@
+{
+  "label": "welcome_baseline",
+  "folder": "welcome_baseline_2026-04-18_202934",
+  "timestamp": "2026-04-18_202934",
+  "mode": "auto",
+  "seed": 2026,
+  "months": 12,
+  "total_days": 313,
+  "total_revenue": 30197330.0,
+  "total_cogs": 12045435,
+  "gross_profit": 18151895.0,
+  "total_orders": 20620,
+  "total_pos": 358,
+  "total_transfers": 1716,
+  "has_compact": true
+}

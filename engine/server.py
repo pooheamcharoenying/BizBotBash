@@ -112,23 +112,36 @@ class SimHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_excel_zip(self):
-        """Zip every .xlsx in sim_excel/ and return it as a download."""
-        if not os.path.isdir(SIM_EXCEL_DIR):
-            return self._json_error(
-                404,
-                "No excel files yet. Run a simulation first, then try again."
-            )
-        xlsx_files = [f for f in os.listdir(SIM_EXCEL_DIR) if f.endswith(".xlsx")]
-        if not xlsx_files:
+        """Zip every .xlsx from the most recent saved run and serve it.
+        Falls back to sim_excel/ if there are no saved runs."""
+        source_dir = None
+        if os.path.isdir(DATA_DIR):
+            candidates = [os.path.join(DATA_DIR, d) for d in os.listdir(DATA_DIR)]
+            candidates = [d for d in candidates if os.path.isdir(d)]
+            if candidates:
+                candidates.sort(key=os.path.getmtime, reverse=True)
+                source_dir = candidates[0]
+
+        if source_dir is None and os.path.isdir(SIM_EXCEL_DIR):
+            source_dir = SIM_EXCEL_DIR
+
+        if source_dir is None:
             return self._json_error(
                 404,
                 "No excel files yet. Run a simulation first, then try again."
             )
 
+        xlsx_files = [f for f in os.listdir(source_dir) if f.endswith(".xlsx")]
+        if not xlsx_files:
+            return self._json_error(
+                404,
+                "No excel files in the latest run. Run a simulation first."
+            )
+
         buf = io.BytesIO()
         with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
             for name in sorted(xlsx_files):
-                zf.write(os.path.join(SIM_EXCEL_DIR, name), arcname=name)
+                zf.write(os.path.join(source_dir, name), arcname=name)
         body = buf.getvalue()
 
         self.send_response(200)
@@ -479,33 +492,11 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 
-def bootstrap_default_run():
-    """Generate a 12-month baseline run at startup so users land on a
-    dashboard that's already populated with data instead of an empty
-    state. Skipped if any runs already exist (locally or after warm
-    restarts)."""
-    if list_runs():
-        return
-    print("Bootstrapping default 12-month baseline run...")
-    try:
-        cfg = load_config()
-        cfg["company"]["sim_months"] = 12
-        engine = SimulationEngine(cfg, mode="auto")
-        engine.run()
-        compact = build_compact(engine)
-        save_run(engine, label="welcome_baseline", compact_data=compact)
-        print("  ✓ Default run saved — dashboard will load with 12 months of data.")
-    except Exception as e:
-        print(f"  ⚠ Bootstrap failed (dashboard will start empty): {e}")
-
-
 def main():
     parser = argparse.ArgumentParser(description="ToyLand Simulation Server")
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5055)))
     parser.add_argument("--host", default=os.environ.get("HOST", "0.0.0.0"))
     args = parser.parse_args()
-
-    bootstrap_default_run()
 
     server = ThreadingHTTPServer((args.host, args.port), SimHandler)
     print(f"ToyLand Simulation Server running on http://{args.host}:{args.port}")
