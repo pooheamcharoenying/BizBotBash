@@ -1,0 +1,13 @@
+{
+  "name": "ToyLand Distribution Co., Ltd.",
+  "currency": "THB",
+  "sim_start": "2025-04-01",
+  "working_days": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

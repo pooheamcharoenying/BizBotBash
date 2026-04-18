@@ -1,0 +1,3535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToyLand Distribution Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            border: none;
+            background: #e2e8f0;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #1e293b;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #cbd5e1;
+        }
+
+        .tab-btn.active:hover {
+            background: #0f172a;
+        }
+
+        .tab-btn[data-tab="bizbotbash"].active {
+            background: linear-gradient(135deg, #d69e2e, #ecc94b) !important;
+            color: #744210 !important;
+        }
+
+        .tab-btn[data-tab="bizbotbash"]:hover {
+            background: #ecc94b;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 130px);
+        }
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            padding: 6px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            background: white;
+            color: #475569;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .chip.all-btn {
+            background: #1e293b;
+            color: white;
+            border-color: #1e293b;
+        }
+
+        .chip:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .chip.active:hover {
+            background: #2563eb;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #1e293b;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            background: #fafbfc;
+            border-radius: 8px;
+        }
+
+        .data-table {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f1f5f9;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-cat {
+            background: #f0f4f8;
+            color: #1e293b;
+        }
+
+        .badge-complete {
+            background: #dcfce7;
+            color: #065f46;
+        }
+
+        .badge-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-pending {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            color: #3b82f6;
+        }
+
+        .clickable:hover {
+            color: #2563eb;
+        }
+
+        .product-catalog-row {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .product-catalog-row:hover {
+            background: #eff6ff !important;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .cat-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .product-header {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .product-header h2 {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .product-header p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .product-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .product-meta span {
+            display: flex;
+            gap: 6px;
+        }
+
+        .product-meta strong {
+            color: #475569;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .tooltip-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .hidden { display: none; }
+
+        .location-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .location-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .location-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .location-stat {
+            text-align: center;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .location-stat .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .location-stat .stat-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .shelf-layout {
+            margin-top: 12px;
+        }
+
+        .shelf-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .shelf-row.grade-A { border-left-color: #16a34a; }
+        .shelf-row.grade-B { border-left-color: #2563eb; }
+        .shelf-row.grade-C { border-left-color: #d97706; }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+        .grade-badge.grade-A { background: #16a34a; }
+        .grade-badge.grade-B { background: #2563eb; }
+        .grade-badge.grade-C { background: #d97706; }
+
+        .shelf-categories {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .online-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .product-scores {
+            display: flex;
+            gap: 16px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .product-scores span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    
+        .sim-bar {
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .sim-bar select, .sim-bar button {
+            padding: 6px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+        }
+
+        .sim-bar button.play-btn {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sim-bar button.play-btn:hover { background: #15803d; }
+        .sim-bar button.play-btn:disabled { background: #94a3b8; border-color: #94a3b8; cursor: not-allowed; }
+        .sim-bar .sim-status { color: #64748b; font-size: 12px; }
+        .sim-bar label { color: #475569; font-weight: 500; }
+
+        /* ── Run Manager Panel ── */
+        .run-manager {
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+        }
+        .run-manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 10px;
+        }
+        .run-manager-header .sidebar-label {
+            margin-bottom: 0;
+        }
+        .run-manager-toggle {
+            font-size: 12px;
+            color: #94a3b8;
+            transition: transform 0.2s;
+        }
+        .run-manager-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+        .run-manager-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .run-manager-list.collapsed {
+            display: none;
+        }
+        .run-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .run-card:hover {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        .run-card.active {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+        }
+        .run-card-label {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 20px;
+        }
+        .run-card-meta {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .run-card-meta span {
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .run-card-revenue {
+            font-weight: 600;
+            color: #16a34a;
+        }
+        .run-card-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 20px;
+            text-align: center;
+            padding: 0;
+            transition: all 0.15s;
+        }
+        .run-card-delete:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .run-card-mode {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .run-card-mode.auto { background: #dbeafe; color: #1d4ed8; }
+        .run-card-mode.bot { background: #fef3c7; color: #92400e; }
+        .run-card-mode.dashboard { background: #dcfce7; color: #166534; }
+        .run-empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 20px 10px;
+            font-size: 12px;
+        }
+        .delete-confirm-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .delete-confirm-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .delete-confirm-box h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+        .delete-confirm-box p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        .delete-confirm-box .btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .delete-confirm-box button {
+            padding: 8px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .delete-confirm-box .btn-cancel {
+            background: white;
+            color: #475569;
+        }
+        .delete-confirm-box .btn-cancel:hover { background: #f1f5f9; }
+        .delete-confirm-box .btn-delete {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+        .delete-confirm-box .btn-delete:hover { background: #b91c1c; }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <h1>ToyLand Distribution</h1>
+        <p>Dashboard • <span id="dateRange">May 2024 - Apr 2025</span></p>
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="product">Product View</button>
+        <button class="tab-btn" data-tab="po">Purchase Orders</button>
+        <button class="tab-btn" data-tab="tr">Stock Transfers</button>
+        <button class="tab-btn" data-tab="locations">Locations</button>
+        <button class="tab-btn" data-tab="suppliers">Suppliers</button>
+        <button class="tab-btn" data-tab="expenses">Expenses & P&L</button>
+        <button class="tab-btn" data-tab="bizbotbash" style="background:#f6e05e;color:#744210;font-weight:700;">🏆 BizBot Bash</button>
+    </div>
+</div>
+
+<div class="sim-bar">
+    <label>Run:</label>
+    <select id="runSelector">
+        <option value="0">Loading...</option>
+    </select>
+    <label style="margin-left: 20px;">Mode:</label>
+    <select id="modeSelector">
+        <option value="auto">Auto (Default)</option>
+        <option value="demo_baseline">Baseline Bot</option>
+        <option value="demo_smart">Smart Bot</option>
+    </select>
+    <label style="margin-left: 20px;">Duration:</label>
+    <select id="durationSelector" onchange="toggleCustomDuration(this)">
+        <option value="3">3 months</option>
+        <option value="6">6 months</option>
+        <option value="12" selected>12 months (1 yr)</option>
+        <option value="18">18 months</option>
+        <option value="24">24 months (2 yr)</option>
+        <option value="36">36 months (3 yr)</option>
+        <option value="48">48 months (4 yr)</option>
+        <option value="60">60 months (5 yr)</option>
+        <option value="custom">Custom...</option>
+    </select>
+    <input id="customDurationInput" type="number" min="1" max="60" placeholder="months" style="display:none;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px;width:70px;margin-left:4px;">
+    <label style="margin-left: 20px;">Label:</label>
+    <input id="runLabelInput" type="text" placeholder="auto-fills from mode" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; width: 140px;">
+    <button id="playBtn" class="play-btn">▶ Run Simulation</button>
+    <span id="simStatus" class="sim-status"></span>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <!-- Run Manager Panel -->
+        <div class="run-manager" id="runManager">
+            <div class="run-manager-header" onclick="toggleRunManager()">
+                <label class="sidebar-label">Run History</label>
+                <span class="run-manager-toggle" id="runManagerToggle">▼</span>
+            </div>
+            <div class="run-manager-list" id="runManagerList">
+                <div class="run-empty">Loading runs...</div>
+            </div>
+            <button id="clearAllRunsBtn" onclick="confirmClearAllRuns()" style="display:none;width:100%;padding:8px;margin-top:4px;background:#fed7d7;color:#c53030;border:1px solid #fc8181;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">🗑 Clear All Runs</button>
+        </div>
+
+        <div class="sidebar-section">
+            <label class="sidebar-label">Year</label>
+            <div class="chips-container" id="yearFilter">
+                <button class="chip all-btn" data-filter="all">All</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <label class="sidebar-label">Region</label>
+            <div class="chips-container" id="regionFilter">
+                <button class="chip all-btn" data-filter="all">All</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <label class="sidebar-label">Location</label>
+            <div class="chips-container" id="locationFilter">
+                <button class="chip all-btn" data-filter="all">All</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section" id="productSection" style="display: none;">
+            <label class="sidebar-label">Product</label>
+            <select id="productSelect">
+                <option value="">Select a product...</option>
+            </select>
+        </div>
+
+        <div class="sidebar-section" id="metricSection" style="display: none;">
+            <label class="sidebar-label">Metric</label>
+            <div class="chips-container">
+                <button class="chip active" data-metric="units">Units</button>
+                <button class="chip" data-metric="revenue">Revenue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <div class="kpi-grid" id="overviewKpis"></div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly Revenue Trend</div>
+                <canvas id="revenueChart" width="800" height="300"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Revenue by Region</div>
+                <canvas id="regionChart" width="800" height="300"></canvas>
+            </div>
+            <div class="data-table">
+                <div class="chart-title" style="padding: 20px 20px 0 20px;">Product Rankings</div>
+                <div class="table-wrapper">
+                    <table id="rankingTable"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCT VIEW TAB -->
+        <div id="product" class="tab-content">
+            <!-- Product catalog list (shown when no product selected) -->
+            <div id="productCatalog"></div>
+            <!-- Product detail view (shown when a product is selected) -->
+            <div id="productDetail" style="display:none;">
+                <div id="productHeader" class="product-header"></div>
+                <div class="kpi-grid" id="productKpis"></div>
+                <div class="chart-container">
+                    <div class="chart-title">Sales by Location</div>
+                    <canvas id="locationChart" width="800" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">On-Hand Inventory</div>
+                    <canvas id="stockChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- PURCHASE ORDERS TAB -->
+        <div id="po" class="tab-content">
+            <div class="kpi-grid" id="poKpis"></div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly PO Spend</div>
+                <canvas id="poSpendChart" width="800" height="300"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly PO Count</div>
+                <canvas id="poCountChart" width="800" height="300"></canvas>
+            </div>
+            <div class="data-table">
+                <div class="chart-title" style="padding: 20px 20px 0 20px;">Purchase Orders</div>
+                <div class="table-wrapper">
+                    <table id="poTable"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STOCK TRANSFERS TAB -->
+        <div id="tr" class="tab-content">
+            <div class="kpi-grid" id="trKpis"></div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly Transfer Volume</div>
+                <canvas id="trVolumeChart" width="800" height="300"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly Transfer Count</div>
+                <canvas id="trCountChart" width="800" height="300"></canvas>
+            </div>
+            <div class="data-table">
+                <div class="chart-title" style="padding: 20px 20px 0 20px;">Transfers</div>
+                <div class="table-wrapper">
+                    <table id="trTable"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOCATIONS TAB -->
+        <div id="locations" class="tab-content"></div>
+        <div id="suppliers" class="tab-content"></div>
+
+        <!-- EXPENSES & P&L TAB -->
+        <div id="expenses" class="tab-content"></div>
+
+        <!-- BIZBOT BASH TAB -->
+        <div id="bizbotbash" class="tab-content">
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <!-- Leaderboard -->
+                <div style="flex:2;min-width:500px;">
+                    <div style="background:linear-gradient(135deg,#744210 0%,#d69e2e 100%);color:#fff;padding:16px 24px;border-radius:12px 12px 0 0;display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:28px;">🏆</span>
+                        <div>
+                            <h2 style="margin:0;font-size:20px;font-weight:800;">BizBot Bash Leaderboard</h2>
+                            <p style="margin:2px 0 0;font-size:12px;opacity:0.85;">Who can build the most profitable bot?</p>
+                        </div>
+                        <button onclick="refreshLeaderboard()" style="margin-left:auto;background:rgba(255,255,255,0.2);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;">↻ Refresh</button>
+                    </div>
+                    <div id="leaderboardTable" style="background:#fff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;overflow:hidden;">
+                        <p style="padding:24px;text-align:center;color:#a0aec0;">Loading leaderboard...</p>
+                    </div>
+                </div>
+
+                <!-- Bot Upload -->
+                <div style="flex:1;min-width:320px;">
+                    <div style="background:#2d3748;color:#fff;padding:16px 24px;border-radius:12px 12px 0 0;">
+                        <h3 style="margin:0;font-size:16px;font-weight:700;">🤖 Upload Your Bot</h3>
+                        <p style="margin:4px 0 0;font-size:11px;opacity:0.7;">Paste your Python bot code below</p>
+                    </div>
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;padding:16px;">
+                        <label style="font-size:12px;font-weight:600;color:#4a5568;">Bot Name</label>
+                        <input id="uploadBotName" type="text" placeholder="e.g. my_smart_bot" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;margin:4px 0 12px;box-sizing:border-box;">
+
+                        <label style="font-size:12px;font-weight:600;color:#4a5568;">Your Name (optional)</label>
+                        <input id="uploadBotAuthor" type="text" placeholder="e.g. Team Alpha" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;margin:4px 0 12px;box-sizing:border-box;">
+
+                        <label style="font-size:12px;font-weight:600;color:#4a5568;">Bot Python Code</label>
+                        <textarea id="uploadBotCode" rows="14" placeholder="class MyBot:&#10;    def __init__(self):&#10;        self.catalog = {}&#10;        self.suppliers = []&#10;        self.locations = []&#10;        self.physical_locs = []&#10;        self.product_supplier = {}&#10;&#10;    def decide(self, state):&#10;        commands = []&#10;        # Your logic here...&#10;        return commands" style="width:100%;padding:10px;border:1px solid #cbd5e0;border-radius:6px;font-family:'Fira Code',monospace;font-size:12px;line-height:1.5;margin:4px 0 12px;resize:vertical;box-sizing:border-box;background:#f7fafc;"></textarea>
+
+                        <button onclick="uploadBot()" style="width:100%;padding:10px;background:#d69e2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">📤 Upload & Register Bot</button>
+                        <div id="uploadBotStatus" style="margin-top:8px;font-size:12px;min-height:18px;"></div>
+
+                        <div style="margin-top:16px;padding:12px;background:#f7fafc;border-radius:8px;font-size:11px;color:#718096;line-height:1.6;">
+                            <strong>Quick guide:</strong><br>
+                            • Your class needs: <code>catalog</code>, <code>suppliers</code>, <code>locations</code>, <code>physical_locs</code>, <code>product_supplier</code> attributes<br>
+                            • Implement <code>decide(self, state)</code> → returns list of command dicts<br>
+                            • Commands: <code>{"action":"order", ...}</code>, <code>{"action":"transfer", ...}</code>, <code>{"action":"set_price", ...}</code><br>
+                            • No <code>subprocess</code>, <code>requests</code>, <code>eval</code>, <code>open</code> — sandboxed for safety
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Jobs -->
+            <div style="margin-top:20px;">
+                <h3 style="margin:0 0 8px;font-size:15px;color:#4a5568;">⏳ Active Jobs</h3>
+                <div id="activeJobsList" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;font-size:13px;color:#a0aec0;">No active jobs</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tooltip hidden" id="tooltip"></div>
+
+<script>
+// ============================================
+// ============================================
+// SIMULATION ENGINE REMOVED
+// The dashboard now uses the Python server (engine/server.py)
+// Start with: python engine/server.py
+// ============================================
+
+
+
+
+// ============================================
+// RUN MANAGEMENT
+// ============================================
+let RUNS = [];
+let currentRunIndex = 0;
+
+// These variables will be dynamically set
+let CATEGORIES, PRODUCTS, LOCATIONS, SUPPLIERS, SALES, STOCK, PO_AGG, PO_DETAIL, TR_AGG, TR_DETAIL;
+
+const RAW = null; // Baseline loaded from server
+
+function switchRun(index) {
+    currentRunIndex = index;
+    const runData = RUNS[index].data;
+    CATEGORIES = runData.categories || {};
+    PRODUCTS = runData.products || [];
+    LOCATIONS = runData.locations || [];
+    SUPPLIERS = runData.suppliers || [];
+    SALES = runData.sales || [];
+    STOCK = runData.stock || [];
+    PO_AGG = runData.po_agg || [];
+    PO_DETAIL = runData.po_detail || [];
+    TR_AGG = runData.tr_agg || [];
+    TR_DETAIL = runData.tr_detail || [];
+
+    // Re-initialize filters for this run's data
+    if (SALES.length > 0 && LOCATIONS.length > 0) {
+        initializeFilters();
+        populateProductSelect();
+    }
+}
+
+// Populate product select dropdown (called after data loads)
+function populateProductSelect() {
+    const productsByCategory = {};
+    PRODUCTS.forEach(p => {
+        if (!productsByCategory[p.cat]) productsByCategory[p.cat] = [];
+        productsByCategory[p.cat].push(p);
+    });
+    const select = document.getElementById('productSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    Object.keys(productsByCategory).sort().forEach(cat => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = CATEGORIES[cat] || cat;
+        productsByCategory[cat].forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            optgroup.appendChild(opt);
+        });
+        select.appendChild(optgroup);
+    });
+}
+
+// Load saved runs from server, then initialize
+async function loadAvailableBots() {
+    const SIM_SERVER = 'http://127.0.0.1:5055';
+    try {
+        const resp = await fetch(SIM_SERVER + '/bots');
+        if (!resp.ok) return;
+        const bots = await resp.json();
+        const sel = document.getElementById('modeSelector');
+        if (!sel) return;
+        // Keep auto option, replace the rest
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="auto">Auto (Default)</option>';
+        bots.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.name;
+            sel.appendChild(opt);
+        });
+        // Restore previous selection if still available
+        if ([...sel.options].some(o => o.value === currentVal)) sel.value = currentVal;
+    } catch (e) { /* server not running yet */ }
+}
+
+async function loadRunsFromServer() {
+    const SIM_SERVER = 'http://127.0.0.1:5055';
+
+    const runsResp = await fetch(SIM_SERVER + '/runs');
+    if (!runsResp.ok) throw new Error('Server returned ' + runsResp.status);
+    const savedRuns = await runsResp.json();
+    console.log('Loaded runs list:', savedRuns.length, 'runs');
+    if (!savedRuns.length) return [];
+
+    const loaded = [];
+    for (let i = 0; i < savedRuns.length; i++) {
+        const meta = savedRuns[i];
+        try {
+            const dataResp = await fetch(SIM_SERVER + '/runs/' + meta.folder);
+            if (dataResp.ok) {
+                const data = await dataResp.json();
+                loaded.push({
+                    id: i,
+                    label: `${meta.label} (${meta.timestamp})`,
+                    months: meta.months || 12,
+                    folder: meta.folder,
+                    timestamp: meta.timestamp || '',
+                    mode: meta.mode || 'auto',
+                    data: data
+                });
+            }
+        } catch (e) { console.warn('Failed to load run:', meta.folder, e); }
+    }
+    return loaded;
+}
+
+function showEmptyState(message) {
+    const months = SIM_CONFIG.company.sim_months || 12;
+    const simStatus = document.getElementById('simStatus');
+    if (simStatus) {
+        simStatus.textContent = message;
+        if (message.includes('⚠')) simStatus.style.color = '#e53e3e';
+    }
+    RUNS = [{
+        id: 0,
+        label: 'No Data — Click Play',
+        months: months,
+        data: { categories: {}, products: [], locations: [], suppliers: [],
+                sales: [], stock: [], po_agg: [], po_detail: [],
+                tr_agg: [], tr_detail: [], summary: {total_units_sold:0, total_revenue:0, total_pos:0, total_transfers:0} }
+    }];
+    switchRun(0);
+    initializeFilters();
+    renderContent();
+    renderRunCards();
+}
+
+function applyLoadedRuns(loadedRuns) {
+    RUNS = loadedRuns;
+    switchRun(0);
+    renderContent();
+
+    const runSelector = document.getElementById('runSelector');
+    if (runSelector) {
+        runSelector.innerHTML = '';
+        RUNS.forEach(run => {
+            const opt = document.createElement('option');
+            opt.value = run.id;
+            opt.textContent = run.label;
+            runSelector.appendChild(opt);
+        });
+    }
+
+    const simStatus = document.getElementById('simStatus');
+    if (simStatus) {
+        simStatus.textContent = `Loaded ${RUNS.length} saved run(s) ✓`;
+        simStatus.style.color = '';
+    }
+    renderRunCards();
+}
+
+async function initializeFromRAW() {
+    // Try to load saved runs, with retries for server startup
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY = 2000; // 2 seconds between retries
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const loadedRuns = await loadRunsFromServer();
+            loadAvailableBots();  // Also refresh bot list
+            if (loadedRuns.length > 0) {
+                console.log(`Loaded ${loadedRuns.length} runs on attempt ${attempt}`);
+                applyLoadedRuns(loadedRuns);
+                return;
+            } else {
+                // Server is up but no saved runs
+                showEmptyState('No saved runs. Click ▶ Run Simulation to create one.');
+                return;
+            }
+        } catch (e) {
+            console.warn(`Attempt ${attempt}/${MAX_RETRIES} failed:`, e.message);
+            if (attempt < MAX_RETRIES) {
+                const simStatus = document.getElementById('simStatus');
+                if (simStatus) {
+                    simStatus.textContent = `Connecting to server... (attempt ${attempt}/${MAX_RETRIES})`;
+                    simStatus.style.color = '#d97706';
+                }
+                await new Promise(r => setTimeout(r, RETRY_DELAY));
+            }
+        }
+    }
+
+    // All retries failed
+    showEmptyState('⚠ Cannot connect to simulation server. Run: python engine/server.py');
+
+    // Keep trying in the background every 5 seconds
+    startServerPolling();
+}
+
+let _serverPollInterval = null;
+function startServerPolling() {
+    if (_serverPollInterval) return;
+    _serverPollInterval = setInterval(async () => {
+        try {
+            const loadedRuns = await loadRunsFromServer();
+            if (loadedRuns.length > 0) {
+                console.log('Server came online, loaded', loadedRuns.length, 'runs');
+                clearInterval(_serverPollInterval);
+                _serverPollInterval = null;
+                applyLoadedRuns(loadedRuns);
+            }
+        } catch (e) { /* still waiting */ }
+    }, 5000);
+}
+
+
+const SIM_CONFIG = {"company":{"name":"ToyLand Distribution Co., Ltd.","name_th":"\u0e1a\u0e23\u0e34\u0e29\u0e31\u0e17 \u0e17\u0e2d\u0e22\u0e41\u0e25\u0e19\u0e14\u0e4c \u0e14\u0e34\u0e2a\u0e17\u0e23\u0e34\u0e1a\u0e34\u0e27\u0e0a\u0e31\u0e48\u0e19 \u0e08\u0e33\u0e01\u0e31\u0e14","tax_id":"0105564012345","founded":"2019-03-15","industry":"Japanese Toy & Character Goods Distribution","headquarters":"88/9 Soi Sukhumvit 55, Khlong Tan Nuea, Watthana, Bangkok 10110","warehouse_address":"129 Moo 5, Bangna-Trad Rd Km.23, Bang Sao Thong, Samut Prakan 10570","employees":42,"registered_capital":15000000,"annual_revenue_target":85000000,"sim_start":"2025-04-01","sim_months":12,"working_days":[0,1,2,3,4,5],"currency":"THB","random_seed":2026},"products":[{"id":"PRD-001","name":"Sumikko Gurashi Plush 20cm","cat":"CAT-01","cost":285,"price":450,"unit":"pc","weight_kg":0.15,"dim_l_cm":22,"dim_w_cm":18,"dim_h_cm":20,"volume_cm3":7920,"refill_num":4},{"id":"PRD-002","name":"Rilakkuma Bear Medium 30cm","cat":"CAT-01","cost":420,"price":690,"unit":"pc","weight_kg":0.25,"dim_l_cm":32,"dim_w_cm":25,"dim_h_cm":28,"volume_cm3":22400,"refill_num":1},{"id":"PRD-003","name":"Sanrio Characters Mini Set (5pc)","cat":"CAT-01","cost":350,"price":590,"unit":"set","weight_kg":0.2,"dim_l_cm":25,"dim_w_cm":20,"dim_h_cm":15,"volume_cm3":7500,"refill_num":4},{"id":"PRD-004","name":"Chiikawa Plush Keychain","cat":"CAT-01","cost":145,"price":250,"unit":"pc","weight_kg":0.05,"dim_l_cm":12,"dim_w_cm":10,"dim_h_cm":8,"volume_cm3":960,"refill_num":10},{"id":"PRD-005","name":"Pusheen Cat Large 40cm","cat":"CAT-01","cost":520,"price":850,"unit":"pc","weight_kg":0.35,"dim_l_cm":42,"dim_w_cm":35,"dim_h_cm":35,"volume_cm3":51450,"refill_num":1},{"id":"PRD-006","name":"One Piece Figure - Luffy Gear 5","cat":"CAT-02","cost":680,"price":1190,"unit":"pc","weight_kg":0.3,"dim_l_cm":25,"dim_w_cm":18,"dim_h_cm":30,"volume_cm3":13500,"refill_num":2},{"id":"PRD-007","name":"Dragon Ball Super Saiyan Set","cat":"CAT-02","cost":890,"price":1490,"unit":"set","weight_kg":0.45,"dim_l_cm":35,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":17500,"refill_num":1},{"id":"PRD-008","name":"Demon Slayer Nendoroid Tanjiro","cat":"CAT-02","cost":750,"price":1290,"unit":"pc","weight_kg":0.2,"dim_l_cm":20,"dim_w_cm":15,"dim_h_cm":25,"volume_cm3":7500,"refill_num":2},{"id":"PRD-009","name":"Jujutsu Kaisen Petit Figure","cat":"CAT-02","cost":320,"price":550,"unit":"pc","weight_kg":0.15,"dim_l_cm":15,"dim_w_cm":12,"dim_h_cm":18,"volume_cm3":3240,"refill_num":5},{"id":"PRD-010","name":"Spy x Family Anya Figure","cat":"CAT-02","cost":480,"price":790,"unit":"pc","weight_kg":0.18,"dim_l_cm":18,"dim_w_cm":14,"dim_h_cm":22,"volume_cm3":5544,"refill_num":3},{"id":"PRD-011","name":"Gashapon Animal Series (box/8)","cat":"CAT-03","cost":560,"price":990,"unit":"box","weight_kg":0.4,"dim_l_cm":30,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":15000,"refill_num":2},{"id":"PRD-012","name":"Gashapon Sanrio Collection (box/6)","cat":"CAT-03","cost":420,"price":750,"unit":"box","weight_kg":0.3,"dim_l_cm":25,"dim_w_cm":20,"dim_h_cm":18,"volume_cm3":9000,"refill_num":5},{"id":"PRD-013","name":"Gashapon Mini Food Replicas (box/10)","cat":"CAT-03","cost":680,"price":1190,"unit":"box","weight_kg":0.5,"dim_l_cm":35,"dim_w_cm":28,"dim_h_cm":22,"volume_cm3":21560,"refill_num":2},{"id":"PRD-014","name":"Gashapon Pokemon Capsule (box/8)","cat":"CAT-03","cost":640,"price":1090,"unit":"box","weight_kg":0.42,"dim_l_cm":30,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":15000,"refill_num":3},{"id":"PRD-015","name":"Gashapon Surprise Ball Single","cat":"CAT-03","cost":55,"price":99,"unit":"pc","weight_kg":0.04,"dim_l_cm":8,"dim_w_cm":8,"dim_h_cm":8,"volume_cm3":512,"refill_num":10},{"id":"PRD-016","name":"Sumikko Notebook Set (3pc)","cat":"CAT-04","cost":95,"price":165,"unit":"set","weight_kg":0.15,"dim_l_cm":22,"dim_w_cm":16,"dim_h_cm":3,"volume_cm3":1056,"refill_num":8},{"id":"PRD-017","name":"Sanrio Pen Collection (5pc)","cat":"CAT-04","cost":120,"price":199,"unit":"set","weight_kg":0.08,"dim_l_cm":20,"dim_w_cm":12,"dim_h_cm":3,"volume_cm3":720,"refill_num":10},{"id":"PRD-018","name":"Character Sticker Pack Assorted","cat":"CAT-04","cost":35,"price":69,"unit":"pack","weight_kg":0.02,"dim_l_cm":15,"dim_w_cm":10,"dim_h_cm":1,"volume_cm3":150,"refill_num":10},{"id":"PRD-019","name":"Rilakkuma Pencil Case","cat":"CAT-04","cost":160,"price":289,"unit":"pc","weight_kg":0.1,"dim_l_cm":22,"dim_w_cm":10,"dim_h_cm":5,"volume_cm3":1100,"refill_num":7},{"id":"PRD-020","name":"Chiikawa Washi Tape Set (4pc)","cat":"CAT-04","cost":80,"price":145,"unit":"set","weight_kg":0.05,"dim_l_cm":12,"dim_w_cm":12,"dim_h_cm":5,"volume_cm3":720,"refill_num":10},{"id":"PRD-021","name":"Pokemon TCG Booster Box","cat":"CAT-05","cost":1800,"price":2890,"unit":"box","weight_kg":0.8,"dim_l_cm":35,"dim_w_cm":15,"dim_h_cm":25,"volume_cm3":13125,"refill_num":2},{"id":"PRD-022","name":"One Piece Card Game Starter Deck","cat":"CAT-05","cost":320,"price":520,"unit":"deck","weight_kg":0.12,"dim_l_cm":15,"dim_w_cm":10,"dim_h_cm":4,"volume_cm3":600,"refill_num":8},{"id":"PRD-023","name":"Yu-Gi-Oh! Booster Pack (24pc box)","cat":"CAT-05","cost":1450,"price":2390,"unit":"box","weight_kg":0.65,"dim_l_cm":30,"dim_w_cm":15,"dim_h_cm":22,"volume_cm3":9900,"refill_num":2},{"id":"PRD-024","name":"Dragon Ball Super Card Booster","cat":"CAT-05","cost":1200,"price":1990,"unit":"box","weight_kg":0.55,"dim_l_cm":28,"dim_w_cm":14,"dim_h_cm":20,"volume_cm3":7840,"refill_num":2},{"id":"PRD-025","name":"Weiss Schwarz Booster (Anime Mix)","cat":"CAT-05","cost":1350,"price":2190,"unit":"box","weight_kg":0.6,"dim_l_cm":28,"dim_w_cm":14,"dim_h_cm":20,"volume_cm3":7840,"refill_num":2},{"id":"PRD-026","name":"Gundam HG 1/144 Entry Grade","cat":"CAT-06","cost":280,"price":420,"unit":"kit","weight_kg":0.2,"dim_l_cm":30,"dim_w_cm":20,"dim_h_cm":8,"volume_cm3":4800,"refill_num":5},{"id":"PRD-027","name":"Gundam RG 1/144 Premium","cat":"CAT-06","cost":680,"price":990,"unit":"kit","weight_kg":0.3,"dim_l_cm":32,"dim_w_cm":22,"dim_h_cm":10,"volume_cm3":7040,"refill_num":2},{"id":"PRD-028","name":"Nanoblock Character Set","cat":"CAT-06","cost":190,"price":320,"unit":"set","weight_kg":0.1,"dim_l_cm":12,"dim_w_cm":10,"dim_h_cm":10,"volume_cm3":1200,"refill_num":4},{"id":"PRD-029","name":"Bandai Figure-rise Standard","cat":"CAT-06","cost":520,"price":790,"unit":"kit","weight_kg":0.25,"dim_l_cm":35,"dim_w_cm":25,"dim_h_cm":12,"volume_cm3":10500,"refill_num":2},{"id":"PRD-030","name":"Metal Build Diecast Model","cat":"CAT-06","cost":2800,"price":4290,"unit":"pc","weight_kg":0.6,"dim_l_cm":40,"dim_w_cm":30,"dim_h_cm":15,"volume_cm3":18000,"refill_num":1},{"id":"PRD-031","name":"Anpanman Musical Toy","cat":"CAT-07","cost":380,"price":620,"unit":"pc","weight_kg":0.25,"dim_l_cm":25,"dim_w_cm":20,"dim_h_cm":22,"volume_cm3":11000,"refill_num":2},{"id":"PRD-032","name":"Tomica Vehicle Set (5pc)","cat":"CAT-07","cost":450,"price":720,"unit":"set","weight_kg":0.3,"dim_l_cm":30,"dim_w_cm":20,"dim_h_cm":8,"volume_cm3":4800,"refill_num":6},{"id":"PRD-033","name":"Sylvanian Families Starter Home","cat":"CAT-07","cost":890,"price":1390,"unit":"set","weight_kg":0.5,"dim_l_cm":40,"dim_w_cm":30,"dim_h_cm":25,"volume_cm3":30000,"refill_num":1},{"id":"PRD-034","name":"Plarail Train Basic Set","cat":"CAT-07","cost":650,"price":1050,"unit":"set","weight_kg":0.45,"dim_l_cm":45,"dim_w_cm":30,"dim_h_cm":12,"volume_cm3":16200,"refill_num":1},{"id":"PRD-035","name":"Shimajiro Learning Toy","cat":"CAT-07","cost":340,"price":550,"unit":"pc","weight_kg":0.2,"dim_l_cm":28,"dim_w_cm":22,"dim_h_cm":15,"volume_cm3":9240,"refill_num":2},{"id":"PRD-036","name":"Mofusand Cat Plush 25cm","cat":"CAT-01","cost":310,"price":520,"unit":"pc","weight_kg":0.18,"dim_l_cm":27,"dim_w_cm":20,"dim_h_cm":22,"volume_cm3":11880,"refill_num":4},{"id":"PRD-037","name":"Cinnamoroll Angel Plush 30cm","cat":"CAT-01","cost":395,"price":650,"unit":"pc","weight_kg":0.22,"dim_l_cm":32,"dim_w_cm":25,"dim_h_cm":28,"volume_cm3":22400,"refill_num":1},{"id":"PRD-038","name":"Miffy Bunny Classic 20cm","cat":"CAT-01","cost":260,"price":420,"unit":"pc","weight_kg":0.14,"dim_l_cm":22,"dim_w_cm":18,"dim_h_cm":18,"volume_cm3":7128,"refill_num":2},{"id":"PRD-039","name":"Chainsaw Man Denji Figure","cat":"CAT-02","cost":590,"price":990,"unit":"pc","weight_kg":0.22,"dim_l_cm":22,"dim_w_cm":16,"dim_h_cm":28,"volume_cm3":9856,"refill_num":3},{"id":"PRD-040","name":"My Hero Academia Deku Nendoroid","cat":"CAT-02","cost":720,"price":1190,"unit":"pc","weight_kg":0.2,"dim_l_cm":20,"dim_w_cm":15,"dim_h_cm":25,"volume_cm3":7500,"refill_num":2},{"id":"PRD-041","name":"Gashapon Disney Tsum Tsum (box/8)","cat":"CAT-03","cost":580,"price":1050,"unit":"box","weight_kg":0.38,"dim_l_cm":30,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":15000,"refill_num":2},{"id":"PRD-042","name":"Gashapon Kirby Collection (box/6)","cat":"CAT-03","cost":490,"price":890,"unit":"box","weight_kg":0.32,"dim_l_cm":25,"dim_w_cm":20,"dim_h_cm":18,"volume_cm3":9000,"refill_num":5},{"id":"PRD-043","name":"Kuromi Diary & Pen Gift Set","cat":"CAT-04","cost":175,"price":299,"unit":"set","weight_kg":0.12,"dim_l_cm":25,"dim_w_cm":18,"dim_h_cm":5,"volume_cm3":2250,"refill_num":6},{"id":"PRD-044","name":"Pokemon Eraser Collection (12pc)","cat":"CAT-04","cost":65,"price":119,"unit":"pack","weight_kg":0.04,"dim_l_cm":18,"dim_w_cm":12,"dim_h_cm":3,"volume_cm3":648,"refill_num":10},{"id":"PRD-045","name":"Digimon Card Game Booster Box","cat":"CAT-05","cost":1100,"price":1790,"unit":"box","weight_kg":0.52,"dim_l_cm":28,"dim_w_cm":14,"dim_h_cm":20,"volume_cm3":7840,"refill_num":2},{"id":"PRD-046","name":"Pokemon TCG Elite Trainer Box","cat":"CAT-05","cost":1500,"price":2490,"unit":"box","weight_kg":0.7,"dim_l_cm":30,"dim_w_cm":22,"dim_h_cm":15,"volume_cm3":9900,"refill_num":2},{"id":"PRD-047","name":"Gundam MG 1/100 Freedom Strike","cat":"CAT-06","cost":1200,"price":1890,"unit":"kit","weight_kg":0.55,"dim_l_cm":45,"dim_w_cm":30,"dim_h_cm":15,"volume_cm3":20250,"refill_num":1},{"id":"PRD-048","name":"Evangelion Model Kit Entry Grade","cat":"CAT-06","cost":350,"price":550,"unit":"kit","weight_kg":0.22,"dim_l_cm":30,"dim_w_cm":20,"dim_h_cm":8,"volume_cm3":4800,"refill_num":3},{"id":"PRD-049","name":"Takara Tomy Komainu Rattle Set","cat":"CAT-07","cost":220,"price":380,"unit":"set","weight_kg":0.15,"dim_l_cm":20,"dim_w_cm":15,"dim_h_cm":10,"volume_cm3":3000,"refill_num":5},{"id":"PRD-050","name":"Woody Puddy Wooden Kitchen Set","cat":"CAT-07","cost":780,"price":1250,"unit":"set","weight_kg":0.65,"dim_l_cm":40,"dim_w_cm":30,"dim_h_cm":20,"volume_cm3":24000,"refill_num":1},{"id":"PRD-051","name":"Pompompurin Golden Retriever Large 35cm","cat":"CAT-01","cost":380,"price":630,"unit":"pc","weight_kg":0.28,"dim_l_cm":37,"dim_w_cm":28,"dim_h_cm":32,"volume_cm3":33152,"refill_num":2},{"id":"PRD-052","name":"Gudetama Lazy Egg Medium 25cm","cat":"CAT-01","cost":295,"price":500,"unit":"pc","weight_kg":0.2,"dim_l_cm":27,"dim_w_cm":22,"dim_h_cm":24,"volume_cm3":14256,"refill_num":3},{"id":"PRD-053","name":"My Neighbor Totoro Studio Ghibli Set (3pc)","cat":"CAT-01","cost":420,"price":720,"unit":"set","weight_kg":0.35,"dim_l_cm":30,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":15000,"refill_num":3},{"id":"PRD-054","name":"Doraemon Classic Blue Cat Plush 28cm","cat":"CAT-01","cost":350,"price":590,"unit":"pc","weight_kg":0.22,"dim_l_cm":30,"dim_w_cm":24,"dim_h_cm":26,"volume_cm3":18720,"refill_num":2},{"id":"PRD-055","name":"Naruto Shippuden Uzumaki Figure Premium","cat":"CAT-02","cost":750,"price":1250,"unit":"pc","weight_kg":0.32,"dim_l_cm":26,"dim_w_cm":20,"dim_h_cm":32,"volume_cm3":16640,"refill_num":2},{"id":"PRD-056","name":"Attack on Titan Eren Yeager Nendoroid","cat":"CAT-02","cost":680,"price":1150,"unit":"pc","weight_kg":0.2,"dim_l_cm":20,"dim_w_cm":16,"dim_h_cm":25,"volume_cm3":8000,"refill_num":2},{"id":"PRD-057","name":"Haikyuu Karasuno Team Set (6pc)","cat":"CAT-02","cost":850,"price":1420,"unit":"set","weight_kg":0.4,"dim_l_cm":32,"dim_w_cm":24,"dim_h_cm":22,"volume_cm3":16896,"refill_num":2},{"id":"PRD-058","name":"Blue Lock Isagi Figure Collectible","cat":"CAT-02","cost":580,"price":970,"unit":"pc","weight_kg":0.25,"dim_l_cm":22,"dim_w_cm":18,"dim_h_cm":28,"volume_cm3":11088,"refill_num":3},{"id":"PRD-059","name":"Frieren Beyond Journey's End Mage Figure","cat":"CAT-02","cost":720,"price":1200,"unit":"pc","weight_kg":0.28,"dim_l_cm":23,"dim_w_cm":19,"dim_h_cm":30,"volume_cm3":13110,"refill_num":2},{"id":"PRD-060","name":"Gashapon Naruto Series (box/8)","cat":"CAT-03","cost":550,"price":950,"unit":"box","weight_kg":0.38,"dim_l_cm":30,"dim_w_cm":25,"dim_h_cm":20,"volume_cm3":15000,"refill_num":2},{"id":"PRD-061","name":"Gashapon Studio Ghibli Spirits (box/6)","cat":"CAT-03","cost":480,"price":840,"unit":"box","weight_kg":0.32,"dim_l_cm":25,"dim_w_cm":20,"dim_h_cm":18,"volume_cm3":9000,"refill_num":4},{"id":"PRD-062","name":"Gashapon Fruit Paradise (box/10)","cat":"CAT-03","cost":620,"price":1100,"unit":"box","weight_kg":0.44,"dim_l_cm":32,"dim_w_cm":26,"dim_h_cm":22,"volume_cm3":18304,"refill_num":2},{"id":"PRD-063","name":"Gashapon Japanese Mascots (box/8)","cat":"CAT-03","cost":510,"price":880,"unit":"box","weight_kg":0.35,"dim_l_cm":28,"dim_w_cm":23,"dim_h_cm":20,"volume_cm3":12880,"refill_num":3},{"id":"PRD-064","name":"Gashapon Kawaii Animals Ball Single","cat":"CAT-03","cost":65,"price":119,"unit":"pc","weight_kg":0.04,"dim_l_cm":8,"dim_w_cm":8,"dim_h_cm":8,"volume_cm3":512,"refill_num":10},{"id":"PRD-065","name":"Totoro Folder & Sticker Set","cat":"CAT-04","cost":110,"price":189,"unit":"set","weight_kg":0.14,"dim_l_cm":23,"dim_w_cm":18,"dim_h_cm":2,"volume_cm3":828,"refill_num":8},{"id":"PRD-066","name":"Naruto Character Stamp Collection (10pc)","cat":"CAT-04","cost":95,"price":165,"unit":"pack","weight_kg":0.08,"dim_l_cm":16,"dim_w_cm":12,"dim_h_cm":3,"volume_cm3":576,"refill_num":10},{"id":"PRD-067","name":"Sanrio Masking Tape Assortment (4pc)","cat":"CAT-04","cost":75,"price":135,"unit":"pack","weight_kg":0.06,"dim_l_cm":14,"dim_w_cm":10,"dim_h_cm":4,"volume_cm3":560,"refill_num":10},{"id":"PRD-068","name":"Ghibli Wooden Ruler & Pencil Set","cat":"CAT-04","cost":125,"price":225,"unit":"set","weight_kg":0.12,"dim_l_cm":25,"dim_w_cm":8,"dim_h_cm":3,"volume_cm3":600,"refill_num":8},{"id":"PRD-069","name":"Cardfight Vanguard Booster Box","cat":"CAT-05","cost":1600,"price":2680,"unit":"box","weight_kg":0.68,"dim_l_cm":32,"dim_w_cm":15,"dim_h_cm":23,"volume_cm3":11040,"refill_num":2},{"id":"PRD-070","name":"Union Arena Card Game Starter Deck","cat":"CAT-05","cost":380,"price":630,"unit":"deck","weight_kg":0.14,"dim_l_cm":16,"dim_w_cm":11,"dim_h_cm":5,"volume_cm3":880,"refill_num":6},{"id":"PRD-071","name":"Battle Spirits TCG Booster Pack (20box)","cat":"CAT-05","cost":1350,"price":2200,"unit":"box","weight_kg":0.6,"dim_l_cm":29,"dim_w_cm":14,"dim_h_cm":21,"volume_cm3":8526,"refill_num":2},{"id":"PRD-072","name":"Shadowverse Evolve Starter Deck Set","cat":"CAT-05","cost":420,"price":700,"unit":"deck","weight_kg":0.16,"dim_l_cm":17,"dim_w_cm":12,"dim_h_cm":5,"volume_cm3":1020,"refill_num":6},{"id":"PRD-073","name":"Gundam HG 1/144 Barbatos Mobile Suit","cat":"CAT-06","cost":420,"price":650,"unit":"kit","weight_kg":0.28,"dim_l_cm":35,"dim_w_cm":22,"dim_h_cm":10,"volume_cm3":7700,"refill_num":3},{"id":"PRD-074","name":"Zoids HMM Liger Complex Motorized Kit","cat":"CAT-06","cost":1100,"price":1790,"unit":"kit","weight_kg":0.52,"dim_l_cm":40,"dim_w_cm":28,"dim_h_cm":12,"volume_cm3":13440,"refill_num":2},{"id":"PRD-075","name":"Frame Arms Girl Type Rendara Custom","cat":"CAT-06","cost":650,"price":990,"unit":"kit","weight_kg":0.32,"dim_l_cm":30,"dim_w_cm":24,"dim_h_cm":14,"volume_cm3":10080,"refill_num":3},{"id":"PRD-076","name":"Scarlet Nexus Figure Assembly Kit","cat":"CAT-06","cost":520,"price":820,"unit":"kit","weight_kg":0.24,"dim_l_cm":28,"dim_w_cm":20,"dim_h_cm":12,"volume_cm3":6720,"refill_num":4},{"id":"PRD-077","name":"Anpanman Bath Bubble Toy Set","cat":"CAT-07","cost":240,"price":400,"unit":"set","weight_kg":0.18,"dim_l_cm":22,"dim_w_cm":18,"dim_h_cm":16,"volume_cm3":6336,"refill_num":5},{"id":"PRD-078","name":"Combi Baby Music & Light Play Toy","cat":"CAT-07","cost":520,"price":860,"unit":"pc","weight_kg":0.3,"dim_l_cm":28,"dim_w_cm":22,"dim_h_cm":20,"volume_cm3":12320,"refill_num":2},{"id":"PRD-079","name":"Shimajiro Laugh & Learn Activity Gym","cat":"CAT-07","cost":780,"price":1250,"unit":"pc","weight_kg":0.58,"dim_l_cm":42,"dim_w_cm":32,"dim_h_cm":28,"volume_cm3":37632,"refill_num":1},{"id":"PRD-080","name":"Pigeon Teething Ring Organic Cotton Set","cat":"CAT-07","cost":350,"price":590,"unit":"set","weight_kg":0.25,"dim_l_cm":26,"dim_w_cm":20,"dim_h_cm":12,"volume_cm3":6240,"refill_num":4}],"categories":{"CAT-01":{"name":"Plush & Stuffed Toys","margin_range":[0.28,0.42]},"CAT-02":{"name":"Action Figures & Collectibles","margin_range":[0.3,0.5]},"CAT-03":{"name":"Capsule Toys (Gashapon)","margin_range":[0.35,0.55]},"CAT-04":{"name":"Character Stationery","margin_range":[0.25,0.4]},"CAT-05":{"name":"Trading Cards & TCG","margin_range":[0.3,0.48]},"CAT-06":{"name":"Building & Model Kits","margin_range":[0.22,0.38]},"CAT-07":{"name":"Baby & Preschool Toys","margin_range":[0.25,0.4]}},"suppliers":[{"id":"SUP-001","name":"Bandai Namco Thailand","categories":["CAT-02"],"lead_days":[21,35],"reliability":0.92,"min_order_thb":25000,"payment_terms":30},{"id":"SUP-002","name":"San-X Distribution (Bangkok)","categories":["CAT-01"],"lead_days":[14,28],"reliability":0.95,"min_order_thb":15000,"payment_terms":30},{"id":"SUP-003","name":"Pokemon Company TH Agent","categories":["CAT-03"],"lead_days":[21,42],"reliability":0.9,"min_order_thb":30000,"payment_terms":45},{"id":"SUP-004","name":"Tomy Thailand Co., Ltd.","categories":["CAT-07"],"lead_days":[14,35],"reliability":0.93,"min_order_thb":20000,"payment_terms":30},{"id":"SUP-005","name":"Japan Import Trading","categories":["CAT-06"],"lead_days":[42,56],"reliability":0.82,"min_order_thb":50000,"payment_terms":60},{"id":"SUP-006","name":"Sanrio Thailand","categories":["CAT-04"],"lead_days":[14,28],"reliability":0.94,"min_order_thb":20000,"payment_terms":30},{"id":"SUP-007","name":"Konami Digital TH","categories":["CAT-05"],"lead_days":[28,49],"reliability":0.88,"min_order_thb":35000,"payment_terms":45}],"customers":[],"warehouses":[{"id":"WH-01","name":"Bangna Central DC","sqm":850,"pallets":180,"products":"all","type":"primary"}],"sales_locations":[{"id":"LOC-001","name":"Siam Paragon Store","type":"Retail Store","region":"Bangkok Central","address":"991 Rama I Rd, Pathum Wan","daily_foot_traffic":850,"conversion_rate":0.01,"operating_hours":"10:00-21:00","storage_capacity_m3":18.0,"effective_capacity_cm3":11700000,"shelves":6,"slots_per_shelf":40,"total_slots":240,"location_grade":"B","shelf_grades":["A","A","B","B","C","C"]},{"id":"LOC-002","name":"CentralWorld Pop-up","type":"Retail Store","region":"Bangkok Central","address":"999/9 Rama I Rd, Pathum Wan","daily_foot_traffic":1200,"conversion_rate":0.008,"operating_hours":"10:00-22:00","storage_capacity_m3":8.0,"effective_capacity_cm3":5200000,"shelves":4,"slots_per_shelf":35,"total_slots":140,"location_grade":"A","shelf_grades":["A","B","C","C"]},{"id":"LOC-003","name":"Terminal 21 Kiosk","type":"Kiosk","region":"Bangkok Central","address":"88 Soi Sukhumvit 19, Watthana","daily_foot_traffic":600,"conversion_rate":0.012,"operating_hours":"10:00-22:00","storage_capacity_m3":4.0,"effective_capacity_cm3":2600000,"shelves":3,"slots_per_shelf":25,"total_slots":75,"location_grade":"B","shelf_grades":["A","B","C"]},{"id":"LOC-004","name":"Mega Bangna Branch","type":"Retail Store","region":"Bangkok East","address":"39 Bangna-Trad Rd, Bang Kaeo","daily_foot_traffic":700,"conversion_rate":0.009,"operating_hours":"10:00-21:00","storage_capacity_m3":15.0,"effective_capacity_cm3":9750000,"shelves":5,"slots_per_shelf":38,"total_slots":190,"location_grade":"B","shelf_grades":["A","A","B","B","C"]},{"id":"LOC-005","name":"Future Park Rangsit","type":"Retail Store","region":"Bangkok North","address":"94 Phahonyothin Rd, Rangsit","daily_foot_traffic":550,"conversion_rate":0.006,"operating_hours":"10:00-21:00","storage_capacity_m3":12.0,"effective_capacity_cm3":7800000,"shelves":4,"slots_per_shelf":35,"total_slots":140,"location_grade":"C","shelf_grades":["A","B","C","C"]},{"id":"LOC-006","name":"Chatuchak Weekend Market","type":"Market Stall","region":"Bangkok North","address":"Chatuchak Market Sec.25, Chatuchak","daily_foot_traffic":2000,"conversion_rate":0.005,"operating_hours":"09:00-18:00","working_days":[5,6],"storage_capacity_m3":5.0,"effective_capacity_cm3":3250000,"shelves":3,"slots_per_shelf":20,"total_slots":60,"location_grade":"A","shelf_grades":["A","B","C"]},{"id":"LOC-007","name":"Central Chiang Mai","type":"Retail Store","region":"Upcountry North","address":"99 Huay Kaew Rd, Chiang Mai","daily_foot_traffic":400,"conversion_rate":0.005,"operating_hours":"10:00-21:00","storage_capacity_m3":10.0,"effective_capacity_cm3":6500000,"shelves":4,"slots_per_shelf":30,"total_slots":120,"location_grade":"C","shelf_grades":["A","B","C","C"]},{"id":"LOC-008","name":"Central Phuket","type":"Retail Store","region":"Upcountry South","address":"74-75 Moo 5, Wichit, Phuket","daily_foot_traffic":350,"conversion_rate":0.005,"operating_hours":"10:00-21:00","storage_capacity_m3":10.0,"effective_capacity_cm3":6500000,"shelves":4,"slots_per_shelf":30,"total_slots":120,"location_grade":"C","shelf_grades":["A","B","C","C"]},{"id":"LOC-009","name":"Shopee Official Store","type":"Online","region":"Online","address":"shopee.co.th/toyland","daily_foot_traffic":3500,"conversion_rate":0.003,"operating_hours":"24/7"},{"id":"LOC-010","name":"Lazada Flagship","type":"Online","region":"Online","address":"lazada.co.th/toyland","daily_foot_traffic":3000,"conversion_rate":0.003,"operating_hours":"24/7"},{"id":"LOC-011","name":"LINE Shopping","type":"Online","region":"Online","address":"shop.line.me/toyland","daily_foot_traffic":1500,"conversion_rate":0.004,"operating_hours":"24/7"},{"id":"LOC-012","name":"ToyLand Official Website","type":"Online","region":"Online","address":"toyland.co.th","daily_foot_traffic":800,"conversion_rate":0.005,"operating_hours":"24/7"}],"costs":{"monthly_fixed_costs":{"warehouse_rent":85000,"showroom_rent":35000,"salaries":420000,"utilities":18000,"insurance":12000,"transport_fleet":45000,"marketing":30000,"IT_systems":8000,"misc":15000},"discount_tiers":{"large":0.08,"medium":0.05,"small":0.02}},"shelf_config":{"_description":"ABC scoring configuration for shelves, locations, and products","shelf_multiplier":{"A":1.25,"B":1.0,"C":0.8},"location_multiplier":{"A":1.25,"B":1.0,"C":0.8},"product_multiplier":{"A":1.25,"B":1.0,"C":0.8},"category_shelf_priority":{"_note":"Categories listed first get placed on A-shelves first. Merchandising strategy.","A_shelf_categories":["CAT-03","CAT-01"],"B_shelf_categories":["CAT-02","CAT-04","CAT-05"],"C_shelf_categories":["CAT-06","CAT-07"]}}};
+
+const CATEGORY_COLORS = {
+    'CAT-01': '#E91E63',
+    'CAT-02': '#FF5722',
+    'CAT-03': '#FF9800',
+    'CAT-04': '#4CAF50',
+    'CAT-05': '#2196F3',
+    'CAT-06': '#9C27B0',
+    'CAT-07': '#00BCD4'
+};
+
+const LOCATION_COLORS = ["#2563eb","#dc2626","#16a34a","#ea580c","#9333ea","#0891b2","#d97706","#4f46e5","#be185d","#059669","#7c3aed","#ca8a04"];
+
+let state = {
+    currentTab: 'overview',
+    years: [],
+    regions: [],
+    locations: [],
+    selectedYears: [],
+    selectedRegions: [],
+    selectedLocations: [],
+    selectedProduct: null,
+    selectedMetric: 'units'
+};
+
+function formatCurrency(val) {
+    if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
+    return val.toLocaleString();
+}
+
+function formatNumber(val) {
+    if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'K';
+    return val.toString();
+}
+
+function formatMonth(monthStr) {
+    const [year, month] = monthStr.split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${monthNames[parseInt(month) - 1]} '${year.slice(2)}`;
+}
+
+function getUniqueDates(data, monthField = 'm') {
+    const dates = new Set();
+    data.forEach(d => dates.add(d[monthField]));
+    return Array.from(dates).sort();
+}
+
+function getMonthYear(monthStr) {
+    const [year, month] = monthStr.split('-');
+    return { year: parseInt(year), month: parseInt(month) };
+}
+
+function initializeFilters() {
+    const years = new Set();
+    SALES.forEach(s => years.add(getMonthYear(s.m).year));
+    state.years = Array.from(years).sort();
+    state.selectedYears = [...state.years];
+
+    const regions = new Set();
+    LOCATIONS.forEach(loc => regions.add(loc.region));
+    state.regions = Array.from(regions).sort();
+    state.selectedRegions = [...state.regions];
+
+    state.selectedLocations = LOCATIONS.map(l => l.id);
+
+    renderFilterChips();
+}
+
+function renderFilterChips() {
+    // Year chips
+    const yearContainer = document.getElementById('yearFilter');
+    yearContainer.innerHTML = '<button class="chip all-btn" data-filter="all">All</button>';
+    state.years.forEach(year => {
+        const btn = document.createElement('button');
+        btn.className = `chip ${state.selectedYears.includes(year) ? 'active' : ''}`;
+        btn.textContent = year;
+        btn.onclick = () => toggleYear(year);
+        yearContainer.appendChild(btn);
+    });
+
+    // Region chips
+    const regionContainer = document.getElementById('regionFilter');
+    regionContainer.innerHTML = '<button class="chip all-btn" data-filter="all">All</button>';
+    state.regions.forEach(region => {
+        const btn = document.createElement('button');
+        btn.className = `chip ${state.selectedRegions.includes(region) ? 'active' : ''}`;
+        btn.textContent = region;
+        btn.onclick = () => toggleRegion(region);
+        regionContainer.appendChild(btn);
+    });
+
+    // Location chips based on selected regions
+    const filteredLocations = LOCATIONS.filter(l => state.selectedRegions.includes(l.region));
+    const locContainer = document.getElementById('locationFilter');
+    locContainer.innerHTML = '<button class="chip all-btn" data-filter="all">All</button>';
+    filteredLocations.forEach(loc => {
+        const btn = document.createElement('button');
+        btn.className = `chip ${state.selectedLocations.includes(loc.id) ? 'active' : ''}`;
+        btn.textContent = loc.name;
+        btn.onclick = () => toggleLocation(loc.id);
+        locContainer.appendChild(btn);
+    });
+
+    // All buttons
+    document.querySelectorAll('.sidebar-section .all-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            const section = this.closest('.sidebar-section');
+            const isYear = section.id === '' && Array.from(section.querySelectorAll('.chip')).indexOf(this) === 0;
+            if (section.contains(document.getElementById('yearFilter'))) {
+                state.selectedYears = [...state.years];
+            } else if (section.contains(document.getElementById('regionFilter'))) {
+                state.selectedRegions = [...state.regions];
+            } else if (section.contains(document.getElementById('locationFilter'))) {
+                const filteredLocations = LOCATIONS.filter(l => state.selectedRegions.includes(l.region));
+                state.selectedLocations = filteredLocations.map(l => l.id);
+            }
+            renderFilterChips();
+            renderContent();
+        };
+    });
+}
+
+function toggleYear(year) {
+    const idx = state.selectedYears.indexOf(year);
+    if (idx >= 0) {
+        state.selectedYears.splice(idx, 1);
+    } else {
+        state.selectedYears.push(year);
+    }
+    renderFilterChips();
+    renderContent();
+}
+
+function toggleRegion(region) {
+    const idx = state.selectedRegions.indexOf(region);
+    if (idx >= 0) {
+        state.selectedRegions.splice(idx, 1);
+    } else {
+        state.selectedRegions.push(region);
+    }
+    state.selectedLocations = LOCATIONS.filter(l => state.selectedRegions.includes(l.region)).map(l => l.id);
+    renderFilterChips();
+    renderContent();
+}
+
+function toggleLocation(locId) {
+    const idx = state.selectedLocations.indexOf(locId);
+    if (idx >= 0) {
+        state.selectedLocations.splice(idx, 1);
+    } else {
+        state.selectedLocations.push(locId);
+    }
+    renderFilterChips();
+    renderContent();
+}
+
+function filteredSales() {
+    return SALES.filter(s => {
+        const year = getMonthYear(s.m).year;
+        return state.selectedYears.includes(year) && state.selectedLocations.includes(s.l);
+    });
+}
+
+function filteredStock() {
+    return STOCK.filter(s => {
+        const year = getMonthYear(s.m).year;
+        return state.selectedYears.includes(year);
+    });
+}
+
+function filteredPODetail() {
+    return PO_DETAIL.filter(po => {
+        const year = getMonthYear(po.d.substring(0, 7)).year;
+        return state.selectedYears.includes(year);
+    });
+}
+
+function filteredTRDetail() {
+    return TR_DETAIL.filter(tr => {
+        const year = getMonthYear(tr.d.substring(0, 7)).year;
+        return state.selectedYears.includes(year);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+// Expenses & P&L Tab
+// ═══════════════════════════════════════════════════════════
+
+function renderExpensesTab() {
+    const container = document.getElementById('expenses');
+    const run = RUNS[currentRunIndex];
+    const fin = (run && run.data && run.data.financials) || [];
+    const monthlyCosts = (run && run.data && run.data.monthly_costs) || SIM_CONFIG.costs.monthly_fixed_costs;
+
+    // Monthly cost breakdown
+    const totalMonthly = Object.values(monthlyCosts).reduce((s, v) => s + v, 0);
+    const costLabels = {
+        warehouse_rent: 'Warehouse Rent (Bangna DC)',
+        showroom_rent: 'Showroom Rent',
+        salaries: 'Staff Salaries (42 employees)',
+        utilities: 'Utilities (Electric, Water, Internet)',
+        insurance: 'Business Insurance',
+        transport_fleet: 'Transport Fleet & Logistics',
+        marketing: 'Marketing & Advertising',
+        IT_systems: 'IT Systems & Software',
+        misc: 'Miscellaneous / Contingency'
+    };
+
+    let costRows = '';
+    const sortedCosts = Object.entries(monthlyCosts).sort((a, b) => b[1] - a[1]);
+    for (const [key, val] of sortedCosts) {
+        const pct = (val / totalMonthly * 100).toFixed(1);
+        const label = costLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const barWidth = Math.round(val / totalMonthly * 100);
+        costRows += `<tr>
+            <td style="padding:10px 14px;font-weight:500;">${label}</td>
+            <td style="padding:10px 14px;text-align:right;font-weight:600;">฿${val.toLocaleString()}</td>
+            <td style="padding:10px 14px;text-align:right;color:#718096;">${pct}%</td>
+            <td style="padding:10px 14px;width:200px;">
+                <div style="background:#edf2f7;border-radius:4px;height:16px;overflow:hidden;">
+                    <div style="background:linear-gradient(90deg,#e53e3e,#fc8181);height:100%;width:${barWidth}%;border-radius:4px;"></div>
+                </div>
+            </td>
+        </tr>`;
+    }
+
+    // P&L monthly table (with variable costs)
+    let plRows = '';
+    let cumRev = 0, cumCogs = 0, cumGP = 0, cumFixed = 0, cumVar = 0, cumNet = 0;
+    for (const f of fin) {
+        const fVar = f.var || 0;
+        cumRev += f.rev; cumCogs += f.cogs; cumGP += f.gp; cumFixed += f.fixed; cumVar += fVar; cumNet += f.net;
+        const netColor = f.net >= 0 ? '#38a169' : '#e53e3e';
+        const gpMargin = f.rev > 0 ? (f.gp / f.rev * 100).toFixed(1) : '0.0';
+        const netMargin = f.rev > 0 ? (f.net / f.rev * 100).toFixed(1) : '0.0';
+        plRows += `<tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:8px 12px;font-weight:600;">${f.m}</td>
+            <td style="padding:8px 12px;text-align:right;">฿${Math.round(f.rev).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;color:#e53e3e;">฿${Math.round(f.cogs).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;color:#38a169;">฿${Math.round(f.gp).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;color:#718096;">${gpMargin}%</td>
+            <td style="padding:8px 12px;text-align:right;color:#d69e2e;">฿${Math.round(f.fixed).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;color:#805ad5;">฿${Math.round(fVar).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;font-weight:700;color:${netColor};">฿${Math.round(f.net).toLocaleString()}</td>
+            <td style="padding:8px 12px;text-align:right;color:${netColor};">${netMargin}%</td>
+        </tr>`;
+    }
+
+    // Totals row
+    const totalNetColor = cumNet >= 0 ? '#38a169' : '#e53e3e';
+    const totalGPMargin = cumRev > 0 ? (cumGP / cumRev * 100).toFixed(1) : '0.0';
+    const totalNetMargin = cumRev > 0 ? (cumNet / cumRev * 100).toFixed(1) : '0.0';
+    plRows += `<tr style="border-top:3px solid #2d3748;background:#f7fafc;font-weight:700;">
+        <td style="padding:10px 12px;">TOTAL</td>
+        <td style="padding:10px 12px;text-align:right;">฿${Math.round(cumRev).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;color:#e53e3e;">฿${Math.round(cumCogs).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;color:#38a169;">฿${Math.round(cumGP).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;">${totalGPMargin}%</td>
+        <td style="padding:10px 12px;text-align:right;color:#d69e2e;">฿${Math.round(cumFixed).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;color:#805ad5;">฿${Math.round(cumVar).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;color:${totalNetColor};">฿${Math.round(cumNet).toLocaleString()}</td>
+        <td style="padding:10px 12px;text-align:right;color:${totalNetColor};">${totalNetMargin}%</td>
+    </tr>`;
+
+    const numMonths = fin.length || 1;
+
+    container.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <!-- Monthly Fixed Costs Breakdown -->
+        <div style="flex:1;min-width:400px;">
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                <div style="background:#2d3748;color:#fff;padding:16px 20px;">
+                    <h3 style="margin:0;font-size:16px;">Monthly Fixed Costs</h3>
+                    <p style="margin:4px 0 0;font-size:12px;opacity:0.7;">These costs are incurred every month regardless of sales volume</p>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead><tr style="background:#f7fafc;border-bottom:2px solid #e2e8f0;">
+                        <th style="padding:10px 14px;text-align:left;">Expense</th>
+                        <th style="padding:10px 14px;text-align:right;">Monthly</th>
+                        <th style="padding:10px 14px;text-align:right;">%</th>
+                        <th style="padding:10px 14px;text-align:left;">Share</th>
+                    </tr></thead>
+                    <tbody>${costRows}</tbody>
+                    <tfoot><tr style="border-top:2px solid #2d3748;background:#f7fafc;font-weight:700;">
+                        <td style="padding:10px 14px;">Total Monthly Fixed</td>
+                        <td style="padding:10px 14px;text-align:right;color:#e53e3e;">฿${totalMonthly.toLocaleString()}</td>
+                        <td style="padding:10px 14px;text-align:right;">100%</td>
+                        <td></td>
+                    </tr>
+                    <tr style="background:#f7fafc;">
+                        <td style="padding:6px 14px;color:#718096;">Annual Projection</td>
+                        <td style="padding:6px 14px;text-align:right;color:#718096;">฿${(totalMonthly * 12).toLocaleString()}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr style="background:#f7fafc;">
+                        <td style="padding:6px 14px;color:#718096;">Daily (÷ 26 working days)</td>
+                        <td style="padding:6px 14px;text-align:right;color:#718096;">฿${Math.round(totalMonthly / 26).toLocaleString()}</td>
+                        <td colspan="2"></td>
+                    </tr></tfoot>
+                </table>
+            </div>
+
+            <!-- Variable Costs Breakdown -->
+            <div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                <div style="background:#553c9a;color:#fff;padding:16px 20px;">
+                    <h3 style="margin:0;font-size:16px;">Variable Costs</h3>
+                    <p style="margin:4px 0 0;font-size:12px;opacity:0.7;">Costs that scale with purchase orders and stock transfers</p>
+                </div>
+                ${(() => {
+                    const vcConfig = (run && run.data && run.data.variable_costs_config) || {};
+                    const summ = (run && run.data && run.data.summary) || {};
+                    const poFee = vcConfig.po_processing_fee || 0;
+                    const poFreight = vcConfig.po_freight_pct || 0;
+                    const trLocal = vcConfig.transfer_cost_local || 0;
+                    const trUp = vcConfig.transfer_cost_upcountry || 0;
+                    const trUnit = vcConfig.transfer_cost_per_unit || 0;
+                    const totalPoVar = summ.total_po_variable_costs || 0;
+                    const totalTrVar = summ.total_transfer_variable_costs || 0;
+                    const totalAllVar = summ.total_variable_costs || 0;
+                    const totalPOs = summ.total_pos || 0;
+                    const totalTrs = summ.total_transfers || 0;
+                    const avgPoCost = totalPOs > 0 ? Math.round(totalPoVar / totalPOs) : 0;
+                    const avgTrCost = totalTrs > 0 ? Math.round(totalTrVar / totalTrs) : 0;
+                    return `
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead><tr style="background:#f7fafc;border-bottom:2px solid #e2e8f0;">
+                            <th style="padding:10px 14px;text-align:left;">Cost Type</th>
+                            <th style="padding:10px 14px;text-align:right;">Rate</th>
+                            <th style="padding:10px 14px;text-align:right;">Count</th>
+                            <th style="padding:10px 14px;text-align:right;">Total</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #edf2f7;background:#faf5ff;">
+                                <td colspan="4" style="padding:8px 14px;font-weight:700;color:#553c9a;">Purchase Order Costs</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;">
+                                <td style="padding:8px 14px;">PO Processing Fee</td>
+                                <td style="padding:8px 14px;text-align:right;">฿${poFee.toLocaleString()} / PO</td>
+                                <td style="padding:8px 14px;text-align:right;">${totalPOs.toLocaleString()} POs</td>
+                                <td style="padding:8px 14px;text-align:right;font-weight:600;">฿${(poFee * totalPOs).toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;">
+                                <td style="padding:8px 14px;">Inbound Freight</td>
+                                <td style="padding:8px 14px;text-align:right;">${(poFreight * 100).toFixed(1)}% of PO value</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                                <td style="padding:8px 14px;text-align:right;font-weight:600;">฿${Math.round(totalPoVar - poFee * totalPOs).toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-bottom:2px solid #e2e8f0;background:#faf5ff;">
+                                <td style="padding:8px 14px;font-weight:600;">Subtotal PO Costs</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">avg ฿${avgPoCost.toLocaleString()} / PO</td>
+                                <td style="padding:8px 14px;"></td>
+                                <td style="padding:8px 14px;text-align:right;font-weight:700;color:#805ad5;">฿${Math.round(totalPoVar).toLocaleString()}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;background:#faf5ff;">
+                                <td colspan="4" style="padding:8px 14px;font-weight:700;color:#553c9a;">Stock Transfer Costs</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;">
+                                <td style="padding:8px 14px;">Transfer Fee (Local)</td>
+                                <td style="padding:8px 14px;text-align:right;">฿${trLocal.toLocaleString()} / transfer</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;">
+                                <td style="padding:8px 14px;">Transfer Fee (Upcountry)</td>
+                                <td style="padding:8px 14px;text-align:right;">฿${trUp.toLocaleString()} / transfer</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #edf2f7;">
+                                <td style="padding:8px 14px;">Handling Cost</td>
+                                <td style="padding:8px 14px;text-align:right;">฿${trUnit} / unit</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">—</td>
+                            </tr>
+                            <tr style="border-bottom:2px solid #e2e8f0;background:#faf5ff;">
+                                <td style="padding:8px 14px;font-weight:600;">Subtotal Transfer Costs</td>
+                                <td style="padding:8px 14px;text-align:right;color:#718096;">avg ฿${avgTrCost.toLocaleString()} / transfer</td>
+                                <td style="padding:8px 14px;text-align:right;">${totalTrs.toLocaleString()} transfers</td>
+                                <td style="padding:8px 14px;text-align:right;font-weight:700;color:#805ad5;">฿${Math.round(totalTrVar).toLocaleString()}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot><tr style="border-top:3px solid #553c9a;background:#faf5ff;font-weight:700;">
+                            <td style="padding:10px 14px;">Total Variable Costs</td>
+                            <td style="padding:10px 14px;"></td>
+                            <td style="padding:10px 14px;"></td>
+                            <td style="padding:10px 14px;text-align:right;color:#805ad5;font-size:15px;">฿${Math.round(totalAllVar).toLocaleString()}</td>
+                        </tr></tfoot>
+                    </table>`;
+                })()}
+            </div>
+
+            <!-- Break-even summary -->
+            <div style="margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;">
+                <h4 style="margin:0 0 12px;font-size:14px;color:#4a5568;">Break-Even Analysis</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+                    <div style="background:#f7fafc;padding:12px;border-radius:8px;">
+                        <div style="color:#718096;font-size:11px;">Monthly Fixed Costs</div>
+                        <div style="font-weight:700;font-size:16px;color:#e53e3e;">฿${totalMonthly.toLocaleString()}</div>
+                    </div>
+                    <div style="background:#f7fafc;padding:12px;border-radius:8px;">
+                        <div style="color:#718096;font-size:11px;">Avg Monthly Variable Costs</div>
+                        <div style="font-weight:700;font-size:16px;color:#805ad5;">฿${Math.round(cumVar / numMonths).toLocaleString()}</div>
+                    </div>
+                    <div style="background:#f7fafc;padding:12px;border-radius:8px;">
+                        <div style="color:#718096;font-size:11px;">Avg Monthly Gross Profit</div>
+                        <div style="font-weight:700;font-size:16px;color:#38a169;">฿${Math.round(cumGP / numMonths).toLocaleString()}</div>
+                    </div>
+                    <div style="background:${cumNet >= 0 ? '#f0fff4' : '#fff5f5'};padding:12px;border-radius:8px;border:2px solid ${cumNet >= 0 ? '#38a169' : '#e53e3e'};">
+                        <div style="color:#718096;font-size:11px;">Avg Monthly Net Profit</div>
+                        <div style="font-weight:700;font-size:16px;color:${totalNetColor};">฿${Math.round(cumNet / numMonths).toLocaleString()}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly P&L Statement -->
+        <div style="flex:2;min-width:550px;">
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                <div style="background:#1e293b;color:#fff;padding:16px 20px;">
+                    <h3 style="margin:0;font-size:16px;">Monthly Profit & Loss Statement</h3>
+                    <p style="margin:4px 0 0;font-size:12px;opacity:0.7;">Revenue − COGS = Gross Profit − Fixed Costs − Variable Costs = Net Profit</p>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="background:#f7fafc;border-bottom:2px solid #e2e8f0;">
+                            <th style="padding:8px 12px;text-align:left;">Month</th>
+                            <th style="padding:8px 12px;text-align:right;">Revenue</th>
+                            <th style="padding:8px 12px;text-align:right;">COGS</th>
+                            <th style="padding:8px 12px;text-align:right;">Gross Profit</th>
+                            <th style="padding:8px 12px;text-align:right;">GP %</th>
+                            <th style="padding:8px 12px;text-align:right;">Fixed Costs</th>
+                            <th style="padding:8px 12px;text-align:right;color:#805ad5;">Var Costs</th>
+                            <th style="padding:8px 12px;text-align:right;">Net Profit</th>
+                            <th style="padding:8px 12px;text-align:right;">Net %</th>
+                        </tr></thead>
+                        <tbody>${plRows || '<tr><td colspan="9" style="padding:20px;text-align:center;color:#a0aec0;">No financial data available. Run a simulation first.</td></tr>'}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// BizBot Bash — Leaderboard, Bot Upload, Active Jobs
+// ═══════════════════════════════════════════════════════════
+
+const BIZBOTBASH_SERVER = 'http://127.0.0.1:5055';
+
+function renderBizBotBashTab() {
+    refreshLeaderboard();
+    refreshActiveJobs();
+}
+
+async function refreshLeaderboard() {
+    const container = document.getElementById('leaderboardTable');
+    if (!container) return;
+
+    try {
+        // Get completed jobs from server
+        const resp = await fetch(BIZBOTBASH_SERVER + '/jobs');
+        if (!resp.ok) throw new Error('Server error');
+        const allJobs = await resp.json();
+
+        // Filter to completed jobs only
+        const completed = allJobs.filter(j => j.status === 'completed' && j.total_revenue);
+
+        if (completed.length === 0) {
+            container.innerHTML = '<p style="padding:24px;text-align:center;color:#a0aec0;">No completed bot runs yet. Run a bot to see results here!</p>';
+            return;
+        }
+
+        // Sort by BBS score descending (highest/least negative wins)
+        completed.sort((a, b) => (b.bizbotbash_score || -Infinity) - (a.bizbotbash_score || -Infinity));
+
+        let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+        html += '<thead><tr style="background:#f7fafc;border-bottom:2px solid #e2e8f0;">';
+        html += '<th style="padding:10px 12px;text-align:left;font-weight:700;color:#4a5568;">#</th>';
+        html += '<th style="padding:10px 12px;text-align:left;font-weight:700;color:#4a5568;">Bot</th>';
+        html += '<th style="padding:10px 12px;text-align:left;font-weight:700;color:#4a5568;">Player</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#805ad5;">BBS Score</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5568;">Revenue</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5568;">Net Profit</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#dd6b20;">On-Hand Value</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5568;">Gross Profit</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5568;">Months</th>';
+        html += '<th style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5568;">Time</th>';
+        html += '</tr></thead><tbody>';
+
+        completed.forEach((job, idx) => {
+            const rank = idx + 1;
+            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`;
+            const rev = job.total_revenue || 0;
+            const cogs = job.total_cogs || 0;
+            const profit = job.gross_profit || 0;
+            const bbs = job.bizbotbash_score || 0;
+            const endInv = job.ending_inventory_value || 0;
+            // Net profit = BBS + ending inventory value (since BBS = NetProfit - EndInv)
+            const netProfit = bbs + endInv;
+            const elapsed = job.elapsed_seconds ? job.elapsed_seconds + 's' : '-';
+            const player = job.submitted_by || '-';
+            const rowBg = rank <= 3 ? 'background:rgba(214,158,46,0.06);' : '';
+
+            html += `<tr style="border-bottom:1px solid #edf2f7;${rowBg}">`;
+            html += `<td style="padding:10px 12px;font-size:16px;text-align:center;">${medal}</td>`;
+            html += `<td style="padding:10px 12px;font-weight:600;">${job.bot || job.label || '-'}</td>`;
+            html += `<td style="padding:10px 12px;color:#718096;">${player}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;font-weight:700;color:${bbs >= 0 ? '#38a169' : '#805ad5'};">฿${Math.round(bbs).toLocaleString()}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;">฿${Math.round(rev).toLocaleString()}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;font-weight:600;color:${netProfit >= 0 ? '#38a169' : '#e53e3e'};">฿${Math.round(netProfit).toLocaleString()}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;color:#dd6b20;">฿${Math.round(endInv).toLocaleString()}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;color:${profit >= 0 ? '#38a169' : '#e53e3e'};">฿${Math.round(profit).toLocaleString()}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;">${job.months || '-'}</td>`;
+            html += `<td style="padding:10px 12px;text-align:right;color:#a0aec0;">${elapsed}</td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+    } catch (e) {
+        container.innerHTML = `<p style="padding:24px;text-align:center;color:#e53e3e;">⚠ Cannot connect to server</p>`;
+    }
+}
+
+async function refreshActiveJobs() {
+    const container = document.getElementById('activeJobsList');
+    if (!container) return;
+
+    try {
+        const resp = await fetch(BIZBOTBASH_SERVER + '/jobs');
+        if (!resp.ok) return;
+        const allJobs = await resp.json();
+        const active = allJobs.filter(j => j.status === 'queued' || j.status === 'running');
+
+        if (active.length === 0) {
+            container.innerHTML = '<span style="color:#a0aec0;">No active jobs right now</span>';
+            return;
+        }
+
+        let html = active.map(j => {
+            const day = j.current_day || '...';
+            const rev = j.revenue ? '฿' + Math.round(j.revenue).toLocaleString() : '';
+            const status = j.status === 'running'
+                ? `<span style="color:#d69e2e;">⏳ Running — day ${day} ${rev}</span>`
+                : `<span style="color:#a0aec0;">⏳ Queued</span>`;
+            return `<div style="padding:4px 0;"><strong>${j.bot || j.label}</strong> ${j.submitted_by ? '(' + j.submitted_by + ')' : ''} — ${status}</div>`;
+        }).join('');
+
+        container.innerHTML = html;
+
+        // Auto-refresh while jobs are active
+        if (active.length > 0) {
+            setTimeout(() => {
+                if (state.currentTab === 'bizbotbash') {
+                    refreshActiveJobs();
+                    refreshLeaderboard();
+                }
+            }, 2000);
+        }
+    } catch (e) { /* server offline */ }
+}
+
+async function uploadBot() {
+    const nameInput = document.getElementById('uploadBotName');
+    const authorInput = document.getElementById('uploadBotAuthor');
+    const codeInput = document.getElementById('uploadBotCode');
+    const statusEl = document.getElementById('uploadBotStatus');
+
+    const botName = nameInput.value.trim();
+    const author = authorInput.value.trim() || 'anonymous';
+    const code = codeInput.value;
+
+    if (!botName) {
+        statusEl.innerHTML = '<span style="color:#e53e3e;">Please enter a bot name</span>';
+        return;
+    }
+    if (!code || code.length < 50) {
+        statusEl.innerHTML = '<span style="color:#e53e3e;">Please paste your bot Python code</span>';
+        return;
+    }
+
+    statusEl.innerHTML = '<span style="color:#d69e2e;">Uploading...</span>';
+
+    try {
+        const resp = await fetch(BIZBOTBASH_SERVER + '/submit-bot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                filename: botName.replace(/[^a-zA-Z0-9_]/g, '_') + '.py',
+                code: code,
+                bot_name: botName,
+                submitted_by: author,
+            })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            statusEl.innerHTML = `<span style="color:#e53e3e;">⚠ ${data.error || 'Upload failed'}</span>`;
+            return;
+        }
+
+        statusEl.innerHTML = `<span style="color:#38a169;">✓ Bot "${data.bot_name}" registered! You can now select it from the Mode dropdown.</span>`;
+
+        // Refresh bot list in mode selector
+        loadAvailableBots();
+
+        // Clear the form
+        nameInput.value = '';
+        codeInput.value = '';
+
+    } catch (e) {
+        statusEl.innerHTML = `<span style="color:#e53e3e;">⚠ Cannot connect to server</span>`;
+    }
+}
+
+function renderContent() {
+    if (state.currentTab === 'overview') renderOverviewTab();
+    else if (state.currentTab === 'product') renderProductTab();
+    else if (state.currentTab === 'po') renderPOTab();
+    else if (state.currentTab === 'tr') renderTRTab();
+    else if (state.currentTab === 'locations') renderLocationsTab();
+    else if (state.currentTab === 'suppliers') renderSuppliersTab();
+    else if (state.currentTab === 'expenses') renderExpensesTab();
+    else if (state.currentTab === 'bizbotbash') renderBizBotBashTab();
+}
+
+function renderOverviewTab() {
+    const sales = filteredSales();
+    const totalRevenue = sales.reduce((s, r) => s + r.r, 0);
+    const totalUnits = sales.reduce((s, r) => s + r.q, 0);
+    const totalOrders = sales.length;
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const activeProducts = new Set(sales.map(s => s.p)).size;
+
+    // P&L from financials data
+    const run = RUNS[currentRunIndex];
+    const fin = (run && run.data && run.data.financials) || [];
+    const summary = (run && run.data && run.data.summary) || {};
+    const totalCogs = fin.reduce((s, f) => s + f.cogs, 0) || summary.total_cogs || 0;
+    const totalFixed = fin.reduce((s, f) => s + f.fixed, 0) || summary.total_fixed_costs || 0;
+    const totalVarCosts = fin.reduce((s, f) => s + (f.var || 0), 0) || summary.total_variable_costs || 0;
+    const grossProfit = totalRevenue - totalCogs;
+    const netProfit = grossProfit - totalFixed - totalVarCosts;
+    const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue * 100) : 0;
+    const netMargin = totalRevenue > 0 ? (netProfit / totalRevenue * 100) : 0;
+
+    // Variable cost breakdown from summary
+    const poVarCosts = summary.total_po_variable_costs || 0;
+    const trVarCosts = summary.total_transfer_variable_costs || 0;
+
+    const kpisHtml = `
+        <div class="kpi-card">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-value">฿${formatCurrency(totalRevenue)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">COGS (Purchases)</div>
+            <div class="kpi-value" style="color:#e53e3e;">฿${formatCurrency(totalCogs)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Gross Profit</div>
+            <div class="kpi-value" style="color:#38a169;">฿${formatCurrency(grossProfit)}</div>
+            <div style="font-size:11px;color:#718096;margin-top:2px;">${grossMargin.toFixed(1)}% margin</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Fixed Costs</div>
+            <div class="kpi-value" style="color:#d69e2e;">฿${formatCurrency(totalFixed)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variable Costs</div>
+            <div class="kpi-value" style="color:#805ad5;">฿${formatCurrency(totalVarCosts)}</div>
+            <div style="font-size:10px;color:#718096;margin-top:2px;">PO: ฿${formatCurrency(poVarCosts)} · Transfer: ฿${formatCurrency(trVarCosts)}</div>
+        </div>
+        <div class="kpi-card" style="border-left:3px solid ${netProfit >= 0 ? '#38a169' : '#e53e3e'};">
+            <div class="kpi-label">Net Profit / (Loss)</div>
+            <div class="kpi-value" style="color:${netProfit >= 0 ? '#38a169' : '#e53e3e'};">฿${formatCurrency(netProfit)}</div>
+            <div style="font-size:11px;color:#718096;margin-top:2px;">${netMargin.toFixed(1)}% net margin</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Units Sold</div>
+            <div class="kpi-value">${formatNumber(totalUnits)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Order Value</div>
+            <div class="kpi-value">฿${formatCurrency(avgOrderValue)}</div>
+        </div>
+    `;
+    document.getElementById('overviewKpis').innerHTML = kpisHtml;
+
+    drawRevenueChart(sales);
+    drawRegionChart(sales);
+    renderProductRankings(sales);
+}
+
+function drawRevenueChart(sales) {
+    const months = getUniqueDates(sales);
+    const monthlyData = {};
+    months.forEach(m => monthlyData[m] = 0);
+    sales.forEach(s => monthlyData[s.m] += s.r);
+
+    const canvas = document.getElementById('revenueChart');
+    const ctx = canvas.getContext('2d');
+    const data = months.map(m => monthlyData[m]);
+
+    drawLineChart(ctx, months, [data], ['Revenue'], [null], canvas.width, canvas.height);
+}
+
+function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
+    ctx.clearRect(0, 0, width, height);
+    const padding = { top: 40, right: 40, bottom: 60, left: 80 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    // Draw grid
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = padding.top + (i * chartHeight / 5);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+    }
+
+    // Y-axis labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    const maxValue = Math.max(...datasets.flat());
+    for (let i = 0; i <= 5; i++) {
+        const val = (i * maxValue / 5);
+        const y = padding.top + chartHeight - (i * chartHeight / 5);
+        ctx.fillText(formatCurrency(val), padding.left - 10, y + 4);
+    }
+
+    // Draw lines
+    datasets.forEach((data, idx) => {
+        const isDashed = idx > 0 && labels[idx].includes('Total');
+        ctx.strokeStyle = colors[idx] || '#3b82f6';
+        ctx.lineWidth = isDashed ? 3 : 2;
+        ctx.setLineDash(isDashed ? [5, 5] : []);
+
+        ctx.beginPath();
+        data.forEach((val, i) => {
+            const x = padding.left + (i * chartWidth / (data.length - 1 || 1));
+            const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw points
+        ctx.fillStyle = colors[idx] || '#3b82f6';
+        data.forEach((val, i) => {
+            const x = padding.left + (i * chartWidth / (data.length - 1 || 1));
+            const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    });
+
+    // X-axis labels
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'center';
+    months.forEach((month, i) => {
+        const x = padding.left + (i * chartWidth / (months.length - 1 || 1));
+        ctx.fillText(formatMonth(month), x, height - padding.bottom + 20);
+    });
+
+    // Axes
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, height - padding.bottom);
+    ctx.lineTo(width - padding.right, height - padding.bottom);
+    ctx.stroke();
+}
+
+function drawRegionChart(sales) {
+    const byRegion = {};
+    sales.forEach(s => {
+        const loc = LOCATIONS.find(l => l.id === s.l);
+        if (loc) {
+            byRegion[loc.region] = (byRegion[loc.region] || 0) + s.r;
+        }
+    });
+
+    const regions = Object.keys(byRegion).sort((a, b) => byRegion[b] - byRegion[a]);
+    const canvas = document.getElementById('regionChart');
+    const ctx = canvas.getContext('2d');
+    const data = regions.map(r => byRegion[r]);
+
+    drawBarChart(ctx, regions, data, canvas.width, canvas.height, 'horizontal');
+}
+
+function drawBarChart(ctx, labels, data, width, height, orientation = 'vertical') {
+    ctx.clearRect(0, 0, width, height);
+    const padding = { top: 40, right: 40, bottom: 60, left: 80 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const maxValue = Math.max(...data);
+    const barHeight = Math.min(30, chartHeight / (data.length || 1));
+
+    if (orientation === 'horizontal') {
+        data.forEach((val, i) => {
+            const barWidth = (val / maxValue) * chartWidth;
+            const y = padding.top + i * (chartHeight / data.length) + chartHeight / data.length / 2 - barHeight / 2;
+            
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(padding.left, y, barWidth, barHeight);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(formatCurrency(val), padding.left + barWidth - 5, y + barHeight / 2 + 4);
+
+            ctx.textAlign = 'right';
+            ctx.fillText(labels[i], padding.left - 10, y + barHeight / 2 + 4);
+        });
+    }
+
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, height - padding.bottom);
+    ctx.lineTo(width - padding.right, height - padding.bottom);
+    ctx.stroke();
+}
+
+function renderProductRankings(sales) {
+    const byProduct = {};
+    sales.forEach(s => {
+        if (!byProduct[s.p]) byProduct[s.p] = { units: 0, revenue: 0 };
+        byProduct[s.p].units += s.q;
+        byProduct[s.p].revenue += s.r;
+    });
+
+    const totalRevenue = Object.values(byProduct).reduce((s, d) => s + d.revenue, 0);
+    const ranking = Object.keys(byProduct)
+        .map(p => {
+            const prod = PRODUCTS.find(pr => pr.id === p);
+            return {
+                id: p,
+                name: prod?.name || p,
+                cat: prod?.cat || 'UNK',
+                units: byProduct[p].units,
+                revenue: byProduct[p].revenue,
+                share: (byProduct[p].revenue / totalRevenue * 100).toFixed(1)
+            };
+        })
+        .sort((a, b) => b.revenue - a.revenue);
+
+    let html = '<thead><tr><th>#</th><th>Product</th><th>Category</th><th>Units</th><th>Revenue (฿)</th><th>Share %</th></tr></thead><tbody>';
+    ranking.forEach((p, i) => {
+        const catName = CATEGORIES[p.cat] || p.cat;
+        html += `<tr>
+            <td>${i + 1}</td>
+            <td class="clickable" onclick="selectProduct('${p.id}')">${p.name}</td>
+            <td><span class="badge badge-cat">${catName}</span></td>
+            <td>${formatNumber(p.units)}</td>
+            <td>฿${formatNumber(p.revenue)}</td>
+            <td>${p.share}%</td>
+        </tr>`;
+    });
+    html += '</tbody>';
+    document.getElementById('rankingTable').innerHTML = html;
+}
+
+function selectProduct(productId) {
+    state.selectedProduct = productId;
+    state.currentTab = 'product';
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === 1);
+    });
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    document.getElementById('product').classList.add('active');
+    document.getElementById('productSection').style.display = 'block';
+    document.getElementById('metricSection').style.display = 'block';
+
+    const select = document.getElementById('productSelect');
+    select.value = productId;
+
+    renderContent();
+}
+
+function renderProductTab() {
+    if (!state.selectedProduct) {
+        // Show product catalog list
+        document.getElementById('productCatalog').style.display = 'block';
+        document.getElementById('productDetail').style.display = 'none';
+        renderProductCatalog();
+        return;
+    }
+    // Show product detail view
+    document.getElementById('productCatalog').style.display = 'none';
+    document.getElementById('productDetail').style.display = 'block';
+
+    const prod = PRODUCTS.find(p => p.id === state.selectedProduct);
+    if (!prod) return;
+
+    // Product header with back button
+    const catName = CATEGORIES[prod.cat] || prod.cat;
+    const catColor = CATEGORY_COLORS[prod.cat] || '#64748b';
+    const gradeColor = prod.grade === 'A' ? '#16a34a' : prod.grade === 'B' ? '#2563eb' : '#d97706';
+    const headerHtml = `
+        <button class="back-btn" onclick="goBackToProductList()">← All Products</button>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <h2 style="margin: 0;">${prod.name}</h2>
+            ${prod.grade ? `<span class="grade-badge grade-${prod.grade}">${prod.grade}</span>` : ''}
+        </div>
+        <p>${prod.id}</p>
+        <div class="product-meta">
+            <span><strong>Cost:</strong> ฿${formatNumber(prod.cost)}</span>
+            <span><strong>Price:</strong> ฿${formatNumber(prod.price)}</span>
+            <span><strong>Margin:</strong> ฿${formatNumber(prod.price - prod.cost)}</span>
+            <span><strong>Category:</strong> <span class="cat-badge" style="background:${catColor}">${catName}</span></span>
+        </div>
+        ${prod.score !== undefined ? `
+        <div class="product-scores">
+            <span><strong>Score:</strong> ${(prod.score || 0).toFixed(3)}</span>
+            <span><strong>Base Demand:</strong> ${formatNumber(prod.demand || 0)}</span>
+            <span><strong>Buzz:</strong> ${(prod.buzz || 0).toFixed(2)}</span>
+            <span><strong>Loyalty:</strong> ${(prod.loyalty || 0).toFixed(2)}</span>
+            <span><strong>Trend:</strong> +${((prod.trend || 0) * 100).toFixed(1)}%</span>
+        </div>
+        ` : ''}
+    `;
+    document.getElementById('productHeader').innerHTML = headerHtml;
+
+    // Sales data for this product
+    const sales = filteredSales().filter(s => s.p === state.selectedProduct);
+    const totalUnits = sales.reduce((s, r) => s + r.q, 0);
+    const totalRevenue = sales.reduce((s, r) => s + r.r, 0);
+    const months = new Set(sales.map(s => s.m)).size;
+    const avgMonthly = months > 0 ? totalUnits / months : 0;
+    const grossMargin = totalRevenue > 0 ? ((totalRevenue - (totalUnits * prod.cost)) / totalRevenue * 100).toFixed(1) : 0;
+
+    const kpisHtml = `
+        <div class="kpi-card">
+            <div class="kpi-label">Total Units</div>
+            <div class="kpi-value">${formatNumber(totalUnits)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Revenue</div>
+            <div class="kpi-value">฿${formatCurrency(totalRevenue)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Gross Margin %</div>
+            <div class="kpi-value">${grossMargin}%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Monthly Units</div>
+            <div class="kpi-value">${formatNumber(avgMonthly)}</div>
+        </div>
+    `;
+    document.getElementById('productKpis').innerHTML = kpisHtml;
+
+    drawProductLocationChart();
+    drawProductStockChart();
+}
+
+function goBackToProductList() {
+    state.selectedProduct = null;
+    document.getElementById('productSelect').value = '';
+    document.getElementById('productSection').style.display = 'none';
+    document.getElementById('metricSection').style.display = 'none';
+    renderProductTab();
+}
+
+function renderProductCatalog() {
+    const sales = filteredSales();
+
+    // Aggregate sales per product
+    const prodStats = {};
+    PRODUCTS.forEach(p => {
+        prodStats[p.id] = { q: 0, r: 0 };
+    });
+    sales.forEach(s => {
+        if (prodStats[s.p]) {
+            prodStats[s.p].q += s.q;
+            prodStats[s.p].r += s.r;
+        }
+    });
+
+    // Build product rows sorted by revenue desc
+    const rows = PRODUCTS.map(p => {
+        const stat = prodStats[p.id];
+        const margin = p.price > 0 ? ((p.price - p.cost) / p.price * 100).toFixed(1) : '0.0';
+        return { ...p, units: stat.q, revenue: stat.r, margin };
+    }).sort((a, b) => b.revenue - a.revenue);
+
+    const totalRev = rows.reduce((s, r) => s + r.revenue, 0);
+
+    let html = `
+        <div class="kpi-grid" style="margin-bottom:20px;">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Products</div>
+                <div class="kpi-value">${PRODUCTS.length}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">฿${formatCurrency(totalRev)}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Units Sold</div>
+                <div class="kpi-value">${formatNumber(rows.reduce((s, r) => s + r.units, 0))}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Categories</div>
+                <div class="kpi-value">${Object.keys(CATEGORIES).length}</div>
+            </div>
+        </div>
+        <div style="margin-bottom:20px;">
+            <div class="chart-title" style="margin-bottom:12px;">Category Summary</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+    `;
+
+    // Build category summary
+    const catStats = {};
+    Object.entries(CATEGORIES).forEach(([cid, val]) => {
+        const catName = typeof val === 'string' ? val : (val.name || cid);
+        catStats[cid] = { name: catName, count: 0, units: 0, revenue: 0, grades: {A:0,B:0,C:0} };
+    });
+    rows.forEach(r => {
+        if (catStats[r.cat]) {
+            catStats[r.cat].count++;
+            catStats[r.cat].units += r.units;
+            catStats[r.cat].revenue += r.revenue;
+            if (r.grade) catStats[r.cat].grades[r.grade] = (catStats[r.cat].grades[r.grade] || 0) + 1;
+        }
+    });
+
+    Object.entries(catStats).forEach(([cid, cs]) => {
+        const color = CATEGORY_COLORS[cid] || '#666';
+        const revShare = totalRev > 0 ? (cs.revenue / totalRev * 100).toFixed(1) : '0.0';
+        const gradeStr = ['A','B','C'].filter(g => cs.grades[g] > 0).map(g => {
+            const gc = g === 'A' ? '#16a34a' : g === 'B' ? '#2563eb' : '#d97706';
+            return `<span style="color:${gc};font-weight:700;">${cs.grades[g]}${g}</span>`;
+        }).join(' · ');
+
+        html += `
+            <div style="background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+                <div style="width:6px;height:48px;border-radius:3px;background:${color};flex-shrink:0;"></div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:14px;color:#1e293b;margin-bottom:2px;">${cs.name}</div>
+                    <div style="font-size:12px;color:#64748b;">${cid} · ${gradeStr}</div>
+                </div>
+                <div style="text-align:center;padding:0 12px;">
+                    <div style="font-size:20px;font-weight:800;color:#1e293b;">${cs.count}</div>
+                    <div style="font-size:10px;color:#64748b;">Products</div>
+                </div>
+                <div style="text-align:center;padding:0 12px;">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;">${formatNumber(cs.units)}</div>
+                    <div style="font-size:10px;color:#64748b;">Units</div>
+                </div>
+                <div style="text-align:center;padding:0 12px;">
+                    <div style="font-size:14px;font-weight:700;color:#1e293b;">฿${formatCurrency(cs.revenue)}</div>
+                    <div style="font-size:10px;color:#64748b;">${revShare}%</div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div></div>
+        <div class="data-table">
+            <div class="chart-title" style="padding:20px 20px 0 20px;">Product Catalog — click a row to view details</div>
+            <div class="table-wrapper" style="max-height:600px;">
+                <table>
+                    <thead><tr>
+                        <th>#</th>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Grade</th>
+                        <th style="text-align:right">Cost (฿)</th>
+                        <th style="text-align:right">Price (฿)</th>
+                        <th style="text-align:right">Margin %</th>
+                        <th style="text-align:right">Units Sold</th>
+                        <th style="text-align:right">Revenue (฿)</th>
+                        <th style="text-align:right">Share</th>
+                    </tr></thead>
+                    <tbody>`;
+
+    rows.forEach((r, i) => {
+        const catName = CATEGORIES[r.cat] || r.cat;
+        const catColor = CATEGORY_COLORS[r.cat] || '#64748b';
+        const share = totalRev > 0 ? (r.revenue / totalRev * 100) : 0;
+        const barWidth = Math.min(share * 3, 100);
+        html += `<tr class="product-catalog-row" onclick="selectProduct('${r.id}')">
+            <td style="color:#94a3b8;font-family:monospace;">${i + 1}</td>
+            <td style="font-family:monospace;font-weight:500;">${r.id}</td>
+            <td style="font-weight:600;color:#1e293b;">${r.name}</td>
+            <td><span class="cat-badge" style="background:${catColor}">${catName}</span></td>
+            <td>${r.grade ? `<span class="grade-badge grade-${r.grade}">${r.grade}</span>` : '-'}</td>
+            <td style="text-align:right;font-family:monospace;">฿${formatNumber(r.cost)}</td>
+            <td style="text-align:right;font-family:monospace;">฿${formatNumber(r.price)}</td>
+            <td style="text-align:right;font-family:monospace;">${r.margin}%</td>
+            <td style="text-align:right;font-family:monospace;">${formatNumber(r.units)}</td>
+            <td style="text-align:right;font-family:monospace;">฿${formatCurrency(r.revenue)}</td>
+            <td style="text-align:right;min-width:90px;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                    <div style="width:50px;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;background:#3b82f6;border-radius:3px;width:${barWidth}%;"></div>
+                    </div>
+                    <span style="font-family:monospace;font-size:12px;min-width:40px;text-align:right;">${share.toFixed(1)}%</span>
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div></div>';
+    document.getElementById('productCatalog').innerHTML = html;
+}
+
+function drawProductLocationChart() {
+    const allMonths = getUniqueDates(SALES);
+    const sales = filteredSales().filter(s => s.p === state.selectedProduct);
+    const byMonthLocation = {};
+
+    allMonths.forEach(m => {
+        byMonthLocation[m] = {};
+        state.selectedLocations.forEach(locId => {
+            byMonthLocation[m][locId] = 0;
+        });
+    });
+
+    sales.forEach(s => {
+        if (byMonthLocation[s.m]) byMonthLocation[s.m][s.l] = (byMonthLocation[s.m][s.l] || 0) + (state.selectedMetric === 'units' ? s.q : s.r);
+    });
+
+    const datasets = [];
+    const colors = [];
+    state.selectedLocations.forEach((locId, idx) => {
+        const loc = LOCATIONS.find(l => l.id === locId);
+        const data = allMonths.map(m => byMonthLocation[m][locId] || 0);
+        datasets.push(data);
+        colors.push(LOCATION_COLORS[idx % LOCATION_COLORS.length]);
+    });
+
+    // Add total line
+    const totalData = allMonths.map(m => {
+        let sum = 0;
+        state.selectedLocations.forEach(locId => sum += byMonthLocation[m][locId] || 0);
+        return sum;
+    });
+    datasets.push(totalData);
+    colors.push(null); // Will use dashed
+
+    const canvas = document.getElementById('locationChart');
+    const ctx = canvas.getContext('2d');
+    const labels = state.selectedLocations.map(id => LOCATIONS.find(l => l.id === id)?.name || id).concat(['Total']);
+    drawLineChart(ctx, allMonths, datasets, labels, colors, canvas.width, canvas.height);
+}
+
+function drawProductStockChart() {
+    const allMonths = getUniqueDates(STOCK);
+    const stock = filteredStock().filter(s => s.p === state.selectedProduct);
+    const byMonth = {};
+    allMonths.forEach(m => byMonth[m] = 0);
+    stock.forEach(s => byMonth[s.m] = s.s);
+
+    const data = allMonths.map(m => byMonth[m]);
+    const canvas = document.getElementById('stockChart');
+    const ctx = canvas.getContext('2d');
+    drawLineChart(ctx, allMonths, [data], ['Stock'], ['#16a34a'], canvas.width, canvas.height);
+}
+
+function renderPOTab() {
+    const poDetail = filteredPODetail();
+    const totalPos = poDetail.length;
+    const totalSpend = poDetail.reduce((s, po) => s + po.cost, 0);
+    const totalLeadTime = poDetail.reduce((s, po) => s + po.lead, 0);
+    const avgLeadTime = totalPos > 0 ? (totalLeadTime / totalPos).toFixed(1) : 0;
+    const fillRate = poDetail.length > 0 ? (poDetail.reduce((s, po) => s + (po.qr / po.qo), 0) / poDetail.length * 100).toFixed(1) : 0;
+
+    const kpisHtml = `
+        <div class="kpi-card">
+            <div class="kpi-label">Total POs</div>
+            <div class="kpi-value">${totalPos}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Spend</div>
+            <div class="kpi-value">฿${formatCurrency(totalSpend)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Lead Time</div>
+            <div class="kpi-value">${avgLeadTime} days</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Fill Rate</div>
+            <div class="kpi-value">${fillRate}%</div>
+        </div>
+    `;
+    document.getElementById('poKpis').innerHTML = kpisHtml;
+
+    // Filter PO_AGG by selected years
+    const poAgg = PO_AGG.filter(p => {
+        const year = getMonthYear(p.m).year;
+        return state.selectedYears.includes(year);
+    });
+
+    drawPOSpendChart(poAgg);
+    drawPOCountChart(poAgg);
+    renderPOTable(poDetail);
+}
+
+function drawPOSpendChart(poAgg) {
+    const months = poAgg.map(p => p.m);
+    const data = poAgg.map(p => p.spend);
+    const canvas = document.getElementById('poSpendChart');
+    const ctx = canvas.getContext('2d');
+    drawLineChart(ctx, months, [data], ['Spend'], [null], canvas.width, canvas.height);
+}
+
+function drawPOCountChart(poAgg) {
+    const months = poAgg.map(p => p.m);
+    const data = poAgg.map(p => p.count);
+    const canvas = document.getElementById('poCountChart');
+    const ctx = canvas.getContext('2d');
+    drawBarChart(ctx, months.map(m => formatMonth(m)), data, canvas.width, canvas.height, 'vertical');
+}
+
+function renderPOTable(poDetail) {
+    let html = '<thead><tr><th>PO ID</th><th>Date</th><th>Supplier</th><th>Product</th><th>Qty Ordered</th><th>Qty Received</th><th>Cost (฿)</th><th>Lead Days</th><th>Status</th></tr></thead><tbody>';
+    
+    poDetail.sort((a, b) => new Date(b.d) - new Date(a.d)).forEach(po => {
+        const supplier = SUPPLIERS.find(s => s.id === po.s);
+        const product = PRODUCTS.find(p => p.id === po.p);
+        const statusBadgeClass = `badge-${po.st}`;
+        html += `<tr>
+            <td>${po.id}</td>
+            <td>${po.d}</td>
+            <td>${supplier?.name || po.s}</td>
+            <td>${product?.name || po.p}</td>
+            <td>${po.qo}</td>
+            <td>${po.qr}</td>
+            <td>฿${formatNumber(po.cost)}</td>
+            <td>${po.lead}</td>
+            <td><span class="badge ${statusBadgeClass}">${po.st}</span></td>
+        </tr>`;
+    });
+    html += '</tbody>';
+    document.getElementById('poTable').innerHTML = html;
+}
+
+function renderTRTab() {
+    const trDetail = filteredTRDetail();
+    const totalTransfers = trDetail.length;
+    
+    // Count by type
+    const whToStore = trDetail.filter(tr => tr.type === 'WH→Store').length;
+    const storeToWh = trDetail.filter(tr => tr.type === 'Store→WH').length;
+    const storeToStore = trDetail.filter(tr => tr.type === 'Store→Store').length;
+
+    const kpisHtml = `
+        <div class="kpi-card">
+            <div class="kpi-label">Total Transfers</div>
+            <div class="kpi-value">${totalTransfers}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">WH→Store</div>
+            <div class="kpi-value">${whToStore}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Store→WH (Recalls)</div>
+            <div class="kpi-value">${storeToWh}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Store→Store</div>
+            <div class="kpi-value">${storeToStore}</div>
+        </div>
+    `;
+    document.getElementById('trKpis').innerHTML = kpisHtml;
+
+    // Filter TR_AGG by selected years
+    const trAgg = TR_AGG.filter(t => {
+        const year = getMonthYear(t.m).year;
+        return state.selectedYears.includes(year);
+    });
+
+    drawTRVolumeChart(trAgg);
+    drawTRCountChart(trAgg);
+    renderTRTable(trDetail);
+}
+
+function drawTRVolumeChart(trAgg) {
+    const months = trAgg.map(t => t.m);
+    const data = trAgg.map(t => t.qty);
+    const canvas = document.getElementById('trVolumeChart');
+    const ctx = canvas.getContext('2d');
+    drawLineChart(ctx, months, [data], ['Units'], [null], canvas.width, canvas.height);
+}
+
+function drawTRCountChart(trAgg) {
+    const months = trAgg.map(t => t.m);
+    const data = trAgg.map(t => t.count);
+    const canvas = document.getElementById('trCountChart');
+    const ctx = canvas.getContext('2d');
+    drawBarChart(ctx, months.map(m => formatMonth(m)), data, canvas.width, canvas.height, 'vertical');
+}
+
+function renderTRTable(trDetail) {
+    let html = '<thead><tr><th>Transfer ID</th><th>Date</th><th>Product</th><th>From</th><th>To</th><th>Type</th><th>Qty</th></tr></thead><tbody>';
+    
+    const typeColors = {
+        'WH→WH': '#9ca3af',
+        'WH→Store': '#3b82f6',
+        'Store→WH': '#f59e0b',
+        'Store→Store': '#10b981'
+    };
+    
+    trDetail.sort((a, b) => new Date(b.d) - new Date(a.d)).forEach(tr => {
+        const product = PRODUCTS.find(p => p.id === tr.p);
+        const typeColor = typeColors[tr.type] || '#9ca3af';
+        html += `<tr>
+            <td>${tr.id}</td>
+            <td>${tr.d}</td>
+            <td>${product?.name || tr.p}</td>
+            <td>${tr.from}</td>
+            <td>${tr.to}</td>
+            <td><span class="badge" style="background: ${typeColor}; color: white;">${tr.type}</span></td>
+            <td>${tr.qty}</td>
+        </tr>`;
+    });
+    html += '</tbody>';
+    document.getElementById('trTable').innerHTML = html;
+}
+
+function renderLocationsTab() {
+    const locationsContainer = document.getElementById('locations');
+
+    // Separate physical and online locations
+    const physicalLocations = LOCATIONS.filter(loc => loc.grade && loc.grade !== '');
+    const onlineLocations = LOCATIONS.filter(loc => !loc.grade || loc.grade === '');
+
+    // Calculate KPIs
+    const totalPhysicalStores = physicalLocations.length;
+    const totalOnlineChannels = onlineLocations.length;
+
+    const avgTraffic = physicalLocations.length > 0
+        ? (physicalLocations.reduce((sum, loc) => sum + (loc.traffic || 0), 0) / physicalLocations.length).toFixed(0)
+        : 0;
+
+    // Count grade distribution
+    const gradeDistribution = {};
+    physicalLocations.forEach(loc => {
+        gradeDistribution[loc.grade] = (gradeDistribution[loc.grade] || 0) + 1;
+    });
+
+    const kpiCards = `
+        <div class="kpi-card">
+            <div class="kpi-label">Physical Stores</div>
+            <div class="kpi-value">${totalPhysicalStores}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Online Channels</div>
+            <div class="kpi-value">${totalOnlineChannels}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Daily Traffic</div>
+            <div class="kpi-value">${formatNumber(avgTraffic)}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Grade A Stores</div>
+            <div class="kpi-value" style="color: #16a34a;">${gradeDistribution['A'] || 0}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Grade B Stores</div>
+            <div class="kpi-value" style="color: #2563eb;">${gradeDistribution['B'] || 0}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Grade C Stores</div>
+            <div class="kpi-value" style="color: #d97706;">${gradeDistribution['C'] || 0}</div>
+        </div>
+    `;
+
+    let contentHtml = `<div class="kpi-grid">${kpiCards}</div>`;
+
+    // Physical locations cards
+    if (physicalLocations.length > 0) {
+        contentHtml += '<div style="margin-top: 30px;"><h3 style="margin-bottom: 20px;">Physical Store Locations</h3><div class="location-grid">';
+
+        physicalLocations.forEach(loc => {
+            const effectiveCustomers = (loc.traffic * loc.conv).toFixed(0);
+
+            // Calculate revenue for this location
+            const locSales = filteredSales().filter(s => s.loc === loc.id);
+            const revenue = locSales.reduce((sum, s) => sum + (s.amt || 0), 0);
+
+            // Build shelf layout
+            let shelfLayoutHtml = '<div class="shelf-layout">';
+            const shelfGrades = loc.shelf_grades || [];
+            shelfGrades.forEach((grade, idx) => {
+                const shelfNum = idx + 1;
+                let categories = '';
+                if (grade === 'A') {
+                    categories = 'Gashapon (CAT-03), Plush (CAT-01)';
+                } else if (grade === 'B') {
+                    categories = 'Action Figures (CAT-02), Stationery (CAT-04), TCG (CAT-05)';
+                } else if (grade === 'C') {
+                    categories = 'Model Kits (CAT-06), Baby (CAT-07)';
+                }
+                shelfLayoutHtml += `
+                    <div class="shelf-row grade-${grade}">
+                        <div style="font-weight: 700; width: 60px;">Shelf ${shelfNum}</div>
+                        <span class="grade-badge grade-${grade}">${grade}</span>
+                        <div class="shelf-categories">${categories}</div>
+                    </div>
+                `;
+            });
+            shelfLayoutHtml += '</div>';
+
+            contentHtml += `
+                <div class="location-card">
+                    <div class="location-card-header">
+                        <div>
+                            <h3 style="margin: 0 0 4px 0;">${loc.name}</h3>
+                            <div style="font-size: 13px; color: #64748b;">ID: ${loc.id} | ${loc.region}</div>
+                            <div style="font-size: 13px; color: #64748b;">${loc.address}</div>
+                        </div>
+                        <span class="grade-badge grade-${loc.grade}">${loc.grade}</span>
+                    </div>
+
+                    <div class="location-stats">
+                        <div class="location-stat">
+                            <div class="stat-label">Daily Traffic</div>
+                            <div class="stat-value">${formatNumber(loc.traffic)}</div>
+                        </div>
+                        <div class="location-stat">
+                            <div class="stat-label">Conversion Rate</div>
+                            <div class="stat-value">${(loc.conv * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="location-stat">
+                            <div class="stat-label">Daily Customers</div>
+                            <div class="stat-value">${formatNumber(effectiveCustomers)}</div>
+                        </div>
+                        <div class="location-stat">
+                            <div class="stat-label">Hours</div>
+                            <div class="stat-value" style="font-size: 12px;">${loc.hours}</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="padding: 8px; background: #f8fafc; border-radius: 8px;">
+                            <div style="font-size: 11px; color: #64748b;">Storage Capacity</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">${loc.capacity_m3} m³</div>
+                        </div>
+                        <div style="padding: 8px; background: #f8fafc; border-radius: 8px;">
+                            <div style="font-size: 11px; color: #64748b;">Location Revenue</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b;">฿${formatCurrency(revenue)}</div>
+                        </div>
+                    </div>
+
+                    ${shelfLayoutHtml}
+                </div>
+            `;
+        });
+
+        contentHtml += '</div></div>';
+    }
+
+    // Online locations cards
+    if (onlineLocations.length > 0) {
+        contentHtml += '<div style="margin-top: 30px;"><h3 style="margin-bottom: 20px;">Online Channels</h3><div class="location-grid">';
+
+        onlineLocations.forEach(loc => {
+            const locSales = filteredSales().filter(s => s.loc === loc.id);
+            const revenue = locSales.reduce((sum, s) => sum + (s.amt || 0), 0);
+
+            contentHtml += `
+                <div class="online-card">
+                    <div>
+                        <h3 style="margin: 0 0 12px 0;">${loc.name}</h3>
+                        <div style="font-size: 13px; color: #64748b;">ID: ${loc.id}</div>
+                    </div>
+                    <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="padding: 8px; background: #f8fafc; border-radius: 8px;">
+                            <div style="font-size: 11px; color: #64748b;">Daily Traffic</div>
+                            <div style="font-size: 18px; font-weight: 700; color: #1e293b;">${formatNumber(loc.traffic)}</div>
+                        </div>
+                        <div style="padding: 8px; background: #f8fafc; border-radius: 8px;">
+                            <div style="font-size: 11px; color: #64748b;">Conversion</div>
+                            <div style="font-size: 18px; font-weight: 700; color: #1e293b;">${(loc.conv * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    <div style="padding: 8px; background: #f8fafc; border-radius: 8px; margin-top: 12px;">
+                        <div style="font-size: 11px; color: #64748b;">Channel Revenue</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #1e293b;">฿${formatCurrency(revenue)}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        contentHtml += '</div></div>';
+    }
+
+    locationsContainer.innerHTML = contentHtml;
+}
+
+// ============================================
+// SUPPLIERS TAB
+// ============================================
+function buildProductSupplierMap() {
+    // Round-robin across all capable suppliers per category (sorted by reliability desc)
+    const map = {};  // productId → supplierId
+    const reverseMap = {};  // supplierId → [productId, ...]
+    SUPPLIERS.forEach(s => { reverseMap[s.id] = []; });
+
+    const catSuppliers = {};
+    SUPPLIERS.forEach(s => {
+        (s.categories || []).forEach(cat => {
+            if (!catSuppliers[cat]) catSuppliers[cat] = [];
+            catSuppliers[cat].push(s);
+        });
+    });
+    Object.keys(catSuppliers).forEach(cat => {
+        catSuppliers[cat].sort((a, b) => (b.reliability || 0) - (a.reliability || 0));
+    });
+
+    const catCounter = {};
+    (PRODUCTS || []).forEach(p => {
+        const candidates = catSuppliers[p.cat] || [];
+        if (candidates.length > 0) {
+            const idx = (catCounter[p.cat] || 0) % candidates.length;
+            const sup = candidates[idx];
+            map[p.id] = sup.id;
+            if (!reverseMap[sup.id]) reverseMap[sup.id] = [];
+            reverseMap[sup.id].push(p.id);
+            catCounter[p.cat] = (catCounter[p.cat] || 0) + 1;
+        }
+    });
+    return { map, reverseMap };
+}
+
+function renderSuppliersTab() {
+    const container = document.getElementById('suppliers');
+    const { map: prodSupMap, reverseMap: supProdMap } = buildProductSupplierMap();
+
+    // Category names lookup
+    const catNames = {};
+    if (CATEGORIES) {
+        Object.entries(CATEGORIES).forEach(([cid, val]) => {
+            catNames[cid] = typeof val === 'string' ? val : (val.name || cid);
+        });
+    }
+
+    // PO stats per supplier
+    const supPOStats = {};
+    SUPPLIERS.forEach(s => { supPOStats[s.id] = { count: 0, totalQty: 0, totalSpend: 0, avgLead: 0, leads: [] }; });
+    (PO_DETAIL || []).forEach(po => {
+        const sid = po.s;
+        if (supPOStats[sid]) {
+            supPOStats[sid].count++;
+            supPOStats[sid].totalQty += po.qo || 0;
+            supPOStats[sid].totalSpend += po.cost || 0;
+            if (po.lead) supPOStats[sid].leads.push(po.lead);
+        }
+    });
+    Object.values(supPOStats).forEach(st => {
+        st.avgLead = st.leads.length > 0
+            ? (st.leads.reduce((a, b) => a + b, 0) / st.leads.length).toFixed(1)
+            : '-';
+    });
+
+    // KPIs
+    const totalSuppliers = SUPPLIERS.length;
+    const activeSuppliers = SUPPLIERS.filter(s => (supProdMap[s.id] || []).length > 0).length;
+    const totalPOSpend = Object.values(supPOStats).reduce((s, st) => s + st.totalSpend, 0);
+    const totalPOCount = Object.values(supPOStats).reduce((s, st) => s + st.count, 0);
+
+    let html = `
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Suppliers</div>
+                <div class="kpi-value">${totalSuppliers}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Active Suppliers</div>
+                <div class="kpi-value" style="color: #16a34a;">${activeSuppliers}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Inactive Suppliers</div>
+                <div class="kpi-value" style="color: #d97706;">${totalSuppliers - activeSuppliers}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total PO Spend</div>
+                <div class="kpi-value">฿${formatCurrency(totalPOSpend)}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total POs</div>
+                <div class="kpi-value">${formatNumber(totalPOCount)}</div>
+            </div>
+        </div>
+    `;
+
+    // Supplier cards
+    html += '<div style="margin-top: 30px;">';
+
+    SUPPLIERS.forEach(sup => {
+        const productIds = supProdMap[sup.id] || [];
+        const products = productIds.map(pid => PRODUCTS.find(p => p.id === pid)).filter(Boolean);
+        const poStats = supPOStats[sup.id];
+        const isActive = products.length > 0;
+
+        // Group products by category
+        const prodsByCat = {};
+        products.forEach(p => {
+            if (!prodsByCat[p.cat]) prodsByCat[p.cat] = [];
+            prodsByCat[p.cat].push(p);
+        });
+
+        // Reliability color
+        const rel = sup.reliability || 0;
+        const relColor = rel >= 0.93 ? '#16a34a' : rel >= 0.88 ? '#2563eb' : '#d97706';
+        const relPct = (rel * 100).toFixed(0);
+
+        // Categories served
+        const catLabels = (sup.categories || []).map(cid =>
+            `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:${CATEGORY_COLORS[cid] || '#666'}22;color:${CATEGORY_COLORS[cid] || '#666'};margin:2px 4px 2px 0;">${catNames[cid] || cid}</span>`
+        ).join('');
+
+        html += `
+            <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;border:1px solid ${isActive ? '#e2e8f0' : '#fde68a'};${!isActive ? 'opacity:0.7;' : ''}">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                    <div>
+                        <h3 style="margin:0 0 4px 0;font-size:18px;">${sup.name}</h3>
+                        <div style="font-size:13px;color:#64748b;">ID: ${sup.id}${!isActive ? ' &nbsp;·&nbsp; <span style="color:#d97706;font-weight:600;">No assigned products</span>' : ''}</div>
+                        <div style="margin-top:6px;">${catLabels}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:28px;font-weight:800;color:${relColor};">${relPct}%</div>
+                        <div style="font-size:11px;color:#64748b;">Reliability</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px;">
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Lead Time</div>
+                        <div style="font-size:16px;font-weight:700;">${sup.lead_days ? sup.lead_days[0] + '–' + sup.lead_days[1] + ' days' : '-'}</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Min Order</div>
+                        <div style="font-size:16px;font-weight:700;">฿${(sup.min_order_thb || 0).toLocaleString()}</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Payment Terms</div>
+                        <div style="font-size:16px;font-weight:700;">${sup.payment_terms || 30} days</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Products</div>
+                        <div style="font-size:16px;font-weight:700;">${products.length}</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">POs Issued</div>
+                        <div style="font-size:16px;font-weight:700;">${poStats.count}</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Total PO Spend</div>
+                        <div style="font-size:16px;font-weight:700;">฿${formatCurrency(poStats.totalSpend)}</div>
+                    </div>
+                    <div style="padding:10px;background:#f8fafc;border-radius:8px;">
+                        <div style="font-size:11px;color:#64748b;">Avg Lead (Actual)</div>
+                        <div style="font-size:16px;font-weight:700;">${poStats.avgLead} days</div>
+                    </div>
+                </div>
+        `;
+
+        // Product table
+        if (products.length > 0) {
+            html += `
+                <div style="margin-top:8px;">
+                    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Assigned Products (${products.length})</div>
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr style="background:#f1f5f9;text-align:left;">
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;">ID</th>
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;">Product</th>
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;">Category</th>
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:right;">Cost</th>
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:right;">Price</th>
+                                <th style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            products.forEach(p => {
+                const gradeColor = p.grade === 'A' ? '#16a34a' : p.grade === 'B' ? '#2563eb' : '#d97706';
+                html += `
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:6px 8px;color:#64748b;font-size:12px;">${p.id}</td>
+                        <td style="padding:6px 8px;">${p.name}</td>
+                        <td style="padding:6px 8px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CATEGORY_COLORS[p.cat] || '#666'};margin-right:4px;"></span>${catNames[p.cat] || p.cat}</td>
+                        <td style="padding:6px 8px;text-align:right;">฿${p.cost.toLocaleString()}</td>
+                        <td style="padding:6px 8px;text-align:right;">฿${p.price.toLocaleString()}</td>
+                        <td style="padding:6px 8px;text-align:center;"><span style="font-weight:700;color:${gradeColor};">${p.grade || '-'}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+        }
+
+        html += '</div>';
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Initialize
+// ============================================
+// RUN MANAGER SIDEBAR
+// ============================================
+const SIM_SERVER_URL = 'http://127.0.0.1:5055';
+
+function toggleCustomDuration(sel) {
+    const customInput = document.getElementById('customDurationInput');
+    if (sel.value === 'custom') {
+        customInput.style.display = 'inline-block';
+        customInput.focus();
+    } else {
+        customInput.style.display = 'none';
+    }
+}
+
+function toggleRunManager() {
+    const list = document.getElementById('runManagerList');
+    const toggle = document.getElementById('runManagerToggle');
+    list.classList.toggle('collapsed');
+    toggle.classList.toggle('collapsed');
+}
+
+function renderRunCards() {
+    const list = document.getElementById('runManagerList');
+    if (!list) return;
+
+    if (RUNS.length === 0 || (RUNS.length === 1 && !RUNS[0].folder)) {
+        list.innerHTML = '<div class="run-empty">No saved runs yet.<br>Click ▶ Run Simulation to create one.</div>';
+        return;
+    }
+
+    list.innerHTML = '';
+    RUNS.forEach((run, index) => {
+        if (!run.folder && !run.data) return; // Skip empty placeholder runs
+
+        const card = document.createElement('div');
+        card.className = 'run-card' + (index === currentRunIndex ? ' active' : '');
+
+        // Extract info
+        const label = run.label || 'Unnamed';
+        const displayLabel = label.split(' (')[0]; // Label without timestamp
+        const timestamp = run.timestamp || (label.match(/\(([^)]+)\)/) || [])[1] || '';
+
+        // Get revenue from run data
+        let revenue = 0;
+        let grossProfit = 0;
+        if (run.data && run.data.summary) {
+            revenue = run.data.summary.total_revenue || 0;
+            grossProfit = run.data.summary.gross_profit || 0;
+        } else if (run.data && run.data.sales) {
+            revenue = run.data.sales.reduce((s, r) => s + (r.r || 0), 0);
+        }
+
+        // Guess mode from label
+        let mode = 'dashboard';
+        const lbl = displayLabel.toLowerCase();
+        if (lbl.includes('bot') || lbl.includes('smart') || lbl.includes('baseline')) mode = 'bot';
+        else if (lbl.includes('auto')) mode = 'auto';
+
+        const months = run.months || 12;
+
+        card.innerHTML = `
+            <div class="run-card-label" title="${label}">${displayLabel}</div>
+            <div class="run-card-meta">
+                <span class="run-card-mode ${mode}">${mode}</span>
+                <span>${months}mo</span>
+                ${timestamp ? '<span>' + formatTimestamp(timestamp) + '</span>' : ''}
+            </div>
+            ${revenue > 0 ? '<div class="run-card-meta"><span class="run-card-revenue">฿' + formatCurrency(revenue) + '</span>' +
+                (grossProfit > 0 ? ' <span>GP: ฿' + formatCurrency(grossProfit) + '</span>' : '') + '</div>' : ''}
+            <button class="run-card-delete" onclick="event.stopPropagation(); confirmDeleteRun(${index})" title="Delete run">×</button>
+        `;
+
+        card.onclick = function() {
+            if (index !== currentRunIndex) {
+                switchRun(index);
+                renderContent();
+                renderRunCards();
+                // Sync dropdown
+                const sel = document.getElementById('runSelector');
+                if (sel) sel.value = run.id;
+            }
+        };
+
+        list.appendChild(card);
+    });
+
+    // Show/hide "Clear All" button based on whether there are real runs
+    const clearBtn = document.getElementById('clearAllRunsBtn');
+    if (clearBtn) {
+        const hasRealRuns = RUNS.some(r => r.folder);
+        clearBtn.style.display = hasRealRuns ? 'block' : 'none';
+    }
+}
+
+function formatTimestamp(ts) {
+    if (!ts) return '';
+    // Handle various formats: "20260417_143022" or "2026-04-17T14:30:22"
+    const cleaned = ts.replace(/[_T]/g, ' ').replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+    try {
+        const d = new Date(cleaned);
+        if (isNaN(d)) return ts.slice(0, 16);
+        return d.toLocaleDateString('en-GB', {day:'numeric', month:'short'}) + ' ' +
+               d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    } catch(e) { return ts.slice(0, 16); }
+}
+
+function confirmDeleteRun(index) {
+    const run = RUNS[index];
+    if (!run) return;
+    const displayLabel = (run.label || 'Unnamed').split(' (')[0];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'delete-confirm-overlay';
+    overlay.innerHTML = `
+        <div class="delete-confirm-box">
+            <h3>Delete Run?</h3>
+            <p>Remove "<strong>${displayLabel}</strong>" and its data files? This cannot be undone.</p>
+            <div class="btn-group">
+                <button class="btn-cancel" onclick="this.closest('.delete-confirm-overlay').remove()">Cancel</button>
+                <button class="btn-delete" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Click outside to dismiss
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+
+    document.getElementById('confirmDeleteBtn').onclick = async function() {
+        overlay.remove();
+        await deleteRun(index);
+    };
+}
+
+async function deleteRun(index) {
+    const run = RUNS[index];
+    if (!run) return;
+
+    // Delete from server if it has a folder
+    if (run.folder) {
+        try {
+            const resp = await fetch(SIM_SERVER_URL + '/runs/' + run.folder, { method: 'DELETE' });
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                console.warn('Delete failed:', err);
+                const simStatus = document.getElementById('simStatus');
+                if (simStatus) {
+                    simStatus.textContent = '⚠ Failed to delete: ' + (err.error || 'Unknown error');
+                    simStatus.style.color = '#e53e3e';
+                    setTimeout(() => { simStatus.textContent = ''; simStatus.style.color = ''; }, 3000);
+                }
+                return;
+            }
+        } catch (e) {
+            console.error('Delete request failed:', e);
+            return;
+        }
+    }
+
+    // Remove from RUNS array
+    const wasActive = (index === currentRunIndex);
+    RUNS.splice(index, 1);
+
+    if (RUNS.length === 0) {
+        // No runs left — show empty state
+        RUNS.push({
+            id: 0, label: 'No Data — Click Play', months: 12,
+            data: { categories: {}, products: [], locations: [], suppliers: [],
+                    sales: [], stock: [], po_agg: [], po_detail: [],
+                    tr_agg: [], tr_detail: [], summary: {total_units_sold:0, total_revenue:0, total_pos:0, total_transfers:0} }
+        });
+        currentRunIndex = 0;
+        switchRun(0);
+    } else if (wasActive) {
+        currentRunIndex = 0;
+        switchRun(0);
+    } else if (index < currentRunIndex) {
+        currentRunIndex--;
+    }
+
+    // Re-render everything
+    renderRunCards();
+    renderContent();
+
+    // Update dropdown
+    const runSelector = document.getElementById('runSelector');
+    if (runSelector) {
+        runSelector.innerHTML = '';
+        RUNS.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = r.label;
+            runSelector.appendChild(opt);
+        });
+        if (RUNS.length > 0) runSelector.value = RUNS[currentRunIndex].id;
+    }
+
+    const simStatus = document.getElementById('simStatus');
+    if (simStatus) {
+        simStatus.textContent = 'Run deleted ✓';
+        simStatus.style.color = '';
+        setTimeout(() => { simStatus.textContent = ''; }, 2000);
+    }
+}
+
+
+// ── Clear All Runs ──
+
+function confirmClearAllRuns() {
+    if (RUNS.length <= 1 && !RUNS[0].folder) return;  // nothing to clear
+
+    const count = RUNS.filter(r => r.folder).length;
+    const overlay = document.createElement('div');
+    overlay.className = 'delete-confirm-overlay';
+    overlay.innerHTML = `
+        <div class="delete-confirm-dialog" style="border-top:4px solid #c53030;">
+            <h3 style="color:#c53030;">⚠️ Clear All Runs?</h3>
+            <p>This will permanently delete <strong>${count} saved run(s)</strong>, including all Excel files and data folders. <strong>This cannot be undone.</strong></p>
+            <p style="margin-top:10px;font-size:13px;">To confirm, type <strong style="color:#c53030;font-family:monospace;">DELETE</strong> below:</p>
+            <input type="text" id="clearAllConfirmInput" autocomplete="off" spellcheck="false"
+                   placeholder="Type DELETE to confirm"
+                   style="width:100%;padding:8px 10px;border:2px solid #fc8181;border-radius:6px;font-size:14px;font-family:monospace;box-sizing:border-box;margin:6px 0 12px 0;text-align:center;" />
+            <div class="btn-group">
+                <button class="btn-cancel" onclick="this.closest('.delete-confirm-overlay').remove()">Cancel</button>
+                <button class="btn-delete" id="confirmClearAllBtn" style="background:#ccc;cursor:not-allowed;" disabled>Delete All</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+
+    const inp = document.getElementById('clearAllConfirmInput');
+    const btn = document.getElementById('confirmClearAllBtn');
+
+    inp.addEventListener('input', function() {
+        if (inp.value.trim() === 'DELETE') {
+            btn.disabled = false;
+            btn.style.background = '#c53030';
+            btn.style.cursor = 'pointer';
+        } else {
+            btn.disabled = true;
+            btn.style.background = '#ccc';
+            btn.style.cursor = 'not-allowed';
+        }
+    });
+
+    inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && inp.value.trim() === 'DELETE') {
+            overlay.remove();
+            clearAllRuns();
+        }
+    });
+
+    btn.onclick = async function() {
+        overlay.remove();
+        await clearAllRuns();
+    };
+
+    // Auto-focus the input
+    setTimeout(() => inp.focus(), 100);
+}
+
+async function clearAllRuns() {
+    const simStatus = document.getElementById('simStatus');
+    const clearBtn = document.getElementById('clearAllRunsBtn');
+    if (clearBtn) clearBtn.disabled = true;
+
+    try {
+        const resp = await fetch(SIM_SERVER_URL + '/clear-all-runs', { method: 'DELETE' });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || 'Server error');
+        }
+        const result = await resp.json();
+
+        // Reset RUNS to empty state
+        RUNS.length = 0;
+        RUNS.push({
+            id: 0, label: 'No Data — Click Play', months: 12,
+            data: { categories: {}, products: [], locations: [], suppliers: [],
+                    sales: [], stock: [], po_agg: [], po_detail: [],
+                    tr_agg: [], tr_detail: [], financials: [],
+                    summary: {total_units_sold:0, total_revenue:0, total_pos:0, total_transfers:0} }
+        });
+        currentRunIndex = 0;
+        switchRun(0);
+        renderRunCards();
+        renderContent();
+
+        // Update dropdown
+        const runSelector = document.getElementById('runSelector');
+        if (runSelector) {
+            runSelector.innerHTML = '<option value="0">No Data — Click Play</option>';
+        }
+
+        if (simStatus) {
+            simStatus.textContent = `Cleared ${result.deleted_runs} runs + ${result.deleted_excel_files} excel files ✓`;
+            simStatus.style.color = '#38a169';
+            setTimeout(() => { simStatus.textContent = ''; simStatus.style.color = ''; }, 4000);
+        }
+    } catch (e) {
+        console.error('Clear all failed:', e);
+        if (simStatus) {
+            simStatus.textContent = '⚠ Failed to clear: ' + e.message;
+            simStatus.style.color = '#e53e3e';
+            setTimeout(() => { simStatus.textContent = ''; simStatus.style.color = ''; }, 3000);
+        }
+    }
+
+    if (clearBtn) { clearBtn.disabled = false; }
+}
+
+
+// Refresh the full run list from server (background, non-destructive)
+// Merges server-side runs with any in-memory runs the user just created
+async function refreshRunList() {
+    // Stop background polling if it was running
+    if (_serverPollInterval) {
+        clearInterval(_serverPollInterval);
+        _serverPollInterval = null;
+    }
+
+    try {
+        const resp = await fetch(SIM_SERVER_URL + '/runs');
+        if (!resp.ok) return;
+        const savedRuns = await resp.json();
+        if (!savedRuns.length) return;
+
+        // Build a set of folders we already have loaded
+        const existingFolders = new Set(RUNS.filter(r => r.folder).map(r => r.folder));
+        const currentFolder = RUNS[currentRunIndex] ? RUNS[currentRunIndex].folder : null;
+
+        let added = 0;
+        for (const meta of savedRuns) {
+            if (existingFolders.has(meta.folder)) continue; // Already loaded
+            try {
+                const dataResp = await fetch(SIM_SERVER_URL + '/runs/' + meta.folder);
+                if (!dataResp.ok) continue;
+                const data = await dataResp.json();
+                const newId = Math.max(...RUNS.map(r => r.id), -1) + 1;
+                RUNS.push({
+                    id: newId,
+                    label: `${meta.label} (${meta.timestamp})`,
+                    months: meta.months || 12,
+                    folder: meta.folder,
+                    timestamp: meta.timestamp || '',
+                    mode: meta.mode || 'auto',
+                    data: data
+                });
+                added++;
+            } catch (e) { console.warn('Failed to load run:', meta.folder, e); }
+        }
+
+        if (added > 0) {
+            // Re-find currentRunIndex by folder
+            if (currentFolder) {
+                const idx = RUNS.findIndex(r => r.folder === currentFolder);
+                if (idx >= 0) currentRunIndex = idx;
+            }
+            renderRunCards();
+            // Update dropdown
+            const runSelector = document.getElementById('runSelector');
+            if (runSelector) {
+                runSelector.innerHTML = '';
+                RUNS.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.id;
+                    opt.textContent = r.label;
+                    runSelector.appendChild(opt);
+                });
+                if (RUNS[currentRunIndex]) runSelector.value = RUNS[currentRunIndex].id;
+            }
+        }
+    } catch (e) { /* server not available */ }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize simulation system
+    // Load baseline from Python server
+initializeFromRAW();
+    
+    // Setup simulation UI handlers
+    const runSelector = document.getElementById('runSelector');
+    const durationSelector = document.getElementById('durationSelector');
+    const playBtn = document.getElementById('playBtn');
+    const simStatus = document.getElementById('simStatus');
+    
+    // Update run selector dropdown
+    function updateRunSelector() {
+        runSelector.innerHTML = '';
+        RUNS.forEach(run => {
+            const option = document.createElement('option');
+            option.value = run.id;
+            option.textContent = run.label;
+            if (run.id === currentRunIndex) option.selected = true;
+            runSelector.appendChild(option);
+        });
+    }
+    
+    updateRunSelector();
+    
+    // Run selector change handler
+    runSelector.onchange = function() {
+        const selectedId = parseInt(this.value);
+        const runIndex = RUNS.findIndex(r => r.id === selectedId);
+        if (runIndex >= 0) {
+            switchRun(runIndex);
+            renderContent();
+            renderRunCards();
+        }
+    };
+    
+    // Simulation server URL (start with: python engine/server.py)
+    const SIM_SERVER = 'http://127.0.0.1:5055';
+
+    // Mode selector — auto-fill label when mode changes
+    const modeSelector = document.getElementById('modeSelector');
+    modeSelector.onchange = function() {
+        const labelInput = document.getElementById('runLabelInput');
+        if (labelInput && !labelInput.value.trim()) {
+            // Placeholder hint updates
+            const modeNames = {auto: 'auto-fills from mode', demo_baseline: 'e.g. baseline_test', demo_smart: 'e.g. smart_12m'};
+            labelInput.placeholder = modeNames[this.value] || 'auto-fills from mode';
+        }
+    };
+
+    // ── Helper: poll a bot job until complete ──
+    async function pollBotJob(jobId, statusEl) {
+        const POLL_INTERVAL = 1000;  // 1 second
+        const MAX_POLLS = 1800;      // 30 minutes max (for long multi-year runs)
+
+        for (let i = 0; i < MAX_POLLS; i++) {
+            await new Promise(r => setTimeout(r, POLL_INTERVAL));
+
+            const resp = await fetch(SIM_SERVER + '/jobs/' + jobId);
+            if (!resp.ok) throw new Error('Failed to check job status');
+            const job = await resp.json();
+
+            // Show progress
+            if (job.status === 'running') {
+                const day = job.current_day || '...';
+                const rev = job.revenue ? '฿' + Math.round(job.revenue).toLocaleString() : '';
+                statusEl.textContent = `⏳ Simulating... day ${day} ${rev}`;
+            }
+
+            if (job.status === 'completed') {
+                // Fetch full compact data
+                const resultResp = await fetch(SIM_SERVER + '/jobs/' + jobId + '/result');
+                if (!resultResp.ok) throw new Error('Failed to fetch job result');
+                const compact = await resultResp.json();
+                compact.run_folder = job.run_folder;
+                return compact;
+            }
+
+            if (job.status === 'failed' || job.status === 'timeout') {
+                throw new Error(job.error || `Job ${job.status}`);
+            }
+        }
+        throw new Error('Job timed out waiting for completion');
+    }
+
+    // Play button handler
+    playBtn.onclick = async function() {
+        const durationVal = durationSelector.value;
+        const months = durationVal === 'custom'
+            ? Math.max(1, Math.min(60, parseInt(document.getElementById('customDurationInput').value) || 12))
+            : parseInt(durationVal);
+        const mode = modeSelector.value;
+        const labelInput = document.getElementById('runLabelInput');
+
+        // Auto-generate label from mode if not provided
+        const defaultLabels = {auto: `dashboard_${months}m`, demo_baseline: `baseline_${months}m`, demo_smart: `smart_${months}m`};
+        const label = (labelInput && labelInput.value.trim()) || defaultLabels[mode] || `run_${months}m`;
+
+        playBtn.disabled = true;
+        const isBot = mode !== 'auto';
+        const modeLabel = isBot ? mode.replace('demo_', '') + ' bot' : 'auto';
+        simStatus.textContent = `Running ${modeLabel} simulation...`;
+        simStatus.style.color = '#4a5568';
+
+        let simResult;
+
+        try {
+            if (isBot) {
+                // ── Async bot run: submit → poll → fetch result ──
+                const payload = {months: months, seed: SIM_CONFIG.company.random_seed, label: label, bot: mode};
+                const resp = await fetch(SIM_SERVER + '/run-bot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    throw new Error(errData.error || 'Server error ' + resp.status);
+                }
+                const jobInfo = await resp.json();
+                simStatus.textContent = `⏳ Bot job queued (${jobInfo.job_id})...`;
+                simResult = await pollBotJob(jobInfo.job_id, simStatus);
+            } else {
+                // ── Synchronous auto run ──
+                const payload = {months: months, seed: SIM_CONFIG.company.random_seed, label: label};
+                const resp = await fetch(SIM_SERVER + '/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    throw new Error(errData.error || 'Server error ' + resp.status);
+                }
+                simResult = await resp.json();
+            }
+        } catch (e) {
+            simStatus.textContent = '⚠ ' + (e.message || 'Cannot connect to server');
+            simStatus.style.color = '#e53e3e';
+            playBtn.disabled = false;
+            return;
+        }
+
+        // Create new run entry
+        const newRunId = Math.max(...RUNS.map(r => r.id), -1) + 1;
+        const ts = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '');
+        const folderName = simResult.run_folder || `${label}_${ts.replace(/[-:]/g, '')}`;
+        const newRun = {
+            id: newRunId,
+            label: `${label} (${ts})`,
+            months: months,
+            folder: folderName,
+            timestamp: ts,
+            data: simResult
+        };
+
+        // Remove any empty placeholder runs before adding
+        RUNS = RUNS.filter(r => r.folder || (r.data && r.data.sales && r.data.sales.length > 0));
+
+        RUNS.unshift(newRun);  // Add to front (newest first)
+        currentRunIndex = 0;
+        updateRunSelector();
+        switchRun(0);  // Also re-initializes filters and product select
+        runSelector.value = newRunId;
+
+        // Clear the label input for next run
+        if (labelInput) labelInput.value = '';
+
+        // Update run manager sidebar
+        renderRunCards();
+
+        // Also reload full run list from server (picks up bot runs too)
+        refreshRunList();
+
+        // Compute stats from sales data
+        const salesData = newRun.data.sales || [];
+        const totalUnits = salesData.reduce((s, r) => s + r.q, 0);
+        const totalRev = Math.round(salesData.reduce((s, r) => s + r.r, 0));
+        const poCount = newRun.data.po_detail ? newRun.data.po_detail.length : 0;
+        const trCount = (newRun.data.summary && newRun.data.summary.total_transfers)
+            || (newRun.data.tr_agg ? newRun.data.tr_agg.reduce((s, r) => s + r.count, 0) : 0);
+
+        const excelNote = ' ✓ Excel files saved';
+        simStatus.textContent = `Done! ${totalUnits.toLocaleString()} units sold, ฿${totalRev.toLocaleString()} revenue, ${poCount} POs, ${trCount.toLocaleString()} transfers${excelNote}`;
+        simStatus.style.color = '#38a169';
+        playBtn.disabled = false;
+
+        renderContent();
+
+        // Clear status after 5 seconds
+        setTimeout(() => {
+            simStatus.textContent = '';
+            simStatus.style.color = '#4a5568';
+        }, 5000);
+    };
+
+    // Note: initializeFilters() is called inside initializeFromRAW() after data arrives from server
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.onclick = function() {
+            const tabs = ['overview', 'product', 'po', 'tr', 'locations', 'suppliers', 'expenses', 'bizbotbash'];
+            state.currentTab = tabs[i];
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById(state.currentTab).classList.add('active');
+            
+            if (state.currentTab === 'product' && !state.selectedProduct) {
+                document.getElementById('productSection').style.display = 'none';
+                document.getElementById('metricSection').style.display = 'none';
+            } else if (state.currentTab === 'product') {
+                document.getElementById('productSection').style.display = 'block';
+                document.getElementById('metricSection').style.display = 'block';
+            } else {
+                document.getElementById('productSection').style.display = 'none';
+                document.getElementById('metricSection').style.display = 'none';
+            }
+            
+            renderContent();
+        };
+    });
+
+    // Product select
+    document.getElementById('productSelect').onchange = function() {
+        if (this.value) {
+            state.selectedProduct = this.value;
+            renderContent();
+        }
+    };
+
+    // Metric toggle
+    document.querySelectorAll('[data-metric]').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('[data-metric]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            state.selectedMetric = this.dataset.metric;
+            if (state.currentTab === 'product') {
+                drawProductLocationChart();
+            }
+        };
+    });
+
+    // Note: Product select and renderContent are handled inside initializeFromRAW() after data arrives
+});
+</script>
+
+</body>
+</html>

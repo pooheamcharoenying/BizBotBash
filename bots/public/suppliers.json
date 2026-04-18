@@ -1,0 +1,100 @@
+[
+  {
+    "id": "SUP-001",
+    "name": "Bandai Namco Thailand",
+    "categories": [
+      "CAT-02"
+    ],
+    "lead_days": [
+      21,
+      35
+    ],
+    "reliability": 0.92,
+    "min_order_thb": 25000,
+    "payment_terms": 30
+  },
+  {
+    "id": "SUP-002",
+    "name": "San-X Distribution (Bangkok)",
+    "categories": [
+      "CAT-01"
+    ],
+    "lead_days": [
+      14,
+      28
+    ],
+    "reliability": 0.95,
+    "min_order_thb": 15000,
+    "payment_terms": 30
+  },
+  {
+    "id": "SUP-003",
+    "name": "Pokemon Company TH Agent",
+    "categories": [
+      "CAT-03"
+    ],
+    "lead_days": [
+      21,
+      42
+    ],
+    "reliability": 0.9,
+    "min_order_thb": 30000,
+    "payment_terms": 45
+  },
+  {
+    "id": "SUP-004",
+    "name": "Tomy Thailand Co., Ltd.",
+    "categories": [
+      "CAT-07"
+    ],
+    "lead_days": [
+      14,
+      35
+    ],
+    "reliability": 0.93,
+    "min_order_thb": 20000,
+    "payment_terms": 30
+  },
+  {
+    "id": "SUP-005",
+    "name": "Japan Import Trading",
+    "categories": [
+      "CAT-06"
+    ],
+    "lead_days": [
+      42,
+      56
+    ],
+    "reliability": 0.82,
+    "min_order_thb": 50000,
+    "payment_terms": 60
+  },
+  {
+    "id": "SUP-006",
+    "name": "Sanrio Thailand",
+    "categories": [
+      "CAT-04"
+    ],
+    "lead_days": [
+      14,
+      28
+    ],
+    "reliability": 0.94,
+    "min_order_thb": 20000,
+    "payment_terms": 30
+  },
+  {
+    "id": "SUP-007",
+    "name": "Konami Digital TH",
+    "categories": [
+      "CAT-05"
+    ],
+    "lead_days": [
+      28,
+      49
+    ],
+    "reliability": 0.88,
+    "min_order_thb": 35000,
+    "payment_terms": 45
+  }
+]

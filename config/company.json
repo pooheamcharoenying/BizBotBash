@@ -1,0 +1,24 @@
+{
+  "name": "ToyLand Distribution Co., Ltd.",
+  "name_th": "\u0e1a\u0e23\u0e34\u0e29\u0e31\u0e17 \u0e17\u0e2d\u0e22\u0e41\u0e25\u0e19\u0e14\u0e4c \u0e14\u0e34\u0e2a\u0e17\u0e23\u0e34\u0e1a\u0e34\u0e27\u0e0a\u0e31\u0e48\u0e19 \u0e08\u0e33\u0e01\u0e31\u0e14",
+  "tax_id": "0105564012345",
+  "founded": "2019-03-15",
+  "industry": "Japanese Toy & Character Goods Distribution",
+  "headquarters": "88/9 Soi Sukhumvit 55, Khlong Tan Nuea, Watthana, Bangkok 10110",
+  "warehouse_address": "129 Moo 5, Bangna-Trad Rd Km.23, Bang Sao Thong, Samut Prakan 10570",
+  "employees": 42,
+  "registered_capital": 15000000,
+  "annual_revenue_target": 85000000,
+  "sim_start": "2025-04-01",
+  "sim_months": 12,
+  "working_days": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "currency": "THB",
+  "random_seed": 2026
+}

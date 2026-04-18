@@ -1,0 +1,38 @@
+{
+  "monthly_fixed_costs": {
+    "warehouse_rent": 85000,
+    "showroom_rent": 35000,
+    "salaries": 420000,
+    "utilities": 18000,
+    "insurance": 12000,
+    "transport_fleet": 45000,
+    "marketing": 30000,
+    "IT_systems": 8000,
+    "misc": 15000
+  },
+
+  "variable_costs": {
+    "_description": "Costs incurred per purchase order or per transfer",
+
+    "po_processing_fee": 15000,
+    "_po_processing_note": "Per-PO cost: customs clearance + QC inspection + receiving labor + logistics coordination (฿15,000/PO)",
+
+    "po_freight_pct": 0.03,
+    "_po_freight_note": "Inbound freight as % of PO value (3% of goods cost)",
+
+    "transfer_cost_local": 800,
+    "_transfer_local_note": "Per-transfer cost for WH→Store within Bangkok (฿800: fuel + driver time + vehicle)",
+
+    "transfer_cost_upcountry": 1500,
+    "_transfer_upcountry_note": "Per-transfer cost for WH→Store upcountry regions (฿1,500: longer distance)",
+
+    "transfer_cost_per_unit": 2,
+    "_transfer_per_unit_note": "Handling cost per unit transferred (฿2/unit: picking + packing)"
+  },
+
+  "discount_tiers": {
+    "large": 0.08,
+    "medium": 0.05,
+    "small": 0.02
+  }
+}

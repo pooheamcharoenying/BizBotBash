@@ -1,0 +1,722 @@
+[
+  {
+    "id": "PRD-001",
+    "name": "Sumikko Gurashi Plush 20cm",
+    "cat": "CAT-01",
+    "cost": 285,
+    "price": 450,
+    "refill_num": 4,
+    "volume_cm3": 7920
+  },
+  {
+    "id": "PRD-002",
+    "name": "Rilakkuma Bear Medium 30cm",
+    "cat": "CAT-01",
+    "cost": 420,
+    "price": 690,
+    "refill_num": 1,
+    "volume_cm3": 22400
+  },
+  {
+    "id": "PRD-003",
+    "name": "Sanrio Characters Mini Set (5pc)",
+    "cat": "CAT-01",
+    "cost": 350,
+    "price": 590,
+    "refill_num": 4,
+    "volume_cm3": 7500
+  },
+  {
+    "id": "PRD-004",
+    "name": "Chiikawa Plush Keychain",
+    "cat": "CAT-01",
+    "cost": 145,
+    "price": 250,
+    "refill_num": 10,
+    "volume_cm3": 960
+  },
+  {
+    "id": "PRD-005",
+    "name": "Pusheen Cat Large 40cm",
+    "cat": "CAT-01",
+    "cost": 520,
+    "price": 850,
+    "refill_num": 1,
+    "volume_cm3": 51450
+  },
+  {
+    "id": "PRD-006",
+    "name": "One Piece Figure - Luffy Gear 5",
+    "cat": "CAT-02",
+    "cost": 680,
+    "price": 1190,
+    "refill_num": 2,
+    "volume_cm3": 13500
+  },
+  {
+    "id": "PRD-007",
+    "name": "Dragon Ball Super Saiyan Set",
+    "cat": "CAT-02",
+    "cost": 890,
+    "price": 1490,
+    "refill_num": 1,
+    "volume_cm3": 17500
+  },
+  {
+    "id": "PRD-008",
+    "name": "Demon Slayer Nendoroid Tanjiro",
+    "cat": "CAT-02",
+    "cost": 750,
+    "price": 1290,
+    "refill_num": 2,
+    "volume_cm3": 7500
+  },
+  {
+    "id": "PRD-009",
+    "name": "Jujutsu Kaisen Petit Figure",
+    "cat": "CAT-02",
+    "cost": 320,
+    "price": 550,
+    "refill_num": 5,
+    "volume_cm3": 3240
+  },
+  {
+    "id": "PRD-010",
+    "name": "Spy x Family Anya Figure",
+    "cat": "CAT-02",
+    "cost": 480,
+    "price": 790,
+    "refill_num": 3,
+    "volume_cm3": 5544
+  },
+  {
+    "id": "PRD-011",
+    "name": "Gashapon Animal Series (box/8)",
+    "cat": "CAT-03",
+    "cost": 560,
+    "price": 990,
+    "refill_num": 2,
+    "volume_cm3": 15000
+  },
+  {
+    "id": "PRD-012",
+    "name": "Gashapon Sanrio Collection (box/6)",
+    "cat": "CAT-03",
+    "cost": 420,
+    "price": 750,
+    "refill_num": 5,
+    "volume_cm3": 9000
+  },
+  {
+    "id": "PRD-013",
+    "name": "Gashapon Mini Food Replicas (box/10)",
+    "cat": "CAT-03",
+    "cost": 680,
+    "price": 1190,
+    "refill_num": 2,
+    "volume_cm3": 21560
+  },
+  {
+    "id": "PRD-014",
+    "name": "Gashapon Pokemon Capsule (box/8)",
+    "cat": "CAT-03",
+    "cost": 640,
+    "price": 1090,
+    "refill_num": 3,
+    "volume_cm3": 15000
+  },
+  {
+    "id": "PRD-015",
+    "name": "Gashapon Surprise Ball Single",
+    "cat": "CAT-03",
+    "cost": 55,
+    "price": 99,
+    "refill_num": 10,
+    "volume_cm3": 512
+  },
+  {
+    "id": "PRD-016",
+    "name": "Sumikko Notebook Set (3pc)",
+    "cat": "CAT-04",
+    "cost": 95,
+    "price": 165,
+    "refill_num": 8,
+    "volume_cm3": 1056
+  },
+  {
+    "id": "PRD-017",
+    "name": "Sanrio Pen Collection (5pc)",
+    "cat": "CAT-04",
+    "cost": 120,
+    "price": 199,
+    "refill_num": 10,
+    "volume_cm3": 720
+  },
+  {
+    "id": "PRD-018",
+    "name": "Character Sticker Pack Assorted",
+    "cat": "CAT-04",
+    "cost": 35,
+    "price": 69,
+    "refill_num": 10,
+    "volume_cm3": 150
+  },
+  {
+    "id": "PRD-019",
+    "name": "Rilakkuma Pencil Case",
+    "cat": "CAT-04",
+    "cost": 160,
+    "price": 289,
+    "refill_num": 7,
+    "volume_cm3": 1100
+  },
+  {
+    "id": "PRD-020",
+    "name": "Chiikawa Washi Tape Set (4pc)",
+    "cat": "CAT-04",
+    "cost": 80,
+    "price": 145,
+    "refill_num": 10,
+    "volume_cm3": 720
+  },
+  {
+    "id": "PRD-021",
+    "name": "Pokemon TCG Booster Box",
+    "cat": "CAT-05",
+    "cost": 1800,
+    "price": 2890,
+    "refill_num": 2,
+    "volume_cm3": 13125
+  },
+  {
+    "id": "PRD-022",
+    "name": "One Piece Card Game Starter Deck",
+    "cat": "CAT-05",
+    "cost": 320,
+    "price": 520,
+    "refill_num": 8,
+    "volume_cm3": 600
+  },
+  {
+    "id": "PRD-023",
+    "name": "Yu-Gi-Oh! Booster Pack (24pc box)",
+    "cat": "CAT-05",
+    "cost": 1450,
+    "price": 2390,
+    "refill_num": 2,
+    "volume_cm3": 9900
+  },
+  {
+    "id": "PRD-024",
+    "name": "Dragon Ball Super Card Booster",
+    "cat": "CAT-05",
+    "cost": 1200,
+    "price": 1990,
+    "refill_num": 2,
+    "volume_cm3": 7840
+  },
+  {
+    "id": "PRD-025",
+    "name": "Weiss Schwarz Booster (Anime Mix)",
+    "cat": "CAT-05",
+    "cost": 1350,
+    "price": 2190,
+    "refill_num": 2,
+    "volume_cm3": 7840
+  },
+  {
+    "id": "PRD-026",
+    "name": "Gundam HG 1/144 Entry Grade",
+    "cat": "CAT-06",
+    "cost": 280,
+    "price": 420,
+    "refill_num": 5,
+    "volume_cm3": 4800
+  },
+  {
+    "id": "PRD-027",
+    "name": "Gundam RG 1/144 Premium",
+    "cat": "CAT-06",
+    "cost": 680,
+    "price": 990,
+    "refill_num": 2,
+    "volume_cm3": 7040
+  },
+  {
+    "id": "PRD-028",
+    "name": "Nanoblock Character Set",
+    "cat": "CAT-06",
+    "cost": 190,
+    "price": 320,
+    "refill_num": 4,
+    "volume_cm3": 1200
+  },
+  {
+    "id": "PRD-029",
+    "name": "Bandai Figure-rise Standard",
+    "cat": "CAT-06",
+    "cost": 520,
+    "price": 790,
+    "refill_num": 2,
+    "volume_cm3": 10500
+  },
+  {
+    "id": "PRD-030",
+    "name": "Metal Build Diecast Model",
+    "cat": "CAT-06",
+    "cost": 2800,
+    "price": 4290,
+    "refill_num": 1,
+    "volume_cm3": 18000
+  },
+  {
+    "id": "PRD-031",
+    "name": "Anpanman Musical Toy",
+    "cat": "CAT-07",
+    "cost": 380,
+    "price": 620,
+    "refill_num": 2,
+    "volume_cm3": 11000
+  },
+  {
+    "id": "PRD-032",
+    "name": "Tomica Vehicle Set (5pc)",
+    "cat": "CAT-07",
+    "cost": 450,
+    "price": 720,
+    "refill_num": 6,
+    "volume_cm3": 4800
+  },
+  {
+    "id": "PRD-033",
+    "name": "Sylvanian Families Starter Home",
+    "cat": "CAT-07",
+    "cost": 890,
+    "price": 1390,
+    "refill_num": 1,
+    "volume_cm3": 30000
+  },
+  {
+    "id": "PRD-034",
+    "name": "Plarail Train Basic Set",
+    "cat": "CAT-07",
+    "cost": 650,
+    "price": 1050,
+    "refill_num": 1,
+    "volume_cm3": 16200
+  },
+  {
+    "id": "PRD-035",
+    "name": "Shimajiro Learning Toy",
+    "cat": "CAT-07",
+    "cost": 340,
+    "price": 550,
+    "refill_num": 2,
+    "volume_cm3": 9240
+  },
+  {
+    "id": "PRD-036",
+    "name": "Mofusand Cat Plush 25cm",
+    "cat": "CAT-01",
+    "cost": 310,
+    "price": 520,
+    "refill_num": 4,
+    "volume_cm3": 11880
+  },
+  {
+    "id": "PRD-037",
+    "name": "Cinnamoroll Angel Plush 30cm",
+    "cat": "CAT-01",
+    "cost": 395,
+    "price": 650,
+    "refill_num": 1,
+    "volume_cm3": 22400
+  },
+  {
+    "id": "PRD-038",
+    "name": "Miffy Bunny Classic 20cm",
+    "cat": "CAT-01",
+    "cost": 260,
+    "price": 420,
+    "refill_num": 2,
+    "volume_cm3": 7128
+  },
+  {
+    "id": "PRD-039",
+    "name": "Chainsaw Man Denji Figure",
+    "cat": "CAT-02",
+    "cost": 590,
+    "price": 990,
+    "refill_num": 3,
+    "volume_cm3": 9856
+  },
+  {
+    "id": "PRD-040",
+    "name": "My Hero Academia Deku Nendoroid",
+    "cat": "CAT-02",
+    "cost": 720,
+    "price": 1190,
+    "refill_num": 2,
+    "volume_cm3": 7500
+  },
+  {
+    "id": "PRD-041",
+    "name": "Gashapon Disney Tsum Tsum (box/8)",
+    "cat": "CAT-03",
+    "cost": 580,
+    "price": 1050,
+    "refill_num": 2,
+    "volume_cm3": 15000
+  },
+  {
+    "id": "PRD-042",
+    "name": "Gashapon Kirby Collection (box/6)",
+    "cat": "CAT-03",
+    "cost": 490,
+    "price": 890,
+    "refill_num": 5,
+    "volume_cm3": 9000
+  },
+  {
+    "id": "PRD-043",
+    "name": "Kuromi Diary & Pen Gift Set",
+    "cat": "CAT-04",
+    "cost": 175,
+    "price": 299,
+    "refill_num": 6,
+    "volume_cm3": 2250
+  },
+  {
+    "id": "PRD-044",
+    "name": "Pokemon Eraser Collection (12pc)",
+    "cat": "CAT-04",
+    "cost": 65,
+    "price": 119,
+    "refill_num": 10,
+    "volume_cm3": 648
+  },
+  {
+    "id": "PRD-045",
+    "name": "Digimon Card Game Booster Box",
+    "cat": "CAT-05",
+    "cost": 1100,
+    "price": 1790,
+    "refill_num": 2,
+    "volume_cm3": 7840
+  },
+  {
+    "id": "PRD-046",
+    "name": "Pokemon TCG Elite Trainer Box",
+    "cat": "CAT-05",
+    "cost": 1500,
+    "price": 2490,
+    "refill_num": 2,
+    "volume_cm3": 9900
+  },
+  {
+    "id": "PRD-047",
+    "name": "Gundam MG 1/100 Freedom Strike",
+    "cat": "CAT-06",
+    "cost": 1200,
+    "price": 1890,
+    "refill_num": 1,
+    "volume_cm3": 20250
+  },
+  {
+    "id": "PRD-048",
+    "name": "Evangelion Model Kit Entry Grade",
+    "cat": "CAT-06",
+    "cost": 350,
+    "price": 550,
+    "refill_num": 3,
+    "volume_cm3": 4800
+  },
+  {
+    "id": "PRD-049",
+    "name": "Takara Tomy Komainu Rattle Set",
+    "cat": "CAT-07",
+    "cost": 220,
+    "price": 380,
+    "refill_num": 5,
+    "volume_cm3": 3000
+  },
+  {
+    "id": "PRD-050",
+    "name": "Woody Puddy Wooden Kitchen Set",
+    "cat": "CAT-07",
+    "cost": 780,
+    "price": 1250,
+    "refill_num": 1,
+    "volume_cm3": 24000
+  },
+  {
+    "id": "PRD-051",
+    "name": "Pompompurin Golden Retriever Large 35cm",
+    "cat": "CAT-01",
+    "cost": 380,
+    "price": 630,
+    "refill_num": 2,
+    "volume_cm3": 33152
+  },
+  {
+    "id": "PRD-052",
+    "name": "Gudetama Lazy Egg Medium 25cm",
+    "cat": "CAT-01",
+    "cost": 295,
+    "price": 500,
+    "refill_num": 3,
+    "volume_cm3": 14256
+  },
+  {
+    "id": "PRD-053",
+    "name": "My Neighbor Totoro Studio Ghibli Set (3pc)",
+    "cat": "CAT-01",
+    "cost": 420,
+    "price": 720,
+    "refill_num": 3,
+    "volume_cm3": 15000
+  },
+  {
+    "id": "PRD-054",
+    "name": "Doraemon Classic Blue Cat Plush 28cm",
+    "cat": "CAT-01",
+    "cost": 350,
+    "price": 590,
+    "refill_num": 2,
+    "volume_cm3": 18720
+  },
+  {
+    "id": "PRD-055",
+    "name": "Naruto Shippuden Uzumaki Figure Premium",
+    "cat": "CAT-02",
+    "cost": 750,
+    "price": 1250,
+    "refill_num": 2,
+    "volume_cm3": 16640
+  },
+  {
+    "id": "PRD-056",
+    "name": "Attack on Titan Eren Yeager Nendoroid",
+    "cat": "CAT-02",
+    "cost": 680,
+    "price": 1150,
+    "refill_num": 2,
+    "volume_cm3": 8000
+  },
+  {
+    "id": "PRD-057",
+    "name": "Haikyuu Karasuno Team Set (6pc)",
+    "cat": "CAT-02",
+    "cost": 850,
+    "price": 1420,
+    "refill_num": 2,
+    "volume_cm3": 16896
+  },
+  {
+    "id": "PRD-058",
+    "name": "Blue Lock Isagi Figure Collectible",
+    "cat": "CAT-02",
+    "cost": 580,
+    "price": 970,
+    "refill_num": 3,
+    "volume_cm3": 11088
+  },
+  {
+    "id": "PRD-059",
+    "name": "Frieren Beyond Journey's End Mage Figure",
+    "cat": "CAT-02",
+    "cost": 720,
+    "price": 1200,
+    "refill_num": 2,
+    "volume_cm3": 13110
+  },
+  {
+    "id": "PRD-060",
+    "name": "Gashapon Naruto Series (box/8)",
+    "cat": "CAT-03",
+    "cost": 550,
+    "price": 950,
+    "refill_num": 2,
+    "volume_cm3": 15000
+  },
+  {
+    "id": "PRD-061",
+    "name": "Gashapon Studio Ghibli Spirits (box/6)",
+    "cat": "CAT-03",
+    "cost": 480,
+    "price": 840,
+    "refill_num": 4,
+    "volume_cm3": 9000
+  },
+  {
+    "id": "PRD-062",
+    "name": "Gashapon Fruit Paradise (box/10)",
+    "cat": "CAT-03",
+    "cost": 620,
+    "price": 1100,
+    "refill_num": 2,
+    "volume_cm3": 18304
+  },
+  {
+    "id": "PRD-063",
+    "name": "Gashapon Japanese Mascots (box/8)",
+    "cat": "CAT-03",
+    "cost": 510,
+    "price": 880,
+    "refill_num": 3,
+    "volume_cm3": 12880
+  },
+  {
+    "id": "PRD-064",
+    "name": "Gashapon Kawaii Animals Ball Single",
+    "cat": "CAT-03",
+    "cost": 65,
+    "price": 119,
+    "refill_num": 10,
+    "volume_cm3": 512
+  },
+  {
+    "id": "PRD-065",
+    "name": "Totoro Folder & Sticker Set",
+    "cat": "CAT-04",
+    "cost": 110,
+    "price": 189,
+    "refill_num": 8,
+    "volume_cm3": 828
+  },
+  {
+    "id": "PRD-066",
+    "name": "Naruto Character Stamp Collection (10pc)",
+    "cat": "CAT-04",
+    "cost": 95,
+    "price": 165,
+    "refill_num": 10,
+    "volume_cm3": 576
+  },
+  {
+    "id": "PRD-067",
+    "name": "Sanrio Masking Tape Assortment (4pc)",
+    "cat": "CAT-04",
+    "cost": 75,
+    "price": 135,
+    "refill_num": 10,
+    "volume_cm3": 560
+  },
+  {
+    "id": "PRD-068",
+    "name": "Ghibli Wooden Ruler & Pencil Set",
+    "cat": "CAT-04",
+    "cost": 125,
+    "price": 225,
+    "refill_num": 8,
+    "volume_cm3": 600
+  },
+  {
+    "id": "PRD-069",
+    "name": "Cardfight Vanguard Booster Box",
+    "cat": "CAT-05",
+    "cost": 1600,
+    "price": 2680,
+    "refill_num": 2,
+    "volume_cm3": 11040
+  },
+  {
+    "id": "PRD-070",
+    "name": "Union Arena Card Game Starter Deck",
+    "cat": "CAT-05",
+    "cost": 380,
+    "price": 630,
+    "refill_num": 6,
+    "volume_cm3": 880
+  },
+  {
+    "id": "PRD-071",
+    "name": "Battle Spirits TCG Booster Pack (20box)",
+    "cat": "CAT-05",
+    "cost": 1350,
+    "price": 2200,
+    "refill_num": 2,
+    "volume_cm3": 8526
+  },
+  {
+    "id": "PRD-072",
+    "name": "Shadowverse Evolve Starter Deck Set",
+    "cat": "CAT-05",
+    "cost": 420,
+    "price": 700,
+    "refill_num": 6,
+    "volume_cm3": 1020
+  },
+  {
+    "id": "PRD-073",
+    "name": "Gundam HG 1/144 Barbatos Mobile Suit",
+    "cat": "CAT-06",
+    "cost": 420,
+    "price": 650,
+    "refill_num": 3,
+    "volume_cm3": 7700
+  },
+  {
+    "id": "PRD-074",
+    "name": "Zoids HMM Liger Complex Motorized Kit",
+    "cat": "CAT-06",
+    "cost": 1100,
+    "price": 1790,
+    "refill_num": 2,
+    "volume_cm3": 13440
+  },
+  {
+    "id": "PRD-075",
+    "name": "Frame Arms Girl Type Rendara Custom",
+    "cat": "CAT-06",
+    "cost": 650,
+    "price": 990,
+    "refill_num": 3,
+    "volume_cm3": 10080
+  },
+  {
+    "id": "PRD-076",
+    "name": "Scarlet Nexus Figure Assembly Kit",
+    "cat": "CAT-06",
+    "cost": 520,
+    "price": 820,
+    "refill_num": 4,
+    "volume_cm3": 6720
+  },
+  {
+    "id": "PRD-077",
+    "name": "Anpanman Bath Bubble Toy Set",
+    "cat": "CAT-07",
+    "cost": 240,
+    "price": 400,
+    "refill_num": 5,
+    "volume_cm3": 6336
+  },
+  {
+    "id": "PRD-078",
+    "name": "Combi Baby Music & Light Play Toy",
+    "cat": "CAT-07",
+    "cost": 520,
+    "price": 860,
+    "refill_num": 2,
+    "volume_cm3": 12320
+  },
+  {
+    "id": "PRD-079",
+    "name": "Shimajiro Laugh & Learn Activity Gym",
+    "cat": "CAT-07",
+    "cost": 780,
+    "price": 1250,
+    "refill_num": 1,
+    "volume_cm3": 37632
+  },
+  {
+    "id": "PRD-080",
+    "name": "Pigeon Teething Ring Organic Cotton Set",
+    "cat": "CAT-07",
+    "cost": 350,
+    "price": 590,
+    "refill_num": 4,
+    "volume_cm3": 6240
+  }
+]

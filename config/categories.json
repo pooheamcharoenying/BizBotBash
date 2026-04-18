@@ -1,0 +1,9 @@
+{
+  "CAT-01": {"name": "Plush & Stuffed Toys", "margin_range": [0.28, 0.42]},
+  "CAT-02": {"name": "Action Figures & Collectibles", "margin_range": [0.30, 0.50]},
+  "CAT-03": {"name": "Capsule Toys (Gashapon)", "margin_range": [0.35, 0.55]},
+  "CAT-04": {"name": "Character Stationery", "margin_range": [0.25, 0.40]},
+  "CAT-05": {"name": "Trading Cards & TCG", "margin_range": [0.30, 0.48]},
+  "CAT-06": {"name": "Building & Model Kits", "margin_range": [0.22, 0.38]},
+  "CAT-07": {"name": "Baby & Preschool Toys", "margin_range": [0.25, 0.40]}
+}

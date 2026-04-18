@@ -1,0 +1,126 @@
+[
+  {
+    "id": "LOC-001",
+    "name": "Siam Paragon Store",
+    "type": "Retail Store",
+    "region": "Bangkok Central",
+    "address": "991 Rama I Rd, Pathum Wan",
+    "operating_hours": "10:00-21:00",
+    "shelves": 6,
+    "total_slots": 240
+  },
+  {
+    "id": "LOC-002",
+    "name": "CentralWorld Pop-up",
+    "type": "Retail Store",
+    "region": "Bangkok Central",
+    "address": "999/9 Rama I Rd, Pathum Wan",
+    "operating_hours": "10:00-22:00",
+    "shelves": 4,
+    "total_slots": 140
+  },
+  {
+    "id": "LOC-003",
+    "name": "Terminal 21 Kiosk",
+    "type": "Kiosk",
+    "region": "Bangkok Central",
+    "address": "88 Soi Sukhumvit 19, Watthana",
+    "operating_hours": "10:00-22:00",
+    "shelves": 3,
+    "total_slots": 75
+  },
+  {
+    "id": "LOC-004",
+    "name": "Mega Bangna Branch",
+    "type": "Retail Store",
+    "region": "Bangkok East",
+    "address": "39 Bangna-Trad Rd, Bang Kaeo",
+    "operating_hours": "10:00-21:00",
+    "shelves": 5,
+    "total_slots": 190
+  },
+  {
+    "id": "LOC-005",
+    "name": "Future Park Rangsit",
+    "type": "Retail Store",
+    "region": "Bangkok North",
+    "address": "94 Phahonyothin Rd, Rangsit",
+    "operating_hours": "10:00-21:00",
+    "shelves": 4,
+    "total_slots": 140
+  },
+  {
+    "id": "LOC-006",
+    "name": "Chatuchak Weekend Market",
+    "type": "Market Stall",
+    "region": "Bangkok North",
+    "address": "Chatuchak Market Sec.25, Chatuchak",
+    "operating_hours": "09:00-18:00",
+    "shelves": 3,
+    "total_slots": 60,
+    "working_days": [
+      5,
+      6
+    ]
+  },
+  {
+    "id": "LOC-007",
+    "name": "Central Chiang Mai",
+    "type": "Retail Store",
+    "region": "Upcountry North",
+    "address": "99 Huay Kaew Rd, Chiang Mai",
+    "operating_hours": "10:00-21:00",
+    "shelves": 4,
+    "total_slots": 120
+  },
+  {
+    "id": "LOC-008",
+    "name": "Central Phuket",
+    "type": "Retail Store",
+    "region": "Upcountry South",
+    "address": "74-75 Moo 5, Wichit, Phuket",
+    "operating_hours": "10:00-21:00",
+    "shelves": 4,
+    "total_slots": 120
+  },
+  {
+    "id": "LOC-009",
+    "name": "Shopee Official Store",
+    "type": "Online",
+    "region": "Online",
+    "address": "shopee.co.th/toyland",
+    "operating_hours": "24/7",
+    "shelves": 0,
+    "total_slots": 0
+  },
+  {
+    "id": "LOC-010",
+    "name": "Lazada Flagship",
+    "type": "Online",
+    "region": "Online",
+    "address": "lazada.co.th/toyland",
+    "operating_hours": "24/7",
+    "shelves": 0,
+    "total_slots": 0
+  },
+  {
+    "id": "LOC-011",
+    "name": "LINE Shopping",
+    "type": "Online",
+    "region": "Online",
+    "address": "shop.line.me/toyland",
+    "operating_hours": "24/7",
+    "shelves": 0,
+    "total_slots": 0
+  },
+  {
+    "id": "LOC-012",
+    "name": "ToyLand Official Website",
+    "type": "Online",
+    "region": "Online",
+    "address": "toyland.co.th",
+    "operating_hours": "24/7",
+    "shelves": 0,
+    "total_slots": 0
+  }
+]

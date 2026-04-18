@@ -1,0 +1,95 @@
+[
+  {
+    "id": "LOC-001", "name": "Siam Paragon Store", "type": "Retail Store",
+    "region": "Bangkok Central", "address": "991 Rama I Rd, Pathum Wan",
+    "daily_foot_traffic": 850, "conversion_rate": 0.01, "operating_hours": "10:00-21:00",
+    "storage_capacity_m3": 18.0, "effective_capacity_cm3": 11700000,
+    "shelves": 6, "slots_per_shelf": 40, "total_slots": 240,
+    "location_grade": "B",
+    "shelf_grades": ["A","A","B","B","C","C"]
+  },
+  {
+    "id": "LOC-002", "name": "CentralWorld Pop-up", "type": "Retail Store",
+    "region": "Bangkok Central", "address": "999/9 Rama I Rd, Pathum Wan",
+    "daily_foot_traffic": 1200, "conversion_rate": 0.008, "operating_hours": "10:00-22:00",
+    "storage_capacity_m3": 8.0, "effective_capacity_cm3": 5200000,
+    "shelves": 4, "slots_per_shelf": 35, "total_slots": 140,
+    "location_grade": "A",
+    "shelf_grades": ["A","B","C","C"]
+  },
+  {
+    "id": "LOC-003", "name": "Terminal 21 Kiosk", "type": "Kiosk",
+    "region": "Bangkok Central", "address": "88 Soi Sukhumvit 19, Watthana",
+    "daily_foot_traffic": 600, "conversion_rate": 0.012, "operating_hours": "10:00-22:00",
+    "storage_capacity_m3": 4.0, "effective_capacity_cm3": 2600000,
+    "shelves": 3, "slots_per_shelf": 25, "total_slots": 75,
+    "location_grade": "B",
+    "shelf_grades": ["A","B","C"]
+  },
+  {
+    "id": "LOC-004", "name": "Mega Bangna Branch", "type": "Retail Store",
+    "region": "Bangkok East", "address": "39 Bangna-Trad Rd, Bang Kaeo",
+    "daily_foot_traffic": 700, "conversion_rate": 0.009, "operating_hours": "10:00-21:00",
+    "storage_capacity_m3": 15.0, "effective_capacity_cm3": 9750000,
+    "shelves": 5, "slots_per_shelf": 38, "total_slots": 190,
+    "location_grade": "B",
+    "shelf_grades": ["A","A","B","B","C"]
+  },
+  {
+    "id": "LOC-005", "name": "Future Park Rangsit", "type": "Retail Store",
+    "region": "Bangkok North", "address": "94 Phahonyothin Rd, Rangsit",
+    "daily_foot_traffic": 550, "conversion_rate": 0.006, "operating_hours": "10:00-21:00",
+    "storage_capacity_m3": 12.0, "effective_capacity_cm3": 7800000,
+    "shelves": 4, "slots_per_shelf": 35, "total_slots": 140,
+    "location_grade": "C",
+    "shelf_grades": ["A","B","C","C"]
+  },
+  {
+    "id": "LOC-006", "name": "Chatuchak Weekend Market", "type": "Market Stall",
+    "region": "Bangkok North", "address": "Chatuchak Market Sec.25, Chatuchak",
+    "daily_foot_traffic": 2000, "conversion_rate": 0.005, "operating_hours": "09:00-18:00",
+    "working_days": [5, 6],
+    "storage_capacity_m3": 5.0, "effective_capacity_cm3": 3250000,
+    "shelves": 3, "slots_per_shelf": 20, "total_slots": 60,
+    "location_grade": "A",
+    "shelf_grades": ["A","B","C"]
+  },
+  {
+    "id": "LOC-007", "name": "Central Chiang Mai", "type": "Retail Store",
+    "region": "Upcountry North", "address": "99 Huay Kaew Rd, Chiang Mai",
+    "daily_foot_traffic": 400, "conversion_rate": 0.005, "operating_hours": "10:00-21:00",
+    "storage_capacity_m3": 10.0, "effective_capacity_cm3": 6500000,
+    "shelves": 4, "slots_per_shelf": 30, "total_slots": 120,
+    "location_grade": "C",
+    "shelf_grades": ["A","B","C","C"]
+  },
+  {
+    "id": "LOC-008", "name": "Central Phuket", "type": "Retail Store",
+    "region": "Upcountry South", "address": "74-75 Moo 5, Wichit, Phuket",
+    "daily_foot_traffic": 350, "conversion_rate": 0.005, "operating_hours": "10:00-21:00",
+    "storage_capacity_m3": 10.0, "effective_capacity_cm3": 6500000,
+    "shelves": 4, "slots_per_shelf": 30, "total_slots": 120,
+    "location_grade": "C",
+    "shelf_grades": ["A","B","C","C"]
+  },
+  {
+    "id": "LOC-009", "name": "Shopee Official Store", "type": "Online",
+    "region": "Online", "address": "shopee.co.th/toyland",
+    "daily_foot_traffic": 3500, "conversion_rate": 0.003, "operating_hours": "24/7"
+  },
+  {
+    "id": "LOC-010", "name": "Lazada Flagship", "type": "Online",
+    "region": "Online", "address": "lazada.co.th/toyland",
+    "daily_foot_traffic": 3000, "conversion_rate": 0.003, "operating_hours": "24/7"
+  },
+  {
+    "id": "LOC-011", "name": "LINE Shopping", "type": "Online",
+    "region": "Online", "address": "shop.line.me/toyland",
+    "daily_foot_traffic": 1500, "conversion_rate": 0.004, "operating_hours": "24/7"
+  },
+  {
+    "id": "LOC-012", "name": "ToyLand Official Website", "type": "Online",
+    "region": "Online", "address": "toyland.co.th",
+    "daily_foot_traffic": 800, "conversion_rate": 0.005, "operating_hours": "24/7"
+  }
+]

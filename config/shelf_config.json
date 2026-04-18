@@ -1,0 +1,30 @@
+{
+  "_description": "Scoring configuration — shelf placement (ABC), location grades (ABC), product grades (ABCDE hidden)",
+
+  "shelf_multiplier": {
+    "_note": "3-tier shelf placement: A=premium eye-level, B=mid-level, C=bottom/back. Bots can see these values.",
+    "A": 1.80,
+    "B": 1.00,
+    "C": 0.40
+  },
+  "location_multiplier": {
+    "A": 1.25,
+    "B": 1.00,
+    "C": 0.80
+  },
+  "product_multiplier": {
+    "_note": "5-tier product grading (HIDDEN — bots cannot see this, must learn from sales data)",
+    "A": 1.60,
+    "B": 1.25,
+    "C": 1.00,
+    "D": 0.75,
+    "E": 0.45
+  },
+
+  "category_shelf_priority": {
+    "_note": "Categories listed first get placed on A-shelves first. Initial merchandising only.",
+    "A_shelf_categories": ["CAT-03", "CAT-01"],
+    "B_shelf_categories": ["CAT-02", "CAT-04", "CAT-05"],
+    "C_shelf_categories": ["CAT-06", "CAT-07"]
+  }
+}
