@@ -44,11 +44,13 @@ LANDING_PATH = os.path.join(DASHBOARD_DIR, "index.html")
 DASHBOARD_PATH = os.path.join(DASHBOARD_DIR, "ToyLand_Dashboard.html")
 TUTORIAL_TOYLAND_PATH = os.path.join(DASHBOARD_DIR, "tutorial_toyland.html")
 COWORK_PROMPT_PATH = os.path.join(DASHBOARD_DIR, "cowork-prompt.md")
+ADMIN_PATH = os.path.join(DASHBOARD_DIR, "admin.html")
 SIM_EXCEL_DIR = os.path.join(PROJECT_DIR, "sim_excel")
 
 from sim_engine import load_config, SimulationEngine, save_run, list_runs, build_compact, DATA_DIR
 from job_runner import JobRunner
-from db import ping as db_ping, MONGO_DB_NAME
+from db import ping as db_ping, get_db, MONGO_DB_NAME
+from seed import seed_all
 
 
 # ── Global job runner instance ──
@@ -187,6 +189,9 @@ class SimHandler(BaseHTTPRequestHandler):
 
         elif path == "/toyland/download-excel":
             self._serve_excel_zip()
+
+        elif path == "/admin":
+            self._serve_html(ADMIN_PATH)
 
         elif self.path == "/healthz":
             self._json_ok({"ok": True})
@@ -358,6 +363,34 @@ class SimHandler(BaseHTTPRequestHandler):
         elif self.path == "/submit-bot":
             # Upload a custom bot Python file
             self._handle_bot_upload()
+
+        elif self.path == "/admin/seed":
+            # Idempotent: seed challenges, challenge_configs, bots from repo
+            db = get_db()
+            if db is None:
+                return self._json_error(
+                    503,
+                    "Database not configured: MONGODB_USER / MONGODB_PWD missing."
+                )
+            try:
+                results = seed_all(db)
+                # Mongo returns ObjectId/datetime, which json can't encode
+                def _coerce(obj):
+                    if isinstance(obj, dict):
+                        return {k: _coerce(v) for k, v in obj.items()}
+                    if isinstance(obj, list):
+                        return [_coerce(v) for v in obj]
+                    if hasattr(obj, "isoformat"):  # datetime
+                        return obj.isoformat()
+                    if hasattr(obj, "binary"):  # ObjectId
+                        return str(obj)
+                    return obj
+                self._json_ok({"ok": True, "results": _coerce(results)})
+            except Exception as e:
+                import traceback
+                tb = traceback.format_exc()
+                print(tb)
+                self._json_error(500, f"{type(e).__name__}: {e}")
 
         else:
             self.send_response(404)

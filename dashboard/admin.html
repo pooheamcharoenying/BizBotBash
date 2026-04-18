@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — BizBotBash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000;
+    --bg-card: #0e0e0e;
+    --border: #1f1f1f;
+    --border-bright: #333;
+    --text: #e4e4e7;
+    --text-dim: #71717a;
+    --text-bright: #fff;
+    --accent: #facc15;
+    --good: #4ade80;
+    --bad: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 100;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    color: var(--text-bright);
+    text-decoration: none;
+  }
+  .logo .dot { color: var(--accent); }
+  .back {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .back:hover { color: var(--accent); }
+
+  .crumb {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .crumb::before { content: '// '; }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--text-bright);
+    margin-bottom: 32px;
+  }
+  .lede {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    max-width: 620px;
+  }
+
+  section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  section h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  section p.sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 12px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    background: var(--text-dim);
+  }
+  .status-dot.ok { background: var(--good); box-shadow: 0 0 6px var(--good); }
+  .status-dot.bad { background: var(--bad); box-shadow: 0 0 6px var(--bad); }
+  .status-dot.pending { background: var(--accent); animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .status-label {
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .status-val { color: var(--text-bright); font-weight: 700; }
+
+  button.action {
+    padding: 14px 28px;
+    background: var(--accent);
+    color: #000;
+    border: 1px solid var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  button.action:hover {
+    background: transparent;
+    color: var(--accent);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  button.action:disabled {
+    background: var(--border-bright);
+    border-color: var(--border-bright);
+    color: var(--text-dim);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .log {
+    margin-top: 24px;
+    background: #050505;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--text);
+    max-height: 420px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .log.err { border-left-color: var(--bad); }
+  .log.good { border-left-color: var(--good); }
+  .log:empty { display: none; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  th, td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  td.count { color: var(--accent); font-weight: 700; font-family: 'Space Grotesk', sans-serif; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <nav>
+    <a href="/" class="logo">BIZBOTBASH<span class="dot">.</span></a>
+    <a href="/" class="back">← Back</a>
+  </nav>
+
+  <div class="crumb">Admin · Database</div>
+  <h1>Database<br>control panel.</h1>
+  <p class="lede">
+    Seed the MongoDB with the ToyLand challenge config and the four
+    built-in bots. Idempotent — running it again just refreshes
+    everything from the current repo state.
+  </p>
+
+  <section>
+    <h2>Connection</h2>
+    <p class="sub">Checks whether the server can reach Atlas.</p>
+    <div class="status-row">
+      <span class="status-dot" id="connDot"></span>
+      <span class="status-label">Status</span>
+      <span class="status-val" id="connStatus">checking...</span>
+    </div>
+    <div class="status-row" id="connDetails" style="display:none;">
+      <span class="status-label" style="min-width: 90px;">Database</span>
+      <span class="status-val" id="connDb">—</span>
+    </div>
+    <div class="status-row" id="connUserRow" style="display:none;">
+      <span class="status-label" style="min-width: 90px;">User</span>
+      <span class="status-val" id="connUser">—</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Seed data</h2>
+    <p class="sub">
+      Populates <code>challenges</code>, <code>challenge_configs</code>,
+      and <code>bots</code> collections from <code>config/*.json</code>
+      and <code>bots/*.py</code>. Creates indexes on all collections.
+    </p>
+    <button class="action" id="seedBtn">▶ Run Seed</button>
+    <div class="log" id="seedLog"></div>
+  </section>
+
+  <section id="collectionsSection" style="display:none;">
+    <h2>Collection counts</h2>
+    <p class="sub">Post-seed document counts per collection.</p>
+    <table id="collectionsTable">
+      <thead><tr><th>Collection</th><th>Docs</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+</div>
+
+<script>
+const API = window.location.origin;
+
+async function checkConnection() {
+  const dot = document.getElementById('connDot');
+  const statusEl = document.getElementById('connStatus');
+  try {
+    const r = await fetch(API + '/healthz/db');
+    const j = await r.json();
+    if (j.ok) {
+      dot.className = 'status-dot ok';
+      statusEl.textContent = 'Connected';
+      statusEl.style.color = 'var(--good)';
+      document.getElementById('connDetails').style.display = 'flex';
+      document.getElementById('connUserRow').style.display = 'flex';
+      document.getElementById('connDb').textContent = j.mongo.database;
+      document.getElementById('connUser').textContent = j.mongo.user;
+    } else {
+      dot.className = 'status-dot bad';
+      statusEl.textContent = 'Offline';
+      statusEl.style.color = 'var(--bad)';
+      document.getElementById('seedLog').className = 'log err';
+      document.getElementById('seedLog').textContent = 'Cannot connect: ' + j.error;
+      document.getElementById('seedBtn').disabled = true;
+    }
+  } catch (e) {
+    dot.className = 'status-dot bad';
+    statusEl.textContent = 'Error';
+    statusEl.style.color = 'var(--bad)';
+  }
+}
+
+async function runSeed() {
+  const btn = document.getElementById('seedBtn');
+  const log = document.getElementById('seedLog');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+  log.className = 'log';
+  log.textContent = 'Running seed_all() against MongoDB...\n';
+
+  try {
+    const r = await fetch(API + '/admin/seed', { method: 'POST' });
+    const j = await r.json();
+    if (j.ok) {
+      log.className = 'log good';
+      log.textContent = JSON.stringify(j.results, null, 2);
+      renderCollections(j.results.collections);
+    } else {
+      log.className = 'log err';
+      log.textContent = 'ERROR: ' + (j.error || 'unknown');
+    }
+  } catch (e) {
+    log.className = 'log err';
+    log.textContent = 'Network error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Run Seed';
+  }
+}
+
+function renderCollections(counts) {
+  if (!counts) return;
+  const section = document.getElementById('collectionsSection');
+  const tbody = document.querySelector('#collectionsTable tbody');
+  tbody.innerHTML = '';
+  Object.keys(counts).sort().forEach(name => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${name}</td><td class="count">${counts[name]}</td>`;
+    tbody.appendChild(tr);
+  });
+  section.style.display = 'block';
+}
+
+document.getElementById('seedBtn').addEventListener('click', runSeed);
+checkConnection();
+</script>
+
+</body>
+</html>
