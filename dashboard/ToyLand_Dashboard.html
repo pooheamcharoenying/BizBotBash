@@ -765,6 +765,298 @@
         ::-webkit-scrollbar-thumb { background: var(--border-bright); }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
+        /* ══════════ TUTORIAL DRAWER ══════════ */
+        .tut-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 150;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 16px 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            writing-mode: vertical-rl;
+            transform-origin: right center;
+            transform: translateY(-50%);
+            transition: all 0.2s;
+            border-left: 3px solid var(--accent);
+        }
+        .tut-toggle:hover {
+            padding-right: 16px;
+            background: #fff;
+        }
+        .tut-toggle::before {
+            content: '◀';
+            display: block;
+            writing-mode: horizontal-tb;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+
+        .tut-drawer {
+            position: fixed;
+            top: 0;
+            right: -480px;
+            width: 460px;
+            max-width: 95vw;
+            height: 100vh;
+            background: var(--bg-elev);
+            border-left: 1px solid var(--border-bright);
+            z-index: 200;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+        }
+        .tut-drawer.open { right: 0; }
+
+        .tut-head {
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-elev);
+            z-index: 2;
+        }
+        .tut-head-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .tut-label {
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .tut-close {
+            background: transparent;
+            border: 1px solid var(--border-bright);
+            color: var(--text-dim);
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.15s;
+        }
+        .tut-close:hover {
+            border-color: var(--text-bright);
+            color: var(--text-bright);
+        }
+        .tut-head h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text-bright);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .tut-head p {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .tut-body { padding: 16px 0 40px; }
+        .tut-stage {
+            border-bottom: 1px solid var(--border);
+        }
+        .tut-stage:last-child { border-bottom: none; }
+        .tut-stage-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            color: inherit;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+        .tut-stage-toggle:hover { background: var(--bg-card); }
+        .tut-stage-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: -0.04em;
+            min-width: 36px;
+        }
+        .tut-stage-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-bright);
+            letter-spacing: -0.01em;
+            flex: 1;
+        }
+        .tut-stage-sub {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 3px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        .tut-stage-caret {
+            color: var(--text-dim);
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .tut-stage.expanded .tut-stage-caret { transform: rotate(180deg); }
+
+        .tut-stage-body {
+            display: none;
+            padding: 0 28px 24px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .tut-stage.expanded .tut-stage-body { display: block; }
+        .tut-stage-body p {
+            color: var(--text-dim);
+            margin-bottom: 14px;
+        }
+        .tut-stage-body p b {
+            color: var(--text-bright);
+            font-weight: 700;
+        }
+        .tut-stage-body ol {
+            counter-reset: tutstep;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px;
+        }
+        .tut-stage-body ol li {
+            counter-increment: tutstep;
+            position: relative;
+            padding: 10px 12px 10px 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .tut-stage-body ol li::before {
+            content: counter(tutstep, decimal-leading-zero);
+            position: absolute;
+            left: 12px;
+            top: 10px;
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .tut-stage-body ol li b {
+            color: var(--text-bright);
+            font-weight: 600;
+        }
+        .tut-stage-body ol li code {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 1px 6px;
+            color: var(--accent);
+            font-size: 11px;
+        }
+        .tut-dl-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .tut-dl {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px;
+            border: 1px solid var(--border-bright);
+            background: var(--bg-card);
+            text-decoration: none;
+            color: inherit;
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+        .tut-dl:hover {
+            border-color: var(--accent);
+            background: var(--bg);
+        }
+        .tut-dl .tut-dl-label {
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            font-weight: 700;
+            font-size: 9px;
+        }
+        .tut-dl .tut-dl-name {
+            color: var(--text-bright);
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .tut-outcome {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border: 1px dashed var(--accent);
+            background: rgba(250, 204, 21, 0.04);
+            font-size: 11px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .tut-outcome b { color: var(--accent); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; }
+
+        .tut-footer {
+            padding: 20px 28px 28px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .tut-footer a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border-bright);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: all 0.15s;
+        }
+        .tut-footer a:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .tut-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+            z-index: 199;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .tut-backdrop.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
     </style>
 </head>
 <body>
@@ -3591,6 +3883,169 @@ initializeFromRAW();
 
     // Note: Product select and renderContent are handled inside initializeFromRAW() after data arrives
 });
+</script>
+
+<!-- ══════════════ TUTORIAL DRAWER ══════════════ -->
+<button class="tut-toggle" id="tutToggle" aria-label="Open tutorial">TUTORIAL</button>
+<div class="tut-backdrop" id="tutBackdrop"></div>
+<aside class="tut-drawer" id="tutDrawer" aria-hidden="true">
+    <div class="tut-head">
+        <div class="tut-head-row">
+            <div class="tut-label">// The Journey</div>
+            <button class="tut-close" id="tutClose" aria-label="Close tutorial">×</button>
+        </div>
+        <h2>From data to autonomy.</h2>
+        <p>Four stages. Each uses our BizBotBash backend plus Claude Cowork to build the layer above.</p>
+    </div>
+    <div class="tut-body">
+
+        <div class="tut-stage expanded" data-stage="1">
+            <button class="tut-stage-toggle">
+                <span class="tut-stage-num">01</span>
+                <span class="tut-stage-title">Analyze the data
+                    <span class="tut-stage-sub">Stage · Foundation</span>
+                </span>
+                <span class="tut-stage-caret">▼</span>
+            </button>
+            <div class="tut-stage-body">
+                <p>Run a sim, download the excel files, hand them to Claude, ask for insights.</p>
+                <ol>
+                    <li><b>Run a simulation</b> — pick a bot, 60 months, click Run. Calls our backend.</li>
+                    <li><b>Download the excel bundle</b> — zip of <code>initial_state.xlsx</code> + <code>month_*.xlsx</code></li>
+                    <li><b>Create</b> <code>~/toyland-data/</code>, unzip into it</li>
+                    <li><b>Install Claude Cowork</b>, point it at the folder</li>
+                    <li><b>Drop in</b> <code>toyland-analysis.md</code> and tell Claude to execute it</li>
+                    <li><b>Claude builds</b> <code>aggregate.py</code>, <code>analysis.py</code>, <code>charts.py</code>, <code>insights.md</code></li>
+                </ol>
+                <div class="tut-dl-row">
+                    <a href="/toyland/download-excel" class="tut-dl">
+                        <span class="tut-dl-label">&gt; .ZIP</span>
+                        <span class="tut-dl-name">Excel bundle</span>
+                    </a>
+                    <a href="/toyland/cowork-prompt.md" class="tut-dl">
+                        <span class="tut-dl-label">&gt; .MD</span>
+                        <span class="tut-dl-name">Cowork prompt</span>
+                    </a>
+                </div>
+                <div class="tut-outcome">
+                    <b>// Outcome</b><br>
+                    A local data folder, Python scripts that aggregate + analyze, and a concrete sense of how the business behaves.
+                </div>
+            </div>
+        </div>
+
+        <div class="tut-stage" data-stage="2">
+            <button class="tut-stage-toggle">
+                <span class="tut-stage-num">02</span>
+                <span class="tut-stage-title">Build a real ERP
+                    <span class="tut-stage-sub">Stage · Application</span>
+                </span>
+                <span class="tut-stage-caret">▼</span>
+            </button>
+            <div class="tut-stage-body">
+                <p>Extend the Python from Stage 01 into a dashboard app that <b>writes back</b> to the excel files.</p>
+                <ol>
+                    <li>Ask Claude to add <b>write functions</b> to <code>aggregate.py</code> (issue PO, record transfer, update shelf)</li>
+                    <li>Build a small <b>Flask UI</b> with pages for each action</li>
+                    <li>Wire "Advance one month" to call our backend at <code>/run</code> or <code>/run-bot</code></li>
+                    <li>Style it like BizBotBash — Claude will match the theme for you</li>
+                </ol>
+                <div class="tut-outcome">
+                    <b>// Outcome</b><br>
+                    A working ERP. Click buttons, excel files update, business moves forward.
+                </div>
+            </div>
+        </div>
+
+        <div class="tut-stage" data-stage="3">
+            <button class="tut-stage-toggle">
+                <span class="tut-stage-num">03</span>
+                <span class="tut-stage-title">Add an AI copilot
+                    <span class="tut-stage-sub">Stage · Copilot</span>
+                </span>
+                <span class="tut-stage-caret">▼</span>
+            </button>
+            <div class="tut-stage-body">
+                <p>Plug in a bot that <b>recommends</b> the next moves. Human approves or ignores.</p>
+                <ol>
+                    <li>Fork <code>bots/bizbotbash_champion.py</code>, return actions as <b>suggestions + rationale</b></li>
+                    <li>Add a <b>Recommendations</b> panel to your ERP with Accept / Ignore buttons</li>
+                    <li>Accept → reuse Stage 02 write functions. Ignore → log the disagreement.</li>
+                    <li>After a month, ask Claude: <i>"Which actions am I accepting &gt;80% of the time?"</i></li>
+                </ol>
+                <div class="tut-outcome">
+                    <b>// Outcome</b><br>
+                    AI assistant inside your ERP. Trust, built step by step, with a human safety net.
+                </div>
+            </div>
+        </div>
+
+        <div class="tut-stage" data-stage="4">
+            <button class="tut-stage-toggle">
+                <span class="tut-stage-num">04</span>
+                <span class="tut-stage-title">Hit Run All
+                    <span class="tut-stage-sub">Stage · Autonomy</span>
+                </span>
+                <span class="tut-stage-caret">▼</span>
+            </button>
+            <div class="tut-stage-body">
+                <p>Click one button. Watch your bot run the company for 5 years with no human in the loop.</p>
+                <ol>
+                    <li>Remove the approval wrapper from Stage 03 — <code>decide()</code> now executes directly</li>
+                    <li>Upload the bot in the <b>🏆 BizBot Bash</b> tab → Submit Bot</li>
+                    <li>Select it in Mode, 60 months, <b>Run Simulation</b></li>
+                    <li>Compare against Demo Baseline, Champion, Ai Genius. Iterate.</li>
+                </ol>
+                <div class="tut-outcome">
+                    <b>// Outcome</b><br>
+                    A fully autonomous bot running a 5-year simulated business in 30 seconds. You built it.
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="tut-footer">
+        <a href="/toyland/tutorial">Full tutorial page →</a>
+    </div>
+</aside>
+
+<script>
+(function() {
+    const drawer = document.getElementById('tutDrawer');
+    const toggle = document.getElementById('tutToggle');
+    const close = document.getElementById('tutClose');
+    const backdrop = document.getElementById('tutBackdrop');
+
+    function setOpen(open) {
+        drawer.classList.toggle('open', open);
+        backdrop.classList.toggle('show', open);
+        drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+        toggle.style.display = open ? 'none' : 'block';
+        try { localStorage.setItem('tutDrawerOpen', open ? '1' : '0'); } catch (e) {}
+    }
+
+    toggle.addEventListener('click', () => setOpen(true));
+    close.addEventListener('click', () => setOpen(false));
+    backdrop.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && drawer.classList.contains('open')) setOpen(false);
+    });
+
+    // Accordion
+    document.querySelectorAll('.tut-stage-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.parentElement.classList.toggle('expanded');
+        });
+    });
+
+    // Restore state (default OPEN on first visit — close once, stay closed)
+    try {
+        const saved = localStorage.getItem('tutDrawerOpen');
+        setOpen(saved === null ? true : saved === '1');
+    } catch (e) {
+        setOpen(true);
+    }
+})();
 </script>
 
 </body>
