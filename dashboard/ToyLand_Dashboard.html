@@ -978,7 +978,7 @@ let RUNS = [];
 let currentRunIndex = 0;
 
 // These variables will be dynamically set
-let CATEGORIES, PRODUCTS, LOCATIONS, SUPPLIERS, SALES, STOCK, PO_AGG, PO_DETAIL, TR_AGG, TR_DETAIL;
+let CATEGORIES, PRODUCTS, LOCATIONS, SUPPLIERS, SALES, STOCK, PO_AGG, PO_DETAIL, TR_AGG, TR_DETAIL, ORDERS_BY_ML;
 
 const RAW = null; // Baseline loaded from server
 
@@ -995,6 +995,7 @@ function switchRun(index) {
     PO_DETAIL = runData.po_detail || [];
     TR_AGG = runData.tr_agg || [];
     TR_DETAIL = runData.tr_detail || [];
+    ORDERS_BY_ML = runData.orders_by_ml || [];
 
     // Re-initialize filters for this run's data
     if (SALES.length > 0 && LOCATIONS.length > 0) {
@@ -1344,6 +1345,16 @@ function filteredSales() {
         const year = getMonthYear(s.m).year;
         return state.selectedYears.includes(year) && state.selectedLocations.includes(s.l);
     });
+}
+
+function filteredOrderCount() {
+    if (!ORDERS_BY_ML || ORDERS_BY_ML.length === 0) return 0;
+    return ORDERS_BY_ML
+        .filter(o => {
+            const year = getMonthYear(o.m).year;
+            return state.selectedYears.includes(year) && state.selectedLocations.includes(o.l);
+        })
+        .reduce((sum, o) => sum + o.c, 0);
 }
 
 function filteredStock() {
@@ -1815,7 +1826,8 @@ function renderOverviewTab() {
     const sales = filteredSales();
     const totalRevenue = sales.reduce((s, r) => s + r.r, 0);
     const totalUnits = sales.reduce((s, r) => s + r.q, 0);
-    const totalOrders = sales.length;
+    const customerOrders = filteredOrderCount();
+    const totalOrders = customerOrders > 0 ? customerOrders : sales.length;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const activeProducts = new Set(sales.map(s => s.p)).size;
 

@@ -505,6 +505,14 @@ def build_compact(engine):
                           "q": v["q"], "r": round(v["r"], 2)}
                          for k, v in sales_agg.items() if v["q"] > 0]
 
+    orders_by_ml = defaultdict(set)
+    for o in D["order_log"]:
+        if o["qty_filled"] > 0:
+            m = str(o["date"])[:7]
+            orders_by_ml[(m, o["sales_location_id"])].add(o["order_id"])
+    compact["orders_by_ml"] = [{"m": k[0], "l": k[1], "c": len(v)}
+                                for k, v in orders_by_ml.items()]
+
     stock_snap = {}
     for entry in D["daily_stock_log"]:
         loc_id = entry.get("location_id", entry.get("warehouse_id", ""))
