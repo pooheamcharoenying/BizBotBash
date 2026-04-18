@@ -22,12 +22,27 @@ Bot commands (list of dicts passed to step_day):
   {"action": "set_shelf",  "location_id", "product_id", "shelf_grade"}
 """
 import random
+import math
 import json
 import os
 from datetime import date, timedelta
 from collections import defaultdict
 
 from datetime import datetime as _datetime
+
+
+def _popularity_cycle(pid, mi, hv):
+    """Cyclical popularity multiplier for a product at month index mi.
+
+    Each product oscillates around its baseline on an 18-36 month cycle
+    with a deterministic phase derived from its ID, so "hot" and "cold"
+    products rotate naturally over time instead of monotonically decaying.
+    """
+    rng = random.Random(pid)
+    period = rng.randint(18, 36)
+    phase = rng.uniform(0, 2 * math.pi)
+    amplitude = min(0.3 + abs(hv.get("trend_monthly_pct", 0)) * 5, 0.55)
+    return 1 + amplitude * math.sin(2 * math.pi * mi / period + phase)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
@@ -796,7 +811,7 @@ class SimulationEngine:
         mi = self.month_index()
         cm = self.calendar_month() - 1
 
-        trend_mult = (1 + hv["trend_monthly_pct"]) ** mi
+        trend_mult = _popularity_cycle(product_id, mi, hv)
         base = hv["base_daily_demand"] * trend_mult
         season_mult = hv["seasonality_12m"][cm]
 
@@ -1200,7 +1215,7 @@ class SimulationEngine:
                 buzz_factor = 1.0 + hv["social_media_buzz"] * 0.5
                 loyalty = hv["brand_loyalty"]
                 season = hv["seasonality_12m"][cm]
-                trend = (1 + hv["trend_monthly_pct"]) ** mi_val
+                trend = _popularity_cycle(p["id"], mi_val, hv)
 
                 w = base_d * buzz_factor * loyalty * season * trend
 
