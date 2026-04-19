@@ -2320,13 +2320,21 @@ function drawRevenueChart(sales) {
         const allMonths = new Set([...Object.keys(baseMonthly), ...Object.keys(currMonthly)]);
         months = [...allMonths].sort();
 
-        // null in the "off" years so the two lines don't meet at zero
         const baseData = months.map(m => baseMonthly[m] != null ? baseMonthly[m] : null);
         const currData = months.map(m => currMonthly[m] != null ? currMonthly[m] : null);
 
+        // Bridge the two lines: anchor the current series at the welcome's
+        // final month so the yellow line grows out of where gray left off.
+        const baselineMonths = Object.keys(baseMonthly).sort();
+        const lastBaselineMonth = baselineMonths[baselineMonths.length - 1];
+        const bridgeIdx = months.indexOf(lastBaselineMonth);
+        if (bridgeIdx >= 0 && currData[bridgeIdx] == null) {
+            currData[bridgeIdx] = baseMonthly[lastBaselineMonth];
+        }
+
         datasets = [baseData, currData];
         labels = ['Baseline (2025)', currentLabel];
-        colors = ['#71717a', '#facc15'];  // dim gray for past, yellow for current
+        colors = ['#71717a', '#facc15'];
         legendItems = [
             { color: colors[0], label: 'Welcome baseline · Demo Baseline Bot · 2025' },
             { color: colors[1], label: `${currentLabel}${currentBotLabel ? ' · ' + currentBotLabel : ''}` },
@@ -2426,10 +2434,16 @@ function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
         });
     });
 
-    // X-axis labels
+    // X-axis labels — decimate so they don't overlap when the timeline is long.
+    // Rough budget: ~70 px per label so each one is readable.
     ctx.fillStyle = '#71717a';
     ctx.textAlign = 'center';
+    const maxLabels = Math.max(2, Math.floor(chartWidth / 70));
+    const stride = Math.max(1, Math.ceil(months.length / maxLabels));
     months.forEach((month, i) => {
+        // Always show the first and last month; otherwise skip by stride
+        const isEdge = i === 0 || i === months.length - 1;
+        if (!isEdge && i % stride !== 0) return;
         const x = padding.left + (i * chartWidth / (months.length - 1 || 1));
         ctx.fillText(formatMonth(month), x, height - padding.bottom + 20);
     });
