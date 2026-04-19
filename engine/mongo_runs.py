@@ -9,6 +9,7 @@ Three collections:
   run_raw     — raw transaction logs for on-demand Excel regeneration
 """
 from datetime import datetime, timezone
+from collections import defaultdict
 from bson import ObjectId
 
 from db import get_db
@@ -113,25 +114,92 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         l for l in engine.cfg["sales_locations"]
         if l.get("type", "").lower() != "online"
     ]
+    loc_name_by_id = {l["id"]: l.get("name", "") for l in engine.cfg["sales_locations"]}
+    product_by_id = {p["id"]: p for p in engine.cfg["products"]}
+    cat_name_by_id = {}
+    cats = engine.cfg.get("categories", {})
+    if isinstance(cats, dict):
+        cat_name_by_id = {cid: cv.get("name", cid) if isinstance(cv, dict) else cv
+                          for cid, cv in cats.items()}
+    else:
+        cat_name_by_id = {c["id"]: c.get("name", c["id"]) for c in cats}
+
+    # Per-(location, product) shelf-grade assignment + one shelf-row per
+    # product showing what the dashboard needs to visualise: current
+    # on-shelf units, backroom units, and per-SKU shelf capacity.
     shelf_layout = [
         {
             "location_id": loc["id"],
             "location_name": loc.get("name", ""),
-            "shelves": loc.get("shelves", 0),
+            "shelves_total": loc.get("shelves", 0),
             "shelf_grades": ",".join(loc.get("shelf_grades", [])),
+            "a_shelves": loc.get("shelf_grades", []).count("A"),
+            "b_shelves": loc.get("shelf_grades", []).count("B"),
+            "c_shelves": loc.get("shelf_grades", []).count("C"),
             "slots_per_shelf": loc.get("slots_per_shelf", 0),
             "total_slots": loc.get("total_slots", 0),
+            "storage_capacity_m3": loc.get("storage_capacity_m3", 0),
         }
         for loc in physical_locs
     ]
+
+    def _assignment_row(loc_id, pid, grade):
+        prod = product_by_id.get(pid, {})
+        shelf_qty = int(engine.shelf_stock.get((loc_id, pid), 0))
+        total_qty = int(engine.stock.get((loc_id, pid), 0))
+        return {
+            "location_id": loc_id,
+            "location_name": loc_name_by_id.get(loc_id, ""),
+            "product_id": pid,
+            "product_name": prod.get("name", ""),
+            "category_id": prod.get("cat", ""),
+            "category_name": cat_name_by_id.get(prod.get("cat", ""), ""),
+            "shelf_grade": grade,
+            "shelf_qty": shelf_qty,
+            "backroom_qty": max(0, total_qty - shelf_qty),
+            "total_qty": total_qty,
+            "shelf_capacity_per_sku": engine.shelf_cap.get(pid, 0),
+            "unit_price": prod.get("price", 0),
+        }
+
     shelf_assign_initial = [
-        {"location_id": k[0], "product_id": k[1], "grade": v}
+        _assignment_row(k[0], k[1], v)
         for k, v in engine.cfg.get("product_shelf_grade", {}).items()
     ]
     shelf_assign_final = [
-        {"location_id": k[0], "product_id": k[1], "grade": v}
+        _assignment_row(k[0], k[1], v)
         for k, v in engine.product_shelf_grade.items()
     ]
+
+    # Pivoted "shelf map" — one row per (location × grade), each listing
+    # the products assigned to that grade tier at that store. This is
+    # the best single source for a shelf-plan dashboard, since the sim
+    # only tracks per-grade (not per-individual-shelf) assignments.
+    shelf_map = []
+    by_loc_grade = defaultdict(list)
+    for k, grade in engine.product_shelf_grade.items():
+        loc_id, pid = k
+        by_loc_grade[(loc_id, grade)].append(pid)
+    for (loc_id, grade), pids in by_loc_grade.items():
+        pids = sorted(pids)
+        shelf_map.append({
+            "location_id": loc_id,
+            "location_name": loc_name_by_id.get(loc_id, ""),
+            "shelf_grade": grade,
+            "num_products": len(pids),
+            "product_ids": ",".join(pids),
+            "product_names": ", ".join(
+                product_by_id.get(pid, {}).get("name", pid) for pid in pids
+            ),
+            "total_shelf_units": sum(
+                engine.shelf_stock.get((loc_id, pid), 0) for pid in pids
+            ),
+            "total_backroom_units": sum(
+                max(0, engine.stock.get((loc_id, pid), 0) -
+                       engine.shelf_stock.get((loc_id, pid), 0))
+                for pid in pids
+            ),
+        })
 
     raw_doc = {
         "run_id": run_id,
@@ -144,6 +212,7 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         "shelf_layout": shelf_layout,
         "shelf_assignments_initial": shelf_assign_initial,
         "shelf_assignments_final": shelf_assign_final,
+        "shelf_map": shelf_map,
         # Random trend events — hidden from bots, visible in post-mortem export
         "trend_events": _iso(getattr(engine, "trend_events_log", [])),
         "created_at": now,

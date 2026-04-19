@@ -84,6 +84,7 @@ def run_to_xlsx_bytes(run_id):
         ("Financials", "financial_log"),
         ("Action_Log", "action_log"),
         ("Shelf_Layout", "shelf_layout"),
+        ("Shelf_Map", "shelf_map"),
         ("Shelf_Assignments_Initial", "shelf_assignments_initial"),
         ("Shelf_Assignments_Final", "shelf_assignments_final"),
         ("Trend_Events", "trend_events"),
