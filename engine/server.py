@@ -45,6 +45,7 @@ DASHBOARD_PATH = os.path.join(DASHBOARD_DIR, "ToyLand_Dashboard.html")
 TUTORIAL_TOYLAND_PATH = os.path.join(DASHBOARD_DIR, "tutorial_toyland.html")
 COWORK_PROMPT_PATH = os.path.join(DASHBOARD_DIR, "cowork-prompt.md")
 ADMIN_PATH = os.path.join(DASHBOARD_DIR, "admin.html")
+FAVICON_PATH = os.path.join(DASHBOARD_DIR, "favicon.svg")
 SIM_EXCEL_DIR = os.path.join(PROJECT_DIR, "sim_excel")
 
 from sim_engine import load_config, SimulationEngine, build_compact, DATA_DIR
@@ -98,6 +99,19 @@ class SimHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self._cors_headers()
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_favicon(self):
+        if not os.path.isfile(FAVICON_PATH):
+            self.send_response(404); self.end_headers(); return
+        with open(FAVICON_PATH, "rb") as f:
+            body = f.read()
+        self.send_response(200)
+        self._cors_headers()
+        self.send_header("Content-Type", "image/svg+xml")
+        self.send_header("Cache-Control", "public, max-age=86400")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -212,6 +226,9 @@ class SimHandler(BaseHTTPRequestHandler):
 
         elif path == "/admin":
             self._serve_html(ADMIN_PATH)
+
+        elif path == "/favicon.svg" or path == "/favicon.ico":
+            self._serve_favicon()
 
         elif self.path == "/healthz":
             self._json_ok({"ok": True})
