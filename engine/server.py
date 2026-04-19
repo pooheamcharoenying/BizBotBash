@@ -303,6 +303,9 @@ class SimHandler(BaseHTTPRequestHandler):
 
             cfg = load_config()
             cfg["company"]["sim_months"] = months
+            # New runs start from the first day of the current real-world
+            # month and project forward, continuing past the welcome baseline.
+            cfg["company"]["sim_start"] = mongo_runs.first_of_current_month()
             if seed is not None:
                 cfg["company"]["random_seed"] = seed
 

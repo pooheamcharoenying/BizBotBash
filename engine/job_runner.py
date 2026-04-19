@@ -157,6 +157,9 @@ def execute_bot_run(bot_name, module_name, class_name, months, seed, label,
     # Load config and create engine
     cfg = load_config()
     cfg["company"]["sim_months"] = months
+    # Bot runs start from the first day of the current real-world month,
+    # picking up where the seeded welcome_baseline leaves off.
+    cfg["company"]["sim_start"] = mongo_runs.first_of_current_month()
     if seed is not None:
         cfg["company"]["random_seed"] = seed
 

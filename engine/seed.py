@@ -232,10 +232,14 @@ def seed_welcome_run(db, challenge_id):
 
     # Lazy imports: these pull heavy deps, skip unless we actually need them
     from sim_engine import load_config, SimulationEngine, build_compact
-    from mongo_runs import save_run
+    from mongo_runs import save_run, first_of_n_months_ago
 
     cfg = load_config()
     cfg["company"]["sim_months"] = 12
+    # Welcome run covers the past 12 months so it ends "now" — new runs
+    # pick up from today going forward.
+    cfg["company"]["sim_start"] = first_of_n_months_ago(12)
+
     engine = SimulationEngine(cfg, mode="auto")
     engine.run()
     compact = build_compact(engine)
@@ -243,12 +247,15 @@ def seed_welcome_run(db, challenge_id):
         engine,
         label="welcome_baseline",
         compact_data=compact,
-        bot_slug="auto",
+        # Auto mode and demo_baseline_bot use identical logic, so we label
+        # the seeded run as demo_baseline for UX consistency.
+        bot_slug="demo_baseline",
     )
     return {
         "status": "inserted",
         "run_id": run_id,
         "months": 12,
+        "sim_start": cfg["company"]["sim_start"],
         "total_revenue": round(engine.total_revenue, 2),
     }
 

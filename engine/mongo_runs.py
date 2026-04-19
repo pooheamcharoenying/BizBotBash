@@ -8,13 +8,34 @@ Three collections:
   run_detail  — compact aggregates for the dashboard, one doc per run
   run_raw     — raw transaction logs for on-demand Excel regeneration
 """
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from bson import ObjectId
 
 from db import get_db
 
 
 CHALLENGE_SLUG = "toyland"
+
+
+# ─────────────────────────────────────────────────────────────
+# Sim start-date helpers (used so runs align with the real calendar)
+# ─────────────────────────────────────────────────────────────
+
+def first_of_current_month():
+    """Return ISO 'YYYY-MM-01' for the month containing today."""
+    t = date.today()
+    return date(t.year, t.month, 1).isoformat()
+
+
+def first_of_n_months_ago(n):
+    """Return ISO 'YYYY-MM-01' N calendar months before the current month."""
+    t = date.today()
+    m = t.month - n
+    y = t.year
+    while m <= 0:
+        y -= 1
+        m += 12
+    return date(y, m, 1).isoformat()
 
 
 # ─────────────────────────────────────────────────────────────
