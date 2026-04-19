@@ -29,7 +29,10 @@ You should see:
   - `Transfers` — stock movements (date, from_loc, to_loc, product, qty, arrival)
   - `Financials` — daily revenue, COGS, fixed costs, variable costs
   - `Active_Discounts` — which discounts were in effect
-  - `Action_Log` — every bot command executed that month
+  - `Action_Log` — every bot command executed that month (includes `set_shelf` events)
+  - `Shelf_Layout` — per physical store: shelves, shelf grades (e.g. "A,A,B,B,C,C"), slots
+  - `Shelf_Assignments_Initial` — which product landed on which shelf grade at sim start, per (location, product)
+  - `Shelf_Assignments_Final` — shelf grade per (location, product) at sim end (after all `set_shelf` actions)
 
 ---
 

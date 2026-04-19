@@ -108,6 +108,31 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         "created_at": now,
     })
 
+    # Shelf state — physical stores only (online channels have no shelves).
+    physical_locs = [
+        l for l in engine.cfg["sales_locations"]
+        if l.get("type", "").lower() != "online"
+    ]
+    shelf_layout = [
+        {
+            "location_id": loc["id"],
+            "location_name": loc.get("name", ""),
+            "shelves": loc.get("shelves", 0),
+            "shelf_grades": ",".join(loc.get("shelf_grades", [])),
+            "slots_per_shelf": loc.get("slots_per_shelf", 0),
+            "total_slots": loc.get("total_slots", 0),
+        }
+        for loc in physical_locs
+    ]
+    shelf_assign_initial = [
+        {"location_id": k[0], "product_id": k[1], "grade": v}
+        for k, v in engine.cfg.get("product_shelf_grade", {}).items()
+    ]
+    shelf_assign_final = [
+        {"location_id": k[0], "product_id": k[1], "grade": v}
+        for k, v in engine.product_shelf_grade.items()
+    ]
+
     raw_doc = {
         "run_id": run_id,
         "order_log": _iso(engine.order_log),
@@ -116,6 +141,9 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         "daily_stock_log": _iso(engine.daily_stock_log),
         "financial_log": _iso(engine.financial_log),
         "action_log": _iso(getattr(engine, "action_log", [])),
+        "shelf_layout": shelf_layout,
+        "shelf_assignments_initial": shelf_assign_initial,
+        "shelf_assignments_final": shelf_assign_final,
         "created_at": now,
     }
     try:
