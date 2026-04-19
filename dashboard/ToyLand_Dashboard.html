@@ -2371,14 +2371,21 @@ function drawRevenueChart(sales) {
         const baseData = months.map(m => baseMonthly[m] != null ? baseMonthly[m] : null);
         const currData = months.map(m => currMonthly[m] != null ? currMonthly[m] : null);
 
-        // Bridge the two lines: anchor the current series at the welcome's
-        // final month so the yellow line grows out of where gray left off.
+        // Visual bridge between the two runs: not a real data point, just
+        // a dashed connector between the welcome's last month and the
+        // current run's first month so the user sees the timeline flow.
         const baselineMonths = Object.keys(baseMonthly).sort();
-        const lastBaselineMonth = baselineMonths[baselineMonths.length - 1];
-        const bridgeIdx = months.indexOf(lastBaselineMonth);
-        if (bridgeIdx >= 0 && currData[bridgeIdx] == null) {
-            currData[bridgeIdx] = baseMonthly[lastBaselineMonth];
-        }
+        const currentMonths = Object.keys(currMonthly).sort();
+        const lastBaseMonth = baselineMonths[baselineMonths.length - 1];
+        const firstCurrMonth = currentMonths[0];
+        const bridge = (lastBaseMonth && firstCurrMonth)
+            ? [{
+                fromIdx: months.indexOf(lastBaseMonth),
+                fromVal: baseMonthly[lastBaseMonth],
+                toIdx: months.indexOf(firstCurrMonth),
+                toVal: currMonthly[firstCurrMonth],
+              }]
+            : [];
 
         datasets = [baseData, currData];
         labels = ['Baseline (2025)', currentLabel];
@@ -2387,6 +2394,14 @@ function drawRevenueChart(sales) {
             { color: colors[0], label: 'Welcome baseline · Demo Baseline Bot · 2025' },
             { color: colors[1], label: `${currentLabel}${currentBotLabel ? ' · ' + currentBotLabel : ''}` },
         ];
+
+        drawLineChart(ctx, months, datasets, labels, colors, canvas.width, canvas.height, { bridges: bridge });
+        if (legendEl) {
+            legendEl.innerHTML = legendItems.map(it =>
+                `<span class="legend-item"><i style="background:${it.color}"></i>${it.label}</span>`
+            ).join('');
+        }
+        return;
     } else {
         months = Object.keys(currMonthly).sort();
         const data = months.map(m => currMonthly[m]);
@@ -2487,11 +2502,12 @@ function attachChartHover(canvas) {
     });
 }
 
-function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
+function drawLineChart(ctx, months, datasets, labels, colors, width, height, opts) {
     ctx.clearRect(0, 0, width, height);
     const padding = { top: 40, right: 40, bottom: 60, left: 80 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
+    const bridges = (opts && opts.bridges) || [];
 
     // Stash chart metadata on the canvas so the mousemove handler can
     // resolve the hovered column back to month + dataset values.
@@ -2557,6 +2573,26 @@ function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
             ctx.arc(x, y, 4, 0, Math.PI * 2);
             ctx.fill();
         });
+    });
+
+    // Bridges — dashed connector segments between real data points,
+    // used to visually link two runs that are adjacent in time without
+    // faking a data point on either dataset.
+    bridges.forEach(b => {
+        if (b.fromIdx < 0 || b.toIdx < 0) return;
+        if (b.fromVal == null || b.toVal == null) return;
+        const x1 = padding.left + (b.fromIdx * chartWidth / (months.length - 1 || 1));
+        const y1 = padding.top + chartHeight - (b.fromVal / maxValue) * chartHeight;
+        const x2 = padding.left + (b.toIdx * chartWidth / (months.length - 1 || 1));
+        const y2 = padding.top + chartHeight - (b.toVal / maxValue) * chartHeight;
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
     });
 
     // X-axis labels — decimate so they don't overlap when the timeline is long.
