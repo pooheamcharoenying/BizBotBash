@@ -19,21 +19,40 @@ CONFIG_DIR = os.path.join(PROJECT_DIR, "config")
 BOTS_DIR = os.path.join(PROJECT_DIR, "bots")
 
 CHALLENGE_SLUG = "toyland"
-CHALLENGE_DOC = {
-    "slug": CHALLENGE_SLUG,
-    "name": "ToyLand Distribution",
-    "description": (
-        "Run a Bangkok toy distributor. 78 SKUs, 4 physical stores, "
-        "1 warehouse, 2 online channels. Decide POs, transfers, shelf "
-        "layouts. Beat the baseline bot over 12-60 months."
-    ),
-    "difficulty": 3,
-    "status": "live",
-    "simulator_module": "sim_engine",
-    "duration_range": {"min": 1, "max": 60},
-    "sku_count": 78,
-    "location_count": 6,
-}
+
+
+def _build_challenge_doc():
+    """Compute challenge metadata from the actual config files so the
+    numbers (SKU count, location count) stay in sync with the data."""
+    products = _load_json("products.json")
+    locations = _load_json("sales_locations.json")
+    warehouses = _load_json("warehouses.json")
+
+    physical = sum(1 for l in locations if l.get("type", "").lower() == "physical")
+    online = sum(1 for l in locations if l.get("type", "").lower() == "online")
+    total_locations = len(locations) + len(warehouses)
+
+    description = (
+        f"Run a Bangkok toy distributor. {len(products)} SKUs, "
+        f"{physical} physical stores, {len(warehouses)} warehouse(s), "
+        f"{online} online channels. Decide POs, transfers, shelf "
+        f"layouts. Beat the baseline bot over 12-60 months."
+    )
+
+    return {
+        "slug": CHALLENGE_SLUG,
+        "name": "ToyLand Distribution",
+        "description": description,
+        "difficulty": 3,
+        "status": "live",
+        "simulator_module": "sim_engine",
+        "duration_range": {"min": 1, "max": 60},
+        "sku_count": len(products),
+        "physical_store_count": physical,
+        "online_channel_count": online,
+        "warehouse_count": len(warehouses),
+        "location_count": total_locations,
+    }
 
 # (filename, slug, display_name, type, description, display_order)
 BOT_REGISTRY = [
@@ -103,10 +122,11 @@ def _now():
 
 
 def seed_challenge(db):
+    challenge_doc = _build_challenge_doc()
     res = db.challenges.update_one(
         {"slug": CHALLENGE_SLUG},
         {
-            "$set": {**CHALLENGE_DOC, "updated_at": _now()},
+            "$set": {**challenge_doc, "updated_at": _now()},
             "$setOnInsert": {"created_at": _now()},
         },
         upsert=True,
@@ -116,6 +136,8 @@ def seed_challenge(db):
         "status": "inserted" if res.upserted_id else "updated",
         "challenge_id": str(doc["_id"]),
         "slug": CHALLENGE_SLUG,
+        "sku_count": challenge_doc["sku_count"],
+        "location_count": challenge_doc["location_count"],
     }
 
 

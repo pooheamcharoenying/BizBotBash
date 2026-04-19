@@ -1393,9 +1393,11 @@ async function loadAvailableBots() {
         const currentVal = sel.value;
         sel.innerHTML = '<option value="auto">Auto (Default)</option>';
         bots.forEach(b => {
+            const value = b.id || b.slug;
+            if (!value) return;                       // skip malformed entries
             const opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = b.name;
+            opt.value = value;
+            opt.textContent = b.name || value;
             sel.appendChild(opt);
         });
         // Restore previous selection if still available
