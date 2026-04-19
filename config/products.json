@@ -11,7 +11,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 20,
     "volume_cm3": 7920,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 396
   },
   {
     "id": "PRD-002",
@@ -25,7 +26,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 28,
     "volume_cm3": 22400,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 800
   },
   {
     "id": "PRD-003",
@@ -39,7 +41,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 15,
     "volume_cm3": 7500,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 500
   },
   {
     "id": "PRD-004",
@@ -53,7 +56,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 8,
     "volume_cm3": 960,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 120
   },
   {
     "id": "PRD-005",
@@ -67,7 +71,8 @@
     "dim_w_cm": 35,
     "dim_h_cm": 35,
     "volume_cm3": 51450,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1470
   },
   {
     "id": "PRD-006",
@@ -81,7 +86,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 30,
     "volume_cm3": 13500,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 450
   },
   {
     "id": "PRD-007",
@@ -95,7 +101,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 17500,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 875
   },
   {
     "id": "PRD-008",
@@ -109,7 +116,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 25,
     "volume_cm3": 7500,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 300
   },
   {
     "id": "PRD-009",
@@ -123,7 +131,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 18,
     "volume_cm3": 3240,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 180
   },
   {
     "id": "PRD-010",
@@ -137,7 +146,8 @@
     "dim_w_cm": 14,
     "dim_h_cm": 22,
     "volume_cm3": 5544,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 252
   },
   {
     "id": "PRD-011",
@@ -151,7 +161,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 15000,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 750
   },
   {
     "id": "PRD-012",
@@ -165,7 +176,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 18,
     "volume_cm3": 9000,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 500
   },
   {
     "id": "PRD-013",
@@ -179,7 +191,8 @@
     "dim_w_cm": 28,
     "dim_h_cm": 22,
     "volume_cm3": 21560,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 980
   },
   {
     "id": "PRD-014",
@@ -193,7 +206,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 15000,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 750
   },
   {
     "id": "PRD-015",
@@ -207,7 +221,8 @@
     "dim_w_cm": 8,
     "dim_h_cm": 8,
     "volume_cm3": 512,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 64
   },
   {
     "id": "PRD-016",
@@ -221,7 +236,8 @@
     "dim_w_cm": 16,
     "dim_h_cm": 3,
     "volume_cm3": 1056,
-    "refill_num": 8
+    "refill_num": 8,
+    "base_area_cm2": 352
   },
   {
     "id": "PRD-017",
@@ -235,7 +251,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 3,
     "volume_cm3": 720,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 240
   },
   {
     "id": "PRD-018",
@@ -249,7 +266,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 1,
     "volume_cm3": 150,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 150
   },
   {
     "id": "PRD-019",
@@ -263,7 +281,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 5,
     "volume_cm3": 1100,
-    "refill_num": 7
+    "refill_num": 7,
+    "base_area_cm2": 220
   },
   {
     "id": "PRD-020",
@@ -277,7 +296,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 5,
     "volume_cm3": 720,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 144
   },
   {
     "id": "PRD-021",
@@ -291,7 +311,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 25,
     "volume_cm3": 13125,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 525
   },
   {
     "id": "PRD-022",
@@ -305,7 +326,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 4,
     "volume_cm3": 600,
-    "refill_num": 8
+    "refill_num": 8,
+    "base_area_cm2": 150
   },
   {
     "id": "PRD-023",
@@ -319,7 +341,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 22,
     "volume_cm3": 9900,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 450
   },
   {
     "id": "PRD-024",
@@ -333,7 +356,8 @@
     "dim_w_cm": 14,
     "dim_h_cm": 20,
     "volume_cm3": 7840,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 392
   },
   {
     "id": "PRD-025",
@@ -347,7 +371,8 @@
     "dim_w_cm": 14,
     "dim_h_cm": 20,
     "volume_cm3": 7840,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 392
   },
   {
     "id": "PRD-026",
@@ -361,7 +386,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 8,
     "volume_cm3": 4800,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 600
   },
   {
     "id": "PRD-027",
@@ -375,7 +401,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 10,
     "volume_cm3": 7040,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 704
   },
   {
     "id": "PRD-028",
@@ -389,7 +416,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 10,
     "volume_cm3": 1200,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 120
   },
   {
     "id": "PRD-029",
@@ -403,7 +431,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 12,
     "volume_cm3": 10500,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 875
   },
   {
     "id": "PRD-030",
@@ -417,7 +446,8 @@
     "dim_w_cm": 30,
     "dim_h_cm": 15,
     "volume_cm3": 18000,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1200
   },
   {
     "id": "PRD-031",
@@ -431,7 +461,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 22,
     "volume_cm3": 11000,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 500
   },
   {
     "id": "PRD-032",
@@ -445,7 +476,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 8,
     "volume_cm3": 4800,
-    "refill_num": 6
+    "refill_num": 6,
+    "base_area_cm2": 600
   },
   {
     "id": "PRD-033",
@@ -459,7 +491,8 @@
     "dim_w_cm": 30,
     "dim_h_cm": 25,
     "volume_cm3": 30000,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1200
   },
   {
     "id": "PRD-034",
@@ -473,7 +506,8 @@
     "dim_w_cm": 30,
     "dim_h_cm": 12,
     "volume_cm3": 16200,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1350
   },
   {
     "id": "PRD-035",
@@ -487,7 +521,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 15,
     "volume_cm3": 9240,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 616
   },
   {
     "id": "PRD-036",
@@ -501,7 +536,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 22,
     "volume_cm3": 11880,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 540
   },
   {
     "id": "PRD-037",
@@ -515,7 +551,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 28,
     "volume_cm3": 22400,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 800
   },
   {
     "id": "PRD-038",
@@ -529,7 +566,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 18,
     "volume_cm3": 7128,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 396
   },
   {
     "id": "PRD-039",
@@ -543,7 +581,8 @@
     "dim_w_cm": 16,
     "dim_h_cm": 28,
     "volume_cm3": 9856,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 352
   },
   {
     "id": "PRD-040",
@@ -557,7 +596,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 25,
     "volume_cm3": 7500,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 300
   },
   {
     "id": "PRD-041",
@@ -571,7 +611,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 15000,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 750
   },
   {
     "id": "PRD-042",
@@ -585,7 +626,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 18,
     "volume_cm3": 9000,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 500
   },
   {
     "id": "PRD-043",
@@ -599,7 +641,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 5,
     "volume_cm3": 2250,
-    "refill_num": 6
+    "refill_num": 6,
+    "base_area_cm2": 450
   },
   {
     "id": "PRD-044",
@@ -613,7 +656,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 3,
     "volume_cm3": 648,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 216
   },
   {
     "id": "PRD-045",
@@ -627,7 +671,8 @@
     "dim_w_cm": 14,
     "dim_h_cm": 20,
     "volume_cm3": 7840,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 392
   },
   {
     "id": "PRD-046",
@@ -641,7 +686,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 15,
     "volume_cm3": 9900,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 660
   },
   {
     "id": "PRD-047",
@@ -655,7 +701,8 @@
     "dim_w_cm": 30,
     "dim_h_cm": 15,
     "volume_cm3": 20250,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1350
   },
   {
     "id": "PRD-048",
@@ -669,7 +716,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 8,
     "volume_cm3": 4800,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 600
   },
   {
     "id": "PRD-049",
@@ -683,7 +731,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 10,
     "volume_cm3": 3000,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 300
   },
   {
     "id": "PRD-050",
@@ -697,7 +746,8 @@
     "dim_w_cm": 30,
     "dim_h_cm": 20,
     "volume_cm3": 24000,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1200
   },
   {
     "id": "PRD-051",
@@ -711,7 +761,8 @@
     "dim_w_cm": 28,
     "dim_h_cm": 32,
     "volume_cm3": 33152,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 1036
   },
   {
     "id": "PRD-052",
@@ -725,7 +776,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 24,
     "volume_cm3": 14256,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 594
   },
   {
     "id": "PRD-053",
@@ -739,7 +791,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 15000,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 750
   },
   {
     "id": "PRD-054",
@@ -753,7 +806,8 @@
     "dim_w_cm": 24,
     "dim_h_cm": 26,
     "volume_cm3": 18720,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 720
   },
   {
     "id": "PRD-055",
@@ -767,7 +821,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 32,
     "volume_cm3": 16640,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 520
   },
   {
     "id": "PRD-056",
@@ -781,7 +836,8 @@
     "dim_w_cm": 16,
     "dim_h_cm": 25,
     "volume_cm3": 8000,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 320
   },
   {
     "id": "PRD-057",
@@ -795,7 +851,8 @@
     "dim_w_cm": 24,
     "dim_h_cm": 22,
     "volume_cm3": 16896,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 768
   },
   {
     "id": "PRD-058",
@@ -809,7 +866,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 28,
     "volume_cm3": 11088,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 396
   },
   {
     "id": "PRD-059",
@@ -823,7 +881,8 @@
     "dim_w_cm": 19,
     "dim_h_cm": 30,
     "volume_cm3": 13110,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 437
   },
   {
     "id": "PRD-060",
@@ -837,7 +896,8 @@
     "dim_w_cm": 25,
     "dim_h_cm": 20,
     "volume_cm3": 15000,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 750
   },
   {
     "id": "PRD-061",
@@ -851,7 +911,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 18,
     "volume_cm3": 9000,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 500
   },
   {
     "id": "PRD-062",
@@ -865,7 +926,8 @@
     "dim_w_cm": 26,
     "dim_h_cm": 22,
     "volume_cm3": 18304,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 832
   },
   {
     "id": "PRD-063",
@@ -879,7 +941,8 @@
     "dim_w_cm": 23,
     "dim_h_cm": 20,
     "volume_cm3": 12880,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 644
   },
   {
     "id": "PRD-064",
@@ -893,7 +956,8 @@
     "dim_w_cm": 8,
     "dim_h_cm": 8,
     "volume_cm3": 512,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 64
   },
   {
     "id": "PRD-065",
@@ -907,7 +971,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 2,
     "volume_cm3": 828,
-    "refill_num": 8
+    "refill_num": 8,
+    "base_area_cm2": 414
   },
   {
     "id": "PRD-066",
@@ -921,7 +986,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 3,
     "volume_cm3": 576,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 192
   },
   {
     "id": "PRD-067",
@@ -935,7 +1001,8 @@
     "dim_w_cm": 10,
     "dim_h_cm": 4,
     "volume_cm3": 560,
-    "refill_num": 10
+    "refill_num": 10,
+    "base_area_cm2": 140
   },
   {
     "id": "PRD-068",
@@ -949,7 +1016,8 @@
     "dim_w_cm": 8,
     "dim_h_cm": 3,
     "volume_cm3": 600,
-    "refill_num": 8
+    "refill_num": 8,
+    "base_area_cm2": 200
   },
   {
     "id": "PRD-069",
@@ -963,7 +1031,8 @@
     "dim_w_cm": 15,
     "dim_h_cm": 23,
     "volume_cm3": 11040,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 480
   },
   {
     "id": "PRD-070",
@@ -977,7 +1046,8 @@
     "dim_w_cm": 11,
     "dim_h_cm": 5,
     "volume_cm3": 880,
-    "refill_num": 6
+    "refill_num": 6,
+    "base_area_cm2": 176
   },
   {
     "id": "PRD-071",
@@ -991,7 +1061,8 @@
     "dim_w_cm": 14,
     "dim_h_cm": 21,
     "volume_cm3": 8526,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 406
   },
   {
     "id": "PRD-072",
@@ -1005,7 +1076,8 @@
     "dim_w_cm": 12,
     "dim_h_cm": 5,
     "volume_cm3": 1020,
-    "refill_num": 6
+    "refill_num": 6,
+    "base_area_cm2": 204
   },
   {
     "id": "PRD-073",
@@ -1019,7 +1091,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 10,
     "volume_cm3": 7700,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 770
   },
   {
     "id": "PRD-074",
@@ -1033,7 +1106,8 @@
     "dim_w_cm": 28,
     "dim_h_cm": 12,
     "volume_cm3": 13440,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 1120
   },
   {
     "id": "PRD-075",
@@ -1047,7 +1121,8 @@
     "dim_w_cm": 24,
     "dim_h_cm": 14,
     "volume_cm3": 10080,
-    "refill_num": 3
+    "refill_num": 3,
+    "base_area_cm2": 720
   },
   {
     "id": "PRD-076",
@@ -1061,7 +1136,8 @@
     "dim_w_cm": 20,
     "dim_h_cm": 12,
     "volume_cm3": 6720,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 560
   },
   {
     "id": "PRD-077",
@@ -1075,7 +1151,8 @@
     "dim_w_cm": 18,
     "dim_h_cm": 16,
     "volume_cm3": 6336,
-    "refill_num": 5
+    "refill_num": 5,
+    "base_area_cm2": 396
   },
   {
     "id": "PRD-078",
@@ -1089,7 +1166,8 @@
     "dim_w_cm": 22,
     "dim_h_cm": 20,
     "volume_cm3": 12320,
-    "refill_num": 2
+    "refill_num": 2,
+    "base_area_cm2": 616
   },
   {
     "id": "PRD-079",
@@ -1103,7 +1181,8 @@
     "dim_w_cm": 32,
     "dim_h_cm": 28,
     "volume_cm3": 37632,
-    "refill_num": 1
+    "refill_num": 1,
+    "base_area_cm2": 1344
   },
   {
     "id": "PRD-080",
@@ -1117,6 +1196,7 @@
     "dim_w_cm": 20,
     "dim_h_cm": 12,
     "volume_cm3": 6240,
-    "refill_num": 4
+    "refill_num": 4,
+    "base_area_cm2": 520
   }
 ]

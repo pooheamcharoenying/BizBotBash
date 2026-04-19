@@ -77,6 +77,11 @@ TREND_MULT_CAP = (0.25, 4.0)     # soft cap so compounded trends don't explode
 TREND_PERMANENT_PROB = 0.20      # 20% of trends persist forever, 80% revert
 TREND_PERMANENT_SENTINEL = 99999 # end_month for permanent events (never prunes)
 
+# Area per shelf slot (cm²). Combined with slots_per_shelf this gives
+# each shelf a total area, which we divide by a product's base_area_cm2
+# to compute how many units of that product fit on one shelf.
+SLOT_AREA_CM2 = 200
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_DIR = os.path.join(PROJECT_DIR, "config")
@@ -754,14 +759,29 @@ class SimulationEngine:
         for loc in cfg["physical_locs"]:
             self.store_capacity_cm3[loc["id"]] = loc.get("effective_capacity_cm3", 5_000_000)
 
-        # Per-SKU shelf capacity (display-side limit). Backroom holds the
-        # rest up to the store's total volumetric capacity. Customers can
-        # only buy what's on the shelf; end-of-day we refill from backroom.
-        #   shelf_cap = refill_num * 2  (min 6, max 40 — keeps unit counts plausible)
-        self.shelf_cap = {
-            p["id"]: max(6, min(40, self.refill_num[p["id"]] * 2))
+        # Product footprint (cm²) — derived from dimensions if the explicit
+        # base_area_cm2 field is absent, min 20 cm² so tiny items don't
+        # dominate shelf capacity.
+        self.product_area = {
+            p["id"]: max(20, p.get("base_area_cm2",
+                                   p.get("dim_l_cm", 10) * p.get("dim_w_cm", 10)))
             for p in products
         }
+
+        # Per-shelf area (cm²) at each store: slots_per_shelf × SLOT_AREA_CM2.
+        self.shelf_area_cm2 = {
+            loc["id"]: loc.get("slots_per_shelf", 30) * SLOT_AREA_CM2
+            for loc in cfg["physical_locs"]
+        }
+        # Number of shelves per grade at each store.
+        self.grade_shelf_count = {}
+        for loc in cfg["physical_locs"]:
+            grades = loc.get("shelf_grades", ["B"])
+            self.grade_shelf_count[loc["id"]] = {
+                "A": grades.count("A"),
+                "B": grades.count("B"),
+                "C": grades.count("C"),
+            }
 
         self.shelf_mult = cfg["shelf_mult"]
         self.location_mult = cfg["location_mult"]
@@ -802,7 +822,9 @@ class SimulationEngine:
                 actual = min(can_place, wh_avail)
                 self.stock[(loc_id, p["id"])] = actual
                 # Fill the shelf first; anything beyond shelf capacity sits in backroom.
-                self.shelf_stock[(loc_id, p["id"])] = min(actual, self.shelf_cap[p["id"]])
+                self.shelf_stock[(loc_id, p["id"])] = min(
+                    actual, self.shelf_cap_for(p["id"], loc_id)
+                )
                 self.stock[("WH-01", p["id"])] = wh_avail - actual
                 used_cm3 += actual * vol_per_unit
 
@@ -861,6 +883,24 @@ class SimulationEngine:
         if d is not None:
             return d
         return 0.0
+
+    def shelf_cap_for(self, product_id, location_id):
+        """Max units of product P that fit on shelf at store L, given
+        P's current grade assignment at that store.
+            units_per_shelf = floor(shelf_area / product_base_area)
+            total_cap       = units_per_shelf × shelves_at_that_grade
+        Returns 0 if P isn't assigned at L, or the store has no shelves
+        of the needed grade (e.g. C-grade product at a store with no
+        C-shelves)."""
+        if location_id not in self.shelf_area_cm2:
+            return 0
+        grade = self.product_shelf_grade.get((location_id, product_id), "B")
+        num_shelves = self.grade_shelf_count.get(location_id, {}).get(grade, 0)
+        if num_shelves == 0:
+            return 0
+        area_per_unit = self.product_area.get(product_id, 1)
+        per_shelf = int(self.shelf_area_cm2[location_id] // area_per_unit)
+        return per_shelf * num_shelves
 
     # ── Random trend events (hidden from bots) ────────────────
     def _targets_for_trend_scope(self, scope):
@@ -1301,6 +1341,12 @@ class SimulationEngine:
                 pid = cmd["product_id"]
                 grade = cmd["shelf_grade"]
                 self.product_shelf_grade[(loc_id, pid)] = grade
+                # If the new grade has a smaller cap (e.g. demotion A → C
+                # where the store has fewer C-shelves), trim visible stock
+                # to the new cap — the excess implicitly moves to backroom.
+                new_cap = self.shelf_cap_for(pid, loc_id)
+                if self.shelf_stock.get((loc_id, pid), 0) > new_cap:
+                    self.shelf_stock[(loc_id, pid)] = new_cap
                 self.action_log.append({"date": self.current_date, "source": "bot",
                     "action": "set_shelf",
                     "details": f"{pid} @ {loc_id} → shelf grade {grade}"})
@@ -1510,7 +1556,7 @@ class SimulationEngine:
                 backroom = total - on_shelf
                 if backroom <= 0:
                     continue
-                cap = self.shelf_cap.get(pid, 20)
+                cap = self.shelf_cap_for(pid, loc_id)
                 need = cap - on_shelf
                 if need <= 0:
                     continue

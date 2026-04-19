@@ -158,7 +158,8 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
             "shelf_qty": shelf_qty,
             "backroom_qty": max(0, total_qty - shelf_qty),
             "total_qty": total_qty,
-            "shelf_capacity_per_sku": engine.shelf_cap.get(pid, 0),
+            "shelf_capacity_units": engine.shelf_cap_for(pid, loc_id),
+            "product_base_area_cm2": engine.product_area.get(pid, 0),
             "unit_price": prod.get("price", 0),
         }
 
