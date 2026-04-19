@@ -201,9 +201,19 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
             ),
         })
 
+    # Slim the order log before writing — drop fields that can be joined
+    # back in from locations / the run itself. Trims ~30% off the doc size
+    # so 12-month runs fit comfortably under Mongo's 16MB BSON cap.
+    _orderlog_drop = {"customer_id", "sales_location_name", "sales_region",
+                      "fulfill_warehouse", "source", "status"}
+    slim_order_log = [
+        {k: v for k, v in o.items() if k not in _orderlog_drop}
+        for o in engine.order_log
+    ]
+
     raw_doc = {
         "run_id": run_id,
-        "order_log": _iso(engine.order_log),
+        "order_log": _iso(slim_order_log),
         "po_log": _iso(engine.po_log),
         "transfer_log": _iso(engine.transfer_log),
         "daily_stock_log": _iso(engine.daily_stock_log),
@@ -220,9 +230,15 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
     try:
         db.run_raw.insert_one(raw_doc)
     except Exception as e:
-        # BSON 16MB cap — we skip raw if oversized. Excel download will fail
-        # for this run but the dashboard still works from run_detail.
-        print(f"WARN: run_raw insert failed (likely >16MB): {e}")
+        # BSON 16MB cap — we skip raw if oversized. Excel download will
+        # fall through to filesystem for this run, which means the
+        # Shelf_* / Trend_Events sheets won't appear in the download.
+        print("=" * 60)
+        print(f"⚠  run_raw insert failed: {type(e).__name__}: {e}")
+        print(f"   run_id={run_id}, label={label!r}")
+        print(f"   Excel download for this run will lack the new sheets.")
+        print(f"   Consider reducing log granularity if this keeps happening.")
+        print("=" * 60)
 
     return str(run_id)
 

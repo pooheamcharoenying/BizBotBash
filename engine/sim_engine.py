@@ -1518,25 +1518,32 @@ class SimulationEngine:
                 self.shelf_stock[(loc_id, pid)] = on_shelf + moved
                 # self.stock is unchanged (total hasn't moved, just reallocated)
 
-        # ── 4b. Stock snapshots (post-refill, end-of-day view) ──
-        for p in products:
-            for wh in warehouses:
-                qty = self.stock.get((wh["id"], p["id"]), 0)
-                self.daily_stock_log.append({
-                    "date": self.current_date, "location_id": wh["id"],
-                    "location_type": "warehouse",
-                    "product_id": p["id"], "qty_on_hand": qty,
-                    "shelf_qty": 0, "backroom_qty": qty,
-                })
-            for loc in self.cfg["physical_locs"]:
-                qty = self.stock.get((loc["id"], p["id"]), 0)
-                shelf = self.shelf_stock.get((loc["id"], p["id"]), 0)
-                self.daily_stock_log.append({
-                    "date": self.current_date, "location_id": loc["id"],
-                    "location_type": "store",
-                    "product_id": p["id"], "qty_on_hand": qty,
-                    "shelf_qty": shelf, "backroom_qty": qty - shelf,
-                })
+        # ── 4b. Stock snapshots (month-end only, post-refill view) ──
+        # Per-day snapshots for 60+ months × 9 locations × 80 SKUs would
+        # blow past Mongo's 16MB BSON limit. Monthly is enough detail
+        # for the dashboard's stock view and the exported spreadsheet.
+        next_day = self.current_date + timedelta(days=1)
+        is_month_end = (next_day.month != self.current_date.month)
+        is_sim_end = (next_day > self.end_date)
+        if is_month_end or is_sim_end:
+            for p in products:
+                for wh in warehouses:
+                    qty = self.stock.get((wh["id"], p["id"]), 0)
+                    self.daily_stock_log.append({
+                        "date": self.current_date, "location_id": wh["id"],
+                        "location_type": "warehouse",
+                        "product_id": p["id"], "qty_on_hand": qty,
+                        "shelf_qty": 0, "backroom_qty": qty,
+                    })
+                for loc in self.cfg["physical_locs"]:
+                    qty = self.stock.get((loc["id"], p["id"]), 0)
+                    shelf = self.shelf_stock.get((loc["id"], p["id"]), 0)
+                    self.daily_stock_log.append({
+                        "date": self.current_date, "location_id": loc["id"],
+                        "location_type": "store",
+                        "product_id": p["id"], "qty_on_hand": qty,
+                        "shelf_qty": shelf, "backroom_qty": qty - shelf,
+                    })
 
         # ── 7. Daily financials ──
         daily_fixed = total_monthly_fixed / 26
