@@ -293,6 +293,54 @@
             flex-shrink: 0;
         }
 
+        /* ── Hover tooltip for line charts ── */
+        .chart-hover-tip {
+            position: fixed;
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border-bright);
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+            pointer-events: none;
+            z-index: 3000;
+            min-width: 200px;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
+        }
+        .chart-hover-tip .tip-month {
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-size: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .chart-hover-tip .tip-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0;
+        }
+        .chart-hover-tip .tip-row i {
+            display: inline-block;
+            width: 10px;
+            height: 2px;
+            flex-shrink: 0;
+        }
+        .chart-hover-tip .tip-label {
+            flex: 1;
+            color: var(--text-dim);
+            font-size: 11px;
+        }
+        .chart-hover-tip .tip-val {
+            color: var(--text-bright);
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
         .data-table {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -2373,11 +2421,88 @@ function describeBot(run) {
     return m[run.bot_slug] || run.bot_slug;
 }
 
+// ── Shared hover tooltip element, created lazily ──
+let _chartTooltipEl = null;
+function _chartTooltip() {
+    if (_chartTooltipEl) return _chartTooltipEl;
+    _chartTooltipEl = document.createElement('div');
+    _chartTooltipEl.className = 'chart-hover-tip';
+    document.body.appendChild(_chartTooltipEl);
+    return _chartTooltipEl;
+}
+
+function attachChartHover(canvas) {
+    if (canvas._hoverAttached) return;
+    canvas._hoverAttached = true;
+
+    canvas.addEventListener('mousemove', (e) => {
+        const meta = canvas._chartMeta;
+        if (!meta) return;
+        const rect = canvas.getBoundingClientRect();
+        // Scale mouse coords to internal canvas pixel space
+        const sx = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const { months, datasets, labels, colors, padding, chartWidth, chartHeight, maxValue } = meta;
+        if (sx < padding.left || sx > canvas.width - padding.right || months.length === 0) {
+            _chartTooltip().style.display = 'none';
+            return;
+        }
+        // Nearest month column
+        const step = chartWidth / (months.length - 1 || 1);
+        const idx = Math.min(months.length - 1, Math.max(0, Math.round((sx - padding.left) / step)));
+        const month = months[idx];
+
+        // Values from each dataset at this column
+        const rows = datasets.map((ds, i) => ({
+            label: labels[i] || `Series ${i+1}`,
+            color: colors[i] || '#facc15',
+            value: ds[idx],
+        })).filter(r => r.value != null && !isNaN(r.value));
+
+        if (rows.length === 0) {
+            _chartTooltip().style.display = 'none';
+            return;
+        }
+
+        const monthName = formatMonth(month);
+        const rowsHtml = rows.map(r =>
+            `<div class="tip-row"><i style="background:${r.color}"></i>` +
+            `<span class="tip-label">${r.label}</span>` +
+            `<span class="tip-val">฿${formatCurrency(r.value)}</span></div>`
+        ).join('');
+        const tip = _chartTooltip();
+        tip.innerHTML = `<div class="tip-month">${monthName}</div>${rowsHtml}`;
+        tip.style.display = 'block';
+
+        // Position: prefer right of cursor, flip if near right edge
+        const tipRect = tip.getBoundingClientRect();
+        let x = e.clientX + 14;
+        let y = e.clientY - tipRect.height - 8;
+        if (x + tipRect.width > window.innerWidth - 8) x = e.clientX - tipRect.width - 14;
+        if (y < 8) y = e.clientY + 14;
+        tip.style.left = x + 'px';
+        tip.style.top = y + 'px';
+    });
+    canvas.addEventListener('mouseleave', () => {
+        if (_chartTooltipEl) _chartTooltipEl.style.display = 'none';
+    });
+}
+
 function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
     ctx.clearRect(0, 0, width, height);
     const padding = { top: 40, right: 40, bottom: 60, left: 80 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
+
+    // Stash chart metadata on the canvas so the mousemove handler can
+    // resolve the hovered column back to month + dataset values.
+    const _allValues = datasets.flat().filter(v => v != null && !isNaN(v));
+    const _maxForHover = _allValues.length ? Math.max(..._allValues) : 1;
+    ctx.canvas._chartMeta = {
+        months, datasets, labels, colors,
+        padding, chartWidth, chartHeight, width, height,
+        maxValue: _maxForHover,
+    };
+    attachChartHover(ctx.canvas);
 
     // Draw grid
     ctx.strokeStyle = '#1f1f1f';
