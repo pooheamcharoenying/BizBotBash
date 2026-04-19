@@ -130,20 +130,20 @@ class SimHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_excel_zip(self):
-        """Serve the latest run's data as xlsx. Prefers Mongo — generates
-        the workbook on the fly from run_raw logs. Falls back to the
-        committed data/welcome_baseline_*/ folder (for legacy runs)."""
+        """Serve the latest run as a zip of xlsx files — one per month,
+        plus initial_state.xlsx and final_state.xlsx. Pulls raw data
+        from Mongo; falls back to the committed data/ folder if Mongo
+        is empty."""
         # ── Try Mongo first ──
         try:
             runs = mongo_runs.list_runs(limit=1)
             if runs:
-                from mongo_excel import run_to_xlsx_bytes
-                body, filename = run_to_xlsx_bytes(runs[0]["folder"])
+                from mongo_excel import run_to_zip_bytes
+                body, filename = run_to_zip_bytes(runs[0]["folder"])
                 if body:
                     self.send_response(200)
                     self._cors_headers()
-                    self.send_header("Content-Type",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    self.send_header("Content-Type", "application/zip")
                     self.send_header("Content-Disposition",
                                      f'attachment; filename="{filename}"')
                     self.send_header("Content-Length", str(len(body)))
@@ -151,7 +151,7 @@ class SimHandler(BaseHTTPRequestHandler):
                     self.wfile.write(body)
                     return
         except Exception as e:
-            print(f"WARN: Mongo xlsx generation failed, falling back: {e}")
+            print(f"WARN: Mongo zip generation failed, falling back: {e}")
 
         # ── Fallback: filesystem ──
         source_dir = None

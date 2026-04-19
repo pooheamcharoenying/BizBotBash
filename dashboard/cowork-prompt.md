@@ -30,9 +30,13 @@ You should see:
   - `Financials` — daily revenue, COGS, fixed costs, variable costs
   - `Active_Discounts` — which discounts were in effect
   - `Action_Log` — every bot command executed that month (includes `set_shelf` events)
-  - `Shelf_Layout` — per physical store: number of shelves per grade (A/B/C), slots, total storage capacity
-  - `Shelf_Map` — per (store × grade): every product assigned to that grade tier at that store. **Best source for a shelf-plan dashboard.**
-  - `Shelf_Assignments_Initial` / `Shelf_Assignments_Final` — per (location, product): grade, current shelf_qty, backroom_qty, product name, category name, unit price. Join to `Shelf_Layout` for per-grade total capacity.
+
+- **`final_state.xlsx`** — end-of-run snapshot
+  - `Summary` — total revenue, COGS, profit, net margin, units sold
+  - `Shelf_Assignments_Final` — per (location, product) at sim end: grade, shelf_qty, backroom_qty, product name, unit price
+  - `Shelf_Map` — per (store × grade): products assigned to that tier, totals. **Best source for a shelf-plan dashboard.**
+
+Initial shelf state (`Shelf_Layout`, `Shelf_Assignments_Initial`) lives in `initial_state.xlsx` so you can diff start → end.
 
 **Shelf visualisation note**: the simulation assigns products to a *grade tier* (A/B/C), not to a specific physical shelf. A store with 2 A-shelves doesn't distinguish between Shelf#1 and Shelf#2 — both hold any product tagged grade A. If you want a physical shelf-by-shelf layout, group products by grade first, then optionally sub-partition your visualisation by shelf number within a grade.
 
