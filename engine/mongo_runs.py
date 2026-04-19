@@ -84,6 +84,7 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
             bot_id = bot_doc["_id"]
 
     now = _now()
+    sim_start = engine.cfg["company"].get("sim_start", "")
     run_doc = {
         "challenge_id": challenge_id,
         "bot_id": bot_id,
@@ -91,6 +92,8 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         "user_id": user_id,
         "label": label,
         "months": engine.cfg["company"].get("sim_months", 12),
+        "sim_start": sim_start,                # e.g. "2025-01-01"
+        "sim_end": str(engine.end_date),       # e.g. "2025-12-31"
         "seed": engine.cfg["company"].get("random_seed"),
         "status": "done",
         "started_at": now,
@@ -149,6 +152,8 @@ def list_runs(user_id=None, limit=100):
             "folder": str(d["_id"]),
             "label": d.get("label", "unknown"),
             "timestamp": ts.isoformat() if ts else "",
+            "sim_start": d.get("sim_start", ""),
+            "sim_end": d.get("sim_end", ""),
             "mode": "auto" if d.get("bot_slug") == "auto" else "bot",
             "bot_slug": d.get("bot_slug"),
             "months": d.get("months", 12),

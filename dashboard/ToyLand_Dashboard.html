@@ -271,6 +271,28 @@
             background: var(--bg);
         }
 
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 0.05em;
+        }
+        .chart-legend .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-legend .legend-item i {
+            display: inline-block;
+            width: 12px;
+            height: 2px;
+            border: 0;
+            flex-shrink: 0;
+        }
+
         .data-table {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -1174,6 +1196,7 @@
             <div class="kpi-grid" id="overviewKpis"></div>
             <div class="chart-container">
                 <div class="chart-title">Monthly Revenue Trend</div>
+                <div id="revenueChartLegend" class="chart-legend"></div>
                 <canvas id="revenueChart" width="800" height="300"></canvas>
             </div>
             <div class="chart-container">
@@ -1335,7 +1358,8 @@ const RAW = null; // Baseline loaded from server
 
 function switchRun(index) {
     currentRunIndex = index;
-    const runData = RUNS[index].data;
+    const run = RUNS[index];
+    const runData = run.data;
     CATEGORIES = runData.categories || {};
     PRODUCTS = runData.products || [];
     LOCATIONS = runData.locations || [];
@@ -1348,11 +1372,29 @@ function switchRun(index) {
     TR_DETAIL = runData.tr_detail || [];
     ORDERS_BY_ML = runData.orders_by_ml || [];
 
+    // Update header date range to reflect this run's actual sim period
+    updateHeaderDateRange(run);
+
     // Re-initialize filters for this run's data
     if (SALES.length > 0 && LOCATIONS.length > 0) {
         initializeFilters();
         populateProductSelect();
     }
+}
+
+function updateHeaderDateRange(run) {
+    const el = document.getElementById('dateRange');
+    if (!el) return;
+    const fmt = iso => {
+        if (!iso) return '';
+        const [y, m] = iso.split('-');
+        const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${names[parseInt(m)-1]} ${y}`;
+    };
+    const start = fmt(run.sim_start);
+    const end = fmt(run.sim_end);
+    if (start && end) el.textContent = `${start} – ${end}`;
+    else el.textContent = run.label || '';
 }
 
 // Populate product select dropdown (called after data loads)
@@ -1425,6 +1467,8 @@ async function loadRunsFromServer() {
                     months: meta.months || 12,
                     folder: meta.folder,
                     timestamp: meta.timestamp || '',
+                    sim_start: meta.sim_start || '',
+                    sim_end: meta.sim_end || '',
                     mode: meta.mode || 'auto',
                     bot_slug: meta.bot_slug || null,
                     data: data
@@ -2246,16 +2290,79 @@ function renderOverviewTab() {
 }
 
 function drawRevenueChart(sales) {
-    const months = getUniqueDates(sales);
-    const monthlyData = {};
-    months.forEach(m => monthlyData[m] = 0);
-    sales.forEach(s => monthlyData[s.m] += s.r);
-
     const canvas = document.getElementById('revenueChart');
     const ctx = canvas.getContext('2d');
-    const data = months.map(m => monthlyData[m]);
+    const legendEl = document.getElementById('revenueChartLegend');
 
-    drawLineChart(ctx, months, [data], ['Revenue'], [null], canvas.width, canvas.height);
+    // Monthly totals for the currently-selected run
+    const currMonthly = {};
+    sales.forEach(s => { currMonthly[s.m] = (currMonthly[s.m] || 0) + s.r; });
+    const currentRun = RUNS[currentRunIndex] || {};
+    const currentLabel = (currentRun.label || '').split(' (')[0];
+    const currentBotLabel = describeBot(currentRun);
+
+    // Look for the welcome baseline run in RUNS (by label match).
+    // If the current run IS the welcome run, skip overlay.
+    const welcome = RUNS.find(r => (r.label || '').startsWith('welcome_baseline'));
+    const isWelcome = currentRun === welcome;
+    const showOverlay = welcome && !isWelcome && welcome.data && welcome.data.sales;
+
+    let months, datasets, labels, colors, legendItems;
+
+    if (showOverlay) {
+        // Aggregate welcome baseline sales
+        const baseMonthly = {};
+        welcome.data.sales.forEach(s => {
+            baseMonthly[s.m] = (baseMonthly[s.m] || 0) + s.r;
+        });
+
+        // Union of months, sorted chronologically (YYYY-MM strings sort fine)
+        const allMonths = new Set([...Object.keys(baseMonthly), ...Object.keys(currMonthly)]);
+        months = [...allMonths].sort();
+
+        // null in the "off" years so the two lines don't meet at zero
+        const baseData = months.map(m => baseMonthly[m] != null ? baseMonthly[m] : null);
+        const currData = months.map(m => currMonthly[m] != null ? currMonthly[m] : null);
+
+        datasets = [baseData, currData];
+        labels = ['Baseline (2025)', currentLabel];
+        colors = ['#71717a', '#facc15'];  // dim gray for past, yellow for current
+        legendItems = [
+            { color: colors[0], label: 'Welcome baseline · Demo Baseline Bot · 2025' },
+            { color: colors[1], label: `${currentLabel}${currentBotLabel ? ' · ' + currentBotLabel : ''}` },
+        ];
+    } else {
+        months = Object.keys(currMonthly).sort();
+        const data = months.map(m => currMonthly[m]);
+        datasets = [data];
+        labels = [currentLabel || 'Revenue'];
+        colors = ['#facc15'];
+        legendItems = [{
+            color: colors[0],
+            label: `${currentLabel || 'Current run'}${currentBotLabel ? ' · ' + currentBotLabel : ''}`,
+        }];
+    }
+
+    // Render legend
+    if (legendEl) {
+        legendEl.innerHTML = legendItems.map(it =>
+            `<span class="legend-item"><i style="background:${it.color}"></i>${it.label}</span>`
+        ).join('');
+    }
+
+    drawLineChart(ctx, months, datasets, labels, colors, canvas.width, canvas.height);
+}
+
+function describeBot(run) {
+    if (!run || !run.bot_slug) return '';
+    const m = {
+        'demo_baseline': 'Demo Baseline Bot',
+        'demo_smart': 'Demo Smart Bot',
+        'bizbotbash_champion': 'Demo Champion Bot',
+        'ai_genius': 'Demo AI Genius Bot',
+        'auto': 'Auto',
+    };
+    return m[run.bot_slug] || run.bot_slug;
 }
 
 function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
@@ -2279,14 +2386,16 @@ function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
     ctx.fillStyle = '#71717a';
     ctx.font = '11px "JetBrains Mono", monospace';
     ctx.textAlign = 'right';
-    const maxValue = Math.max(...datasets.flat());
+    // Skip null/undefined when computing max so sparse overlays still scale right
+    const allValues = datasets.flat().filter(v => v != null && !isNaN(v));
+    const maxValue = allValues.length ? Math.max(...allValues) : 1;
     for (let i = 0; i <= 5; i++) {
         const val = (i * maxValue / 5);
         const y = padding.top + chartHeight - (i * chartHeight / 5);
         ctx.fillText(formatCurrency(val), padding.left - 10, y + 4);
     }
 
-    // Draw lines
+    // Draw lines (null values break the path so overlays stay clean)
     datasets.forEach((data, idx) => {
         const isDashed = idx > 0 && labels[idx].includes('Total');
         ctx.strokeStyle = colors[idx] || '#facc15';
@@ -2294,10 +2403,12 @@ function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
         ctx.setLineDash(isDashed ? [5, 5] : []);
 
         ctx.beginPath();
+        let pendingMove = true;
         data.forEach((val, i) => {
+            if (val == null || isNaN(val)) { pendingMove = true; return; }
             const x = padding.left + (i * chartWidth / (data.length - 1 || 1));
             const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
-            if (i === 0) ctx.moveTo(x, y);
+            if (pendingMove) { ctx.moveTo(x, y); pendingMove = false; }
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
@@ -2306,6 +2417,7 @@ function drawLineChart(ctx, months, datasets, labels, colors, width, height) {
         // Draw points
         ctx.fillStyle = colors[idx] || '#facc15';
         data.forEach((val, i) => {
+            if (val == null || isNaN(val)) return;
             const x = padding.left + (i * chartWidth / (data.length - 1 || 1));
             const y = padding.top + chartHeight - (val / maxValue) * chartHeight;
             ctx.beginPath();
@@ -3343,13 +3455,24 @@ function renderRunCards() {
 
         const months = run.months || 12;
 
+        // Format sim period from sim_start / sim_end (e.g. "Jan 2025 – Dec 2025")
+        const fmtMon = iso => {
+            if (!iso) return '';
+            const [y, m] = iso.split('-');
+            const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${names[parseInt(m)-1]} ${y}`;
+        };
+        const simPeriod = run.sim_start && run.sim_end
+            ? `${fmtMon(run.sim_start)} – ${fmtMon(run.sim_end)}`
+            : '';
+
         card.innerHTML = `
             <div class="run-card-label" title="${label}">${displayLabel}</div>
             ${botLabel ? '<div class="run-card-bot">' + botLabel + '</div>' : ''}
             <div class="run-card-meta">
                 <span class="run-card-mode ${mode}">${mode}</span>
                 <span>${months}mo</span>
-                ${timestamp ? '<span>' + formatTimestamp(timestamp) + '</span>' : ''}
+                ${simPeriod ? '<span>' + simPeriod + '</span>' : ''}
             </div>
             ${revenue > 0 ? '<div class="run-card-meta"><span class="run-card-revenue">฿' + formatCurrency(revenue) + '</span>' +
                 (grossProfit > 0 ? ' <span>GP: ฿' + formatCurrency(grossProfit) + '</span>' : '') + '</div>' : ''}
