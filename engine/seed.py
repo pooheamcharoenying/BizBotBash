@@ -28,8 +28,10 @@ def _build_challenge_doc():
     locations = _load_json("sales_locations.json")
     warehouses = _load_json("warehouses.json")
 
-    physical = sum(1 for l in locations if l.get("type", "").lower() == "physical")
+    # "online" is the only online type; everything else (Retail Store,
+    # Kiosk, Market Stall, ...) counts as a physical store.
     online = sum(1 for l in locations if l.get("type", "").lower() == "online")
+    physical = len(locations) - online
     total_locations = len(locations) + len(warehouses)
 
     description = (
