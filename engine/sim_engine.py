@@ -64,6 +64,8 @@ TREND_DURATION_BUCKETS = [
 ]
 TREND_MAG_RANGE = (0.10, 0.50)   # ±10% to ±50%
 TREND_MULT_CAP = (0.25, 4.0)     # soft cap so compounded trends don't explode
+TREND_PERMANENT_PROB = 0.20      # 20% of trends persist forever, 80% revert
+TREND_PERMANENT_SENTINEL = 99999 # end_month for permanent events (never prunes)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
@@ -880,16 +882,29 @@ class SimulationEngine:
             for target_id in self._trend_targets(scope):
                 if self.rng_trends.random() >= rate:
                     continue
-                # Pick duration bucket
-                r = self.rng_trends.random()
-                cum = 0
-                dmin, dmax = 1, 3
-                for prob, lo, hi in TREND_DURATION_BUCKETS:
-                    cum += prob
-                    if r < cum:
-                        dmin, dmax = lo, hi
-                        break
-                duration = self.rng_trends.randint(dmin, dmax)
+                # 20% of trends are PERMANENT — a real baseline shift that
+                # never reverts. 80% are temporary and expire after the
+                # chosen duration (short/mid/long per TREND_DURATION_BUCKETS).
+                permanent = self.rng_trends.random() < TREND_PERMANENT_PROB
+                if permanent:
+                    duration = None
+                    end_month = TREND_PERMANENT_SENTINEL
+                    bucket = "permanent"
+                else:
+                    r = self.rng_trends.random()
+                    cum = 0
+                    dmin, dmax = 1, 3
+                    for prob, lo, hi in TREND_DURATION_BUCKETS:
+                        cum += prob
+                        if r < cum:
+                            dmin, dmax = lo, hi
+                            break
+                    duration = self.rng_trends.randint(dmin, dmax)
+                    end_month = mi + duration
+                    bucket = (
+                        "short" if duration <= 3 else
+                        "mid" if duration <= 6 else "long"
+                    )
                 direction = self.rng_trends.choice([-1, +1])
                 magnitude = self.rng_trends.uniform(*TREND_MAG_RANGE)
                 event = {
@@ -898,12 +913,10 @@ class SimulationEngine:
                     "direction": direction,
                     "magnitude": round(magnitude, 3),
                     "start_month": mi,
-                    "end_month": mi + duration,
+                    "end_month": end_month,
                     "duration_months": duration,
-                    "bucket": (
-                        "short" if duration <= 3 else
-                        "mid" if duration <= 6 else "long"
-                    ),
+                    "bucket": bucket,
+                    "permanent": permanent,
                     "started_on": str(self.current_date),
                 }
                 self.trend_events.append(event)
