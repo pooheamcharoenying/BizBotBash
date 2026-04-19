@@ -715,6 +715,15 @@ class SimulationEngine:
         for loc in cfg["physical_locs"]:
             self.store_capacity_cm3[loc["id"]] = loc.get("effective_capacity_cm3", 5_000_000)
 
+        # Per-SKU shelf capacity (display-side limit). Backroom holds the
+        # rest up to the store's total volumetric capacity. Customers can
+        # only buy what's on the shelf; end-of-day we refill from backroom.
+        #   shelf_cap = refill_num * 2  (min 6, max 40 — keeps unit counts plausible)
+        self.shelf_cap = {
+            p["id"]: max(6, min(40, self.refill_num[p["id"]] * 2))
+            for p in products
+        }
+
         self.shelf_mult = cfg["shelf_mult"]
         self.location_mult = cfg["location_mult"]
         self.product_mult = cfg["product_mult"]
@@ -727,7 +736,8 @@ class SimulationEngine:
         self.discounts = {}
 
         # Initialize warehouse stock
-        self.stock = {}
+        self.stock = {}           # total at each (location, product)
+        self.shelf_stock = {}     # sellable subset at (store, product). Backroom = stock - shelf.
         for p in products:
             inv = cfg["inventory_params"][p["id"]]
             self.stock[("WH-01", p["id"])] = inv["initial_wh01"]
@@ -747,10 +757,13 @@ class SimulationEngine:
                 can_place = min(refill, max_by_volume)
                 if can_place <= 0:
                     self.stock[(loc_id, p["id"])] = 0
+                    self.shelf_stock[(loc_id, p["id"])] = 0
                     continue
                 wh_avail = self.stock.get(("WH-01", p["id"]), 0)
                 actual = min(can_place, wh_avail)
                 self.stock[(loc_id, p["id"])] = actual
+                # Fill the shelf first; anything beyond shelf capacity sits in backroom.
+                self.shelf_stock[(loc_id, p["id"])] = min(actual, self.shelf_cap[p["id"]])
                 self.stock[("WH-01", p["id"])] = wh_avail - actual
                 used_cm3 += actual * vol_per_unit
 
@@ -1257,9 +1270,13 @@ class SimulationEngine:
                     sell_price = round(prod["price"] * (1 - disc), 2)
 
                     if is_physical:
-                        store_avail = self.stock.get((loc_id, prod["id"]), 0)
-                        qty_filled = min(qty_wanted, store_avail)
-                        self.stock[(loc_id, prod["id"])] = store_avail - qty_filled
+                        # Customers can only buy what's ON THE SHELF. If the
+                        # shelf is empty the sale is lost even when backroom
+                        # has stock — bots must replenish shelf faster.
+                        shelf_avail = self.shelf_stock.get((loc_id, prod["id"]), 0)
+                        qty_filled = min(qty_wanted, shelf_avail)
+                        self.shelf_stock[(loc_id, prod["id"])] = shelf_avail - qty_filled
+                        self.stock[(loc_id, prod["id"])] = self.stock.get((loc_id, prod["id"]), 0) - qty_filled
                     else:
                         wh_avail = self.stock.get(("WH-01", prod["id"]), 0)
                         qty_filled = min(qty_wanted, wh_avail)
@@ -1298,7 +1315,28 @@ class SimulationEngine:
         self.total_cogs += day_cogs
         self.total_variable_costs += self.daily_variable_costs
 
-        # ── 4. Stock snapshots ──
+        # ── 4a. End-of-day shelf refill from backroom ──
+        # After sales, any product whose shelf is below its per-SKU cap
+        # gets restocked from the store's backroom. Backroom is the
+        # implicit gap between self.stock and self.shelf_stock.
+        for loc in self.cfg["physical_locs"]:
+            loc_id = loc["id"]
+            for p in products:
+                pid = p["id"]
+                total = self.stock.get((loc_id, pid), 0)
+                on_shelf = self.shelf_stock.get((loc_id, pid), 0)
+                backroom = total - on_shelf
+                if backroom <= 0:
+                    continue
+                cap = self.shelf_cap.get(pid, 20)
+                need = cap - on_shelf
+                if need <= 0:
+                    continue
+                moved = min(need, backroom)
+                self.shelf_stock[(loc_id, pid)] = on_shelf + moved
+                # self.stock is unchanged (total hasn't moved, just reallocated)
+
+        # ── 4b. Stock snapshots (post-refill, end-of-day view) ──
         for p in products:
             for wh in warehouses:
                 qty = self.stock.get((wh["id"], p["id"]), 0)
@@ -1306,13 +1344,16 @@ class SimulationEngine:
                     "date": self.current_date, "location_id": wh["id"],
                     "location_type": "warehouse",
                     "product_id": p["id"], "qty_on_hand": qty,
+                    "shelf_qty": 0, "backroom_qty": qty,
                 })
             for loc in self.cfg["physical_locs"]:
                 qty = self.stock.get((loc["id"], p["id"]), 0)
+                shelf = self.shelf_stock.get((loc["id"], p["id"]), 0)
                 self.daily_stock_log.append({
                     "date": self.current_date, "location_id": loc["id"],
                     "location_type": "store",
                     "product_id": p["id"], "qty_on_hand": qty,
+                    "shelf_qty": shelf, "backroom_qty": qty - shelf,
                 })
 
         # ── 7. Daily financials ──
