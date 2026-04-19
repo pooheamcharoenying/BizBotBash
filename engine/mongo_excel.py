@@ -86,6 +86,7 @@ def run_to_xlsx_bytes(run_id):
         ("Shelf_Layout", "shelf_layout"),
         ("Shelf_Assignments_Initial", "shelf_assignments_initial"),
         ("Shelf_Assignments_Final", "shelf_assignments_final"),
+        ("Trend_Events", "trend_events"),
     ]:
         ws = wb.create_sheet(sheet_title)
         _write_sheet(ws, raw.get(key, []) or [], sheet_title)

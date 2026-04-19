@@ -44,6 +44,27 @@ def _popularity_cycle(pid, mi, hv):
     amplitude = min(0.3 + abs(hv.get("trend_monthly_pct", 0)) * 5, 0.55)
     return 1 + amplitude * math.sin(2 * math.pi * mi / period + phase)
 
+
+# ─────────────────────────────────────────────────────────────
+# Random trend-event configuration (hidden from bots)
+# ─────────────────────────────────────────────────────────────
+# Expected events per month per individual target. With 4 scopes and
+# ~10-80 targets each, total trend events fire a few times per month.
+TREND_RATES = {
+    "location": 0.15,   # ~1 event / 7 months per location
+    "product":  0.06,   # ~1 event / 16 months per SKU
+    "brand":    0.12,   # ~1 event / 8 months per supplier
+    "category": 0.15,   # ~1 event / 7 months per category
+}
+# (probability, min duration months, max duration months)
+TREND_DURATION_BUCKETS = [
+    (0.40, 1, 3),    # short-term fad
+    (0.40, 4, 6),    # mid-term
+    (0.20, 7, 18),   # long-term
+]
+TREND_MAG_RANGE = (0.10, 0.50)   # ±10% to ±50%
+TREND_MULT_CAP = (0.25, 4.0)     # soft cap so compounded trends don't explode
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_DIR = os.path.join(PROJECT_DIR, "config")
@@ -703,7 +724,13 @@ class SimulationEngine:
         seed = company.get("random_seed", 2026)
         self.rng_sales = random.Random(seed)       # customer traffic, product picks, qty
         self.rng_logistics = random.Random(seed + 1)  # PO lead times, transfer transit, reliability
+        self.rng_trends = random.Random(seed + 2)  # random trend events (hidden from bots)
         random.seed(seed)  # keep global seed for backward compat (load_config uses it)
+
+        # Hidden trend-event state (bots cannot observe directly)
+        self.trend_events = []        # currently active events
+        self.trend_events_log = []    # every event ever rolled, for post-mortem export
+        self._last_trend_month = -1
 
         products = cfg["products"]
         self.product_map = {p["id"]: p for p in products}
@@ -823,6 +850,91 @@ class SimulationEngine:
             return d
         return 0.0
 
+    # ── Random trend events (hidden from bots) ────────────────
+    def _trend_targets(self, scope):
+        if scope == "location":
+            return [l["id"] for l in self.cfg["sales_locations"]]
+        if scope == "product":
+            return [p["id"] for p in self.cfg["products"]]
+        if scope == "brand":
+            # TEMPORARY: one supplier == one brand. In reality a single
+            # supplier can distribute multiple brands (e.g. a toy
+            # wholesaler carrying Sanrio + Bandai + Takara). Revisit
+            # when products grow a proper `brand` field.
+            return [s["id"] for s in self.cfg["suppliers"]]
+        if scope == "category":
+            cats = self.cfg["categories"]
+            return list(cats.keys()) if isinstance(cats, dict) else [c["id"] for c in cats]
+        return []
+
+    def _product_supplier_id(self, pid):
+        return self.cfg.get("product_supplier", {}).get(pid)
+
+    def _product_category(self, pid):
+        p = self.product_map.get(pid, {})
+        return p.get("cat")
+
+    def _roll_new_trends(self, mi):
+        """At the start of each new month, roll dice for new trend events."""
+        for scope, rate in TREND_RATES.items():
+            for target_id in self._trend_targets(scope):
+                if self.rng_trends.random() >= rate:
+                    continue
+                # Pick duration bucket
+                r = self.rng_trends.random()
+                cum = 0
+                dmin, dmax = 1, 3
+                for prob, lo, hi in TREND_DURATION_BUCKETS:
+                    cum += prob
+                    if r < cum:
+                        dmin, dmax = lo, hi
+                        break
+                duration = self.rng_trends.randint(dmin, dmax)
+                direction = self.rng_trends.choice([-1, +1])
+                magnitude = self.rng_trends.uniform(*TREND_MAG_RANGE)
+                event = {
+                    "scope": scope,
+                    "target_id": target_id,
+                    "direction": direction,
+                    "magnitude": round(magnitude, 3),
+                    "start_month": mi,
+                    "end_month": mi + duration,
+                    "duration_months": duration,
+                    "bucket": (
+                        "short" if duration <= 3 else
+                        "mid" if duration <= 6 else "long"
+                    ),
+                    "started_on": str(self.current_date),
+                }
+                self.trend_events.append(event)
+                self.trend_events_log.append(event)
+
+    def _prune_expired_trends(self, mi):
+        self.trend_events = [e for e in self.trend_events if e["end_month"] >= mi]
+
+    def _trend_multiplier(self, pid, loc_id, mi):
+        """Compute the combined trend-event multiplier for a (product, location)
+        pairing at the current month. Hidden input — bots infer it from sales."""
+        if not self.trend_events:
+            return 1.0
+        mult = 1.0
+        sup_id = self._product_supplier_id(pid)
+        cat_id = self._product_category(pid)
+        for e in self.trend_events:
+            if not (e["start_month"] <= mi <= e["end_month"]):
+                continue
+            target = e["target_id"]
+            applies = (
+                (e["scope"] == "location" and target == loc_id) or
+                (e["scope"] == "product"  and target == pid) or
+                (e["scope"] == "brand"    and target == sup_id) or
+                (e["scope"] == "category" and target == cat_id)
+            )
+            if applies:
+                mult *= (1 + e["direction"] * e["magnitude"])
+        lo, hi = TREND_MULT_CAP
+        return max(lo, min(hi, mult))
+
     def get_demand(self, product_id, location_id=None, include_discount=True):
         """Calculate daily demand with optional price elasticity from discounts."""
         hv = self.cfg["hidden_vars"][product_id]
@@ -831,6 +943,7 @@ class SimulationEngine:
 
         trend_mult = _popularity_cycle(product_id, mi, hv)
         base = hv["base_daily_demand"] * trend_mult
+        base *= self._trend_multiplier(product_id, location_id or "", mi)
         season_mult = hv["seasonality_12m"][cm]
 
         hype_mult = 1.0
@@ -1159,6 +1272,13 @@ class SimulationEngine:
             write_monthly_excel(self, self._last_month)
         self._last_month = current_month_str
 
+        # First day of a new sim-month: roll new random trend events,
+        # expire old ones. Deterministic via self.rng_trends (seed + 2).
+        if mi != self._last_trend_month:
+            self._roll_new_trends(mi)
+            self._prune_expired_trends(mi)
+            self._last_trend_month = mi
+
         # In auto mode, generate commands just like a bot would (before sales)
         if self.mode == "auto":
             auto_commands = self._generate_auto_commands()
@@ -1234,8 +1354,9 @@ class SimulationEngine:
                 loyalty = hv["brand_loyalty"]
                 season = hv["seasonality_12m"][cm]
                 trend = _popularity_cycle(p["id"], mi_val, hv)
+                event_trend = self._trend_multiplier(p["id"], loc_id, mi_val)
 
-                w = base_d * buzz_factor * loyalty * season * trend
+                w = base_d * buzz_factor * loyalty * season * trend * event_trend
 
                 # Shelf grade affects product visibility/attractiveness at physical stores
                 if is_physical:
