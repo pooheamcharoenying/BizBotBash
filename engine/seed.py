@@ -232,13 +232,12 @@ def seed_welcome_run(db, challenge_id):
 
     # Lazy imports: these pull heavy deps, skip unless we actually need them
     from sim_engine import load_config, SimulationEngine, build_compact
-    from mongo_runs import save_run, first_of_n_months_ago
+    from mongo_runs import save_run, WELCOME_SIM_START, WELCOME_SIM_MONTHS
 
     cfg = load_config()
-    cfg["company"]["sim_months"] = 12
-    # Welcome run covers the past 12 months so it ends "now" — new runs
-    # pick up from today going forward.
-    cfg["company"]["sim_start"] = first_of_n_months_ago(12)
+    cfg["company"]["sim_months"] = WELCOME_SIM_MONTHS
+    # Welcome baseline always covers all of 2025. New user runs start 2026-01-01.
+    cfg["company"]["sim_start"] = WELCOME_SIM_START
 
     engine = SimulationEngine(cfg, mode="auto")
     engine.run()
