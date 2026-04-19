@@ -48,14 +48,24 @@ def _popularity_cycle(pid, mi, hv):
 # ─────────────────────────────────────────────────────────────
 # Random trend-event configuration (hidden from bots)
 # ─────────────────────────────────────────────────────────────
-# Expected events per month per individual target. With 4 scopes and
-# ~10-80 targets each, total trend events fire a few times per month.
-TREND_RATES = {
-    "location": 0.15,   # ~1 event / 7 months per location
-    "product":  0.06,   # ~1 event / 16 months per SKU
-    "brand":    0.12,   # ~1 event / 8 months per supplier
-    "category": 0.15,   # ~1 event / 7 months per category
-}
+# Trends can fire either globally (affects the target everywhere) or
+# locally (affects the target only at one specific store).
+# Local rates are much smaller because they roll per (target × location)
+# combination, so the total event volume stays balanced.
+#
+# For a given (product, location) pair the effective multiplier is:
+#   1 + Σ (direction × magnitude) over every active event that matches
+# (additive score combining, per user spec) — capped at ×0.25..×4.0.
+TREND_SCOPES = [
+    # (scope_name, per_location, rate)
+    ("location",         False, 0.15),  # inherently local (the location IS the target)
+    ("product_global",   False, 0.04),  # per SKU
+    ("product_local",    True,  0.005), # per (SKU × location)
+    ("brand_global",     False, 0.08),  # per supplier (== brand for now)
+    ("brand_local",      True,  0.02),  # per (supplier × location)
+    ("category_global",  False, 0.10),  # per category
+    ("category_local",   True,  0.03),  # per (category × location)
+]
 # (probability, min duration months, max duration months)
 TREND_DURATION_BUCKETS = [
     (0.40, 1, 3),    # short-term fad
@@ -853,21 +863,23 @@ class SimulationEngine:
         return 0.0
 
     # ── Random trend events (hidden from bots) ────────────────
-    def _trend_targets(self, scope):
-        if scope == "location":
+    def _targets_for_trend_scope(self, scope):
+        if scope in ("location",):
             return [l["id"] for l in self.cfg["sales_locations"]]
-        if scope == "product":
+        if scope in ("product_global", "product_local"):
             return [p["id"] for p in self.cfg["products"]]
-        if scope == "brand":
-            # TEMPORARY: one supplier == one brand. In reality a single
-            # supplier can distribute multiple brands (e.g. a toy
-            # wholesaler carrying Sanrio + Bandai + Takara). Revisit
-            # when products grow a proper `brand` field.
+        if scope in ("brand_global", "brand_local"):
+            # TEMPORARY: one supplier == one brand. In reality suppliers
+            # can carry multiple brands. Revisit when products grow a
+            # `brand` field.
             return [s["id"] for s in self.cfg["suppliers"]]
-        if scope == "category":
+        if scope in ("category_global", "category_local"):
             cats = self.cfg["categories"]
             return list(cats.keys()) if isinstance(cats, dict) else [c["id"] for c in cats]
         return []
+
+    def _all_location_ids(self):
+        return [l["id"] for l in self.cfg["sales_locations"]]
 
     def _product_supplier_id(self, pid):
         return self.cfg.get("product_supplier", {}).get(pid)
@@ -876,75 +888,111 @@ class SimulationEngine:
         p = self.product_map.get(pid, {})
         return p.get("cat")
 
+    def _emit_trend_event(self, mi, scope, target_id, location_id):
+        """Roll permanence/duration/direction/magnitude and append the event."""
+        permanent = self.rng_trends.random() < TREND_PERMANENT_PROB
+        if permanent:
+            duration = None
+            end_month = TREND_PERMANENT_SENTINEL
+            bucket = "permanent"
+        else:
+            r = self.rng_trends.random()
+            cum = 0
+            dmin, dmax = 1, 3
+            for prob, lo, hi in TREND_DURATION_BUCKETS:
+                cum += prob
+                if r < cum:
+                    dmin, dmax = lo, hi
+                    break
+            duration = self.rng_trends.randint(dmin, dmax)
+            end_month = mi + duration
+            bucket = (
+                "short" if duration <= 3 else
+                "mid" if duration <= 6 else "long"
+            )
+        direction = self.rng_trends.choice([-1, +1])
+        magnitude = self.rng_trends.uniform(*TREND_MAG_RANGE)
+        event = {
+            "scope": scope,
+            "locality": "local" if location_id is not None else "global",
+            "target_id": target_id,
+            "location_id": location_id,  # None for global scope events
+            "direction": direction,
+            "magnitude": round(magnitude, 3),
+            "start_month": mi,
+            "end_month": end_month,
+            "duration_months": duration,
+            "bucket": bucket,
+            "permanent": permanent,
+            "started_on": str(self.current_date),
+        }
+        self.trend_events.append(event)
+        self.trend_events_log.append(event)
+
     def _roll_new_trends(self, mi):
-        """At the start of each new month, roll dice for new trend events."""
-        for scope, rate in TREND_RATES.items():
-            for target_id in self._trend_targets(scope):
-                if self.rng_trends.random() >= rate:
-                    continue
-                # 20% of trends are PERMANENT — a real baseline shift that
-                # never reverts. 80% are temporary and expire after the
-                # chosen duration (short/mid/long per TREND_DURATION_BUCKETS).
-                permanent = self.rng_trends.random() < TREND_PERMANENT_PROB
-                if permanent:
-                    duration = None
-                    end_month = TREND_PERMANENT_SENTINEL
-                    bucket = "permanent"
-                else:
-                    r = self.rng_trends.random()
-                    cum = 0
-                    dmin, dmax = 1, 3
-                    for prob, lo, hi in TREND_DURATION_BUCKETS:
-                        cum += prob
-                        if r < cum:
-                            dmin, dmax = lo, hi
-                            break
-                    duration = self.rng_trends.randint(dmin, dmax)
-                    end_month = mi + duration
-                    bucket = (
-                        "short" if duration <= 3 else
-                        "mid" if duration <= 6 else "long"
-                    )
-                direction = self.rng_trends.choice([-1, +1])
-                magnitude = self.rng_trends.uniform(*TREND_MAG_RANGE)
-                event = {
-                    "scope": scope,
-                    "target_id": target_id,
-                    "direction": direction,
-                    "magnitude": round(magnitude, 3),
-                    "start_month": mi,
-                    "end_month": end_month,
-                    "duration_months": duration,
-                    "bucket": bucket,
-                    "permanent": permanent,
-                    "started_on": str(self.current_date),
-                }
-                self.trend_events.append(event)
-                self.trend_events_log.append(event)
+        """At the start of each new month, roll dice for new trend events
+        across every scope (global and local)."""
+        all_locs = self._all_location_ids()
+        for scope, per_location, rate in TREND_SCOPES:
+            targets = self._targets_for_trend_scope(scope)
+            locs = all_locs if per_location else [None]
+            for target_id in targets:
+                for loc_id in locs:
+                    if self.rng_trends.random() >= rate:
+                        continue
+                    # For "location" scope, the target IS a location;
+                    # emit with location_id=None (locality is implicit).
+                    self._emit_trend_event(mi, scope, target_id, loc_id)
 
     def _prune_expired_trends(self, mi):
         self.trend_events = [e for e in self.trend_events if e["end_month"] >= mi]
 
     def _trend_multiplier(self, pid, loc_id, mi):
-        """Compute the combined trend-event multiplier for a (product, location)
-        pairing at the current month. Hidden input — bots infer it from sales."""
+        """Combined trend-event multiplier for a (product, location) pairing.
+        ADDITIVE combining: sum every matching event's delta, then apply
+        once. Global and local events at the same scope just add. Capped
+        at [0.25, 4.0] so stacked shocks can't run away."""
         if not self.trend_events:
             return 1.0
-        mult = 1.0
         sup_id = self._product_supplier_id(pid)
         cat_id = self._product_category(pid)
+        total_delta = 0.0
         for e in self.trend_events:
             if not (e["start_month"] <= mi <= e["end_month"]):
                 continue
-            target = e["target_id"]
-            applies = (
-                (e["scope"] == "location" and target == loc_id) or
-                (e["scope"] == "product"  and target == pid) or
-                (e["scope"] == "brand"    and target == sup_id) or
-                (e["scope"] == "category" and target == cat_id)
-            )
-            if applies:
-                mult *= (1 + e["direction"] * e["magnitude"])
+            scope = e["scope"]
+            tgt = e["target_id"]
+            event_loc = e.get("location_id")
+
+            # Match logic — each scope has a target and, for *_local,
+            # must also match the location.
+            if scope == "location":
+                if tgt != loc_id:
+                    continue
+            elif scope == "product_global":
+                if tgt != pid:
+                    continue
+            elif scope == "product_local":
+                if tgt != pid or event_loc != loc_id:
+                    continue
+            elif scope == "brand_global":
+                if tgt != sup_id:
+                    continue
+            elif scope == "brand_local":
+                if tgt != sup_id or event_loc != loc_id:
+                    continue
+            elif scope == "category_global":
+                if tgt != cat_id:
+                    continue
+            elif scope == "category_local":
+                if tgt != cat_id or event_loc != loc_id:
+                    continue
+            else:
+                continue
+
+            total_delta += e["direction"] * e["magnitude"]
+
+        mult = 1.0 + total_delta
         lo, hi = TREND_MULT_CAP
         return max(lo, min(hi, mult))
 
