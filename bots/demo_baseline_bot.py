@@ -81,17 +81,48 @@ class DemoBot:
                 best = min(candidates, key=lambda s: sum(s["lead_days"]) / 2)
                 self.product_supplier[pid] = best["id"]
 
-        # Order-up-to target: 1.75× one refill round per product.
-        # Trigger at 1/2 of target — covers lead-time demand + the ~2%
-        # yield loss on partial supplier deliveries without accumulating
-        # the way the old fixed 2× rule did under the shelf mechanic.
+        # Pre-compute per-(product, store) shelf capacity and the
+        # system-wide WH target. Shelf capacity = how many units of P
+        # fit on the shelves of P's grade at that store, derived from
+        # product footprint (base_area_cm2) and shelf area (slots × 200).
+        self.shelf_cap = {}       # (pid, loc_id) → int
+        self.initial_grade = {}   # (pid, loc_id) → "A"/"B"/"C"
+        SLOT_AREA_CM2 = 200
+        for loc in self.physical_locs:
+            loc_id = loc["id"]
+            shelf_grades = loc.get("shelf_grades", ["B"])
+            grade_counts = {g: shelf_grades.count(g) for g in ("A", "B", "C")}
+            shelf_area = loc.get("slots_per_shelf", 30) * SLOT_AREA_CM2
+            for pid, p in self.catalog.items():
+                area = max(20, p.get("base_area_cm2",
+                                     p.get("dim_l_cm", 10) * p.get("dim_w_cm", 10)))
+                # Initial grade matches the server's category-priority placement.
+                initial_grade = self._initial_grade_for(p)
+                self.initial_grade[(pid, loc_id)] = initial_grade
+                n_shelves = grade_counts.get(initial_grade, 0)
+                per_shelf = shelf_area // area
+                self.shelf_cap[(pid, loc_id)] = per_shelf * n_shelves
+
+        # WH target: enough to refill every store's shelf once + 50%
+        # cushion for lead time and partial deliveries.
         self.target_wh = {}
         self.trigger_wh = {}
         for pid, p in self.catalog.items():
             refill = p.get("refill_num", 5)
-            target = max(int(refill * num_stores * 1.75), 10)
+            system_shelf = sum(self.shelf_cap.get((pid, loc["id"]), 0)
+                               for loc in self.physical_locs)
+            target = max(int(max(system_shelf, refill * num_stores) * 1.5), 10)
             self.target_wh[pid] = target
             self.trigger_wh[pid] = max(refill, target // 2)
+
+    def _initial_grade_for(self, product):
+        """Category-priority placement (mirrors server-side logic)."""
+        cat = product.get("cat", "")
+        if cat in ("CAT-03", "CAT-01"):
+            return "A"
+        if cat in ("CAT-02", "CAT-04", "CAT-05"):
+            return "B"
+        return "C"
 
         return resp["state"]
 
@@ -148,21 +179,24 @@ class DemoBot:
             loc_id = loc["id"]
             loc_stock = stock.get(loc_id, {})
             for pid in self.catalog:
+                cap = self.shelf_cap.get((pid, loc_id), 0)
+                if cap <= 0:
+                    continue
                 store_qty = loc_stock.get(pid, 0)
-                if store_qty > 0:
-                    continue  # Still has stock
+                # Reorder when shelf is half-empty, topping up to full.
+                if store_qty > cap // 2:
+                    continue
                 if (pid, loc_id) in pending_transfers:
-                    continue  # Transfer already in progress
+                    continue
 
-                refill = self.catalog[pid].get("refill_num", 5)
+                need = cap - store_qty
                 wh_avail = wh_stock.get(pid, 0)
-                transfer_qty = min(refill, wh_avail)
+                transfer_qty = min(need, wh_avail)
 
                 if transfer_qty > 0:
                     if loc_id not in shipment_items:
                         shipment_items[loc_id] = []
                     shipment_items[loc_id].append({"product_id": pid, "qty": transfer_qty})
-                    # Track locally so we don't double-transfer from WH
                     wh_stock[pid] = wh_avail - transfer_qty
 
         # Emit one grouped transfer per destination store

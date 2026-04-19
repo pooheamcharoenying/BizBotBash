@@ -28,10 +28,12 @@ using the observable data available through the API.
 
 ## Store Refill (Transfers from Warehouse)
 
-- **Trigger:** A product's stock at a physical store reaches **0 units**
+- **Trigger:** A product's shelf stock drops to **≤ half of its shelf capacity** at a store
 - **Skip if:** A pending (unreceived) transfer already exists for that product → that store
-- **Quantity:** `min(refill_num, max_units_that_fit_by_volume)` — constrained by the store's
-  remaining shelf capacity (volume in cm³)
+- **Quantity:** `shelf_capacity − current_stock` — fills the shelf all the way up (capped by WH availability)
+- **Shelf capacity** is derived from the product's `base_area_cm2` and the store's
+  per-grade shelf area: `units_per_shelf = floor(shelf_area / base_area)`,
+  `cap = units_per_shelf × shelves_at_that_grade`
 - **Source:** WH-01 only (no Store→Store transfers in default mode)
 - **Transit time:**
   - Bangkok stores: **1 day**

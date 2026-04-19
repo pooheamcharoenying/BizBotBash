@@ -145,8 +145,7 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
 
     def _assignment_row(loc_id, pid, grade):
         prod = product_by_id.get(pid, {})
-        shelf_qty = int(engine.shelf_stock.get((loc_id, pid), 0))
-        total_qty = int(engine.stock.get((loc_id, pid), 0))
+        shelf_qty = int(engine.stock.get((loc_id, pid), 0))
         return {
             "location_id": loc_id,
             "location_name": loc_name_by_id.get(loc_id, ""),
@@ -156,8 +155,6 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
             "category_name": cat_name_by_id.get(prod.get("cat", ""), ""),
             "shelf_grade": grade,
             "shelf_qty": shelf_qty,
-            "backroom_qty": max(0, total_qty - shelf_qty),
-            "total_qty": total_qty,
             "shelf_capacity_units": engine.shelf_cap_for(pid, loc_id),
             "product_base_area_cm2": engine.product_area.get(pid, 0),
             "unit_price": prod.get("price", 0),
@@ -193,12 +190,10 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
                 product_by_id.get(pid, {}).get("name", pid) for pid in pids
             ),
             "total_shelf_units": sum(
-                engine.shelf_stock.get((loc_id, pid), 0) for pid in pids
+                engine.stock.get((loc_id, pid), 0) for pid in pids
             ),
-            "total_backroom_units": sum(
-                max(0, engine.stock.get((loc_id, pid), 0) -
-                       engine.shelf_stock.get((loc_id, pid), 0))
-                for pid in pids
+            "total_shelf_capacity": sum(
+                engine.shelf_cap_for(pid, loc_id) for pid in pids
             ),
         })
 

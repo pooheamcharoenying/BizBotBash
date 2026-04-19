@@ -199,27 +199,43 @@ def load_config():
     rng = random.Random(cfg["company"].get("random_seed", 2026))
 
     num_stores = len(physical_locs)
+    # Pre-compute per-(product, store) shelf capacity using the same
+    # area formula the engine will apply at runtime, so inventory_params
+    # match what stores actually demand.
+    shelf_grades_at_loc = {
+        loc["id"]: {
+            "A": loc.get("shelf_grades", []).count("A"),
+            "B": loc.get("shelf_grades", []).count("B"),
+            "C": loc.get("shelf_grades", []).count("C"),
+        }
+        for loc in physical_locs
+    }
+    slot_area_cm2 = 200  # matches SLOT_AREA_CM2 at module level
     for p in cfg["products"]:
-        # Default bot uses ONLY public information. Order-up-to target
-        # is one full refill round (refill_num × num_stores). No fixed
-        # safety cushion — bots that layer demand-aware buffers on top
-        # will visibly beat this.
+        pid = p["id"]
+        area_per_unit = max(20, p.get("base_area_cm2",
+                                      p.get("dim_l_cm", 10) * p.get("dim_w_cm", 10)))
         refill = p.get("refill_num", 5)
-        # Target WH = 1.75× one refill round — a measured buffer that
-        # covers supplier lead time (5-10 days) and the ~2% yield loss
-        # to partial deliveries, without the runaway 2× accumulation
-        # the old fixed rule caused under the new shelf mechanic.
-        base_round = refill * num_stores
-        target_wh = int(base_round * 1.75)
+        # Sum shelf capacity for this product across all stores at their
+        # initial grades. This is the system-wide "one round of display".
+        total_shelf_cap = 0
+        for loc in physical_locs:
+            grade = product_shelf_grade.get((loc["id"], pid), "B")
+            shelf_area = loc.get("slots_per_shelf", 30) * slot_area_cm2
+            per_shelf = shelf_area // area_per_unit
+            n_shelves = shelf_grades_at_loc[loc["id"]].get(grade, 0)
+            total_shelf_cap += per_shelf * n_shelves
+
+        # Target WH = enough to refill every store once (the shelf
+        # capacity sum) plus a 0.5× cushion for lead time + yield loss.
+        target_wh = int(max(total_shelf_cap, refill * num_stores) * 1.5)
         trigger_wh = max(refill, target_wh // 2)
         initial_wh01 = target_wh
 
-        inventory_params[p["id"]] = {
+        inventory_params[pid] = {
             "target_wh": max(target_wh, 10),
             "trigger_wh": max(trigger_wh, 2),
-            # legacy field: keep for any caller that still reads reorder_qty;
-            # treat it as the target amount (order-up-to style)
-            "reorder_qty": max(target_wh, 10),
+            "reorder_qty": max(target_wh, 10),  # legacy alias
             "initial_wh01": max(initial_wh01, 10),
         }
     cfg["inventory_params"] = inventory_params
@@ -806,38 +822,25 @@ class SimulationEngine:
         self.discounts = {}
 
         # Initialize warehouse stock
-        self.stock = {}           # total at each (location, product)
-        self.shelf_stock = {}     # sellable subset at (store, product). Backroom = stock - shelf.
+        # self.stock is the SINGLE stock pool per (location, product).
+        # For physical stores it represents units on the shelf (what
+        # customers see + can buy). There's no separate backroom.
+        self.stock = {}
         for p in products:
             inv = cfg["inventory_params"][p["id"]]
             self.stock[("WH-01", p["id"])] = inv["initial_wh01"]
 
-        # Initialize store stock
+        # Initialize store stock: fill each shelf to its area-based
+        # capacity, constrained by whatever the WH can spare.
         for loc in cfg["physical_locs"]:
             loc_id = loc["id"]
-            capacity_cm3 = self.store_capacity_cm3[loc_id]
-            used_cm3 = 0
-            shuffled = list(products)
-            self.rng_logistics.shuffle(shuffled)
-            for p in shuffled:
-                refill = self.refill_num[p["id"]]
-                vol_per_unit = self.product_volume[p["id"]]
-                space_left_cm3 = capacity_cm3 - used_cm3
-                max_by_volume = int(space_left_cm3 / vol_per_unit) if vol_per_unit > 0 else 0
-                can_place = min(refill, max_by_volume)
-                if can_place <= 0:
-                    self.stock[(loc_id, p["id"])] = 0
-                    self.shelf_stock[(loc_id, p["id"])] = 0
-                    continue
-                wh_avail = self.stock.get(("WH-01", p["id"]), 0)
-                actual = min(can_place, wh_avail)
-                self.stock[(loc_id, p["id"])] = actual
-                # Fill the shelf first; anything beyond shelf capacity sits in backroom.
-                self.shelf_stock[(loc_id, p["id"])] = min(
-                    actual, self.shelf_cap_for(p["id"], loc_id)
-                )
-                self.stock[("WH-01", p["id"])] = wh_avail - actual
-                used_cm3 += actual * vol_per_unit
+            for p in products:
+                pid = p["id"]
+                cap = self.shelf_cap_for(pid, loc_id)
+                wh_avail = self.stock.get(("WH-01", pid), 0)
+                actual = min(cap, wh_avail)
+                self.stock[(loc_id, pid)] = actual
+                self.stock[("WH-01", pid)] = wh_avail - actual
 
         self.pending_pos = []
         self.po_counter = 0
@@ -902,16 +905,13 @@ class SimulationEngine:
         and at sim end — runs regardless of working-day status since
         it only reads state."""
         for (loc_id, pid), grade in self.product_shelf_grade.items():
-            shelf = self.shelf_stock.get((loc_id, pid), 0)
-            total = self.stock.get((loc_id, pid), 0)
             self.monthly_shelf_log.append({
                 "month": month_str,
                 "location_id": loc_id,
                 "product_id": pid,
                 "shelf_grade": grade,
-                "shelf_qty": shelf,
-                "backroom_qty": max(0, total - shelf),
-                "total_qty": total,
+                "shelf_qty": self.stock.get((loc_id, pid), 0),
+                "shelf_capacity": self.shelf_cap_for(pid, loc_id),
             })
 
     def shelf_cap_for(self, product_id, location_id):
@@ -1173,30 +1173,34 @@ class SimulationEngine:
                 "items": po_items,
             })
 
-        # ── 2. Store refill: transfer from WH when store stock = 0 ──
-        # Group all products going to the same store into one shipment
+        # ── 2. Store refill: transfer from WH when store shelf is below
+        # half capacity, topping the shelf up to full. Fills the shelf
+        # to its area-based capacity so we actually use it — no tiny
+        # refill_num-sized trickle that leaves shelves mostly bare.
         pending_transfer_keys = set(
             (t["product_id"], t["to_loc"]) for t in self.pending_transfers if not t["received"])
 
-        # Track WH stock locally to avoid double-transferring
         wh_stock_local = {}
         for p in products:
             wh_stock_local[p["id"]] = self.stock.get(("WH-01", p["id"]), 0)
 
-        # Collect items per destination store
         store_items = defaultdict(list)  # loc_id → [{product_id, qty}, ...]
         for loc in self.cfg["physical_locs"]:
             loc_id = loc["id"]
             for p in products:
                 pid = p["id"]
+                cap = self.shelf_cap_for(pid, loc_id)
+                if cap <= 0:
+                    continue
                 store_qty = self.stock.get((loc_id, pid), 0)
-                if store_qty > 0:
+                # Reorder when the shelf is half empty (or emptier).
+                if store_qty > cap // 2:
                     continue
                 if (pid, loc_id) in pending_transfer_keys:
                     continue
-                refill = self.refill_num[pid]
+                need = cap - store_qty
                 wh_avail = wh_stock_local.get(pid, 0)
-                actual = min(refill, wh_avail)
+                actual = min(need, wh_avail)
                 if actual > 0:
                     store_items[loc_id].append({"product_id": pid, "qty": actual})
                     wh_stock_local[pid] = wh_avail - actual
@@ -1377,11 +1381,14 @@ class SimulationEngine:
                 grade = cmd["shelf_grade"]
                 self.product_shelf_grade[(loc_id, pid)] = grade
                 # If the new grade has a smaller cap (e.g. demotion A → C
-                # where the store has fewer C-shelves), trim visible stock
-                # to the new cap — the excess implicitly moves to backroom.
+                # where the store has fewer C-shelves), the excess can't
+                # fit on the shelf — clamp stock down to the new cap.
+                # (In the real world this would be returned to WH; for the
+                # sim we simply lose the overflow, which discourages
+                # thrashy grade changes.)
                 new_cap = self.shelf_cap_for(pid, loc_id)
-                if self.shelf_stock.get((loc_id, pid), 0) > new_cap:
-                    self.shelf_stock[(loc_id, pid)] = new_cap
+                if self.stock.get((loc_id, pid), 0) > new_cap:
+                    self.stock[(loc_id, pid)] = new_cap
                 self.action_log.append({"date": self.current_date, "source": "bot",
                     "action": "set_shelf",
                     "details": f"{pid} @ {loc_id} → shelf grade {grade}"})
@@ -1535,13 +1542,11 @@ class SimulationEngine:
                     sell_price = round(prod["price"] * (1 - disc), 2)
 
                     if is_physical:
-                        # Customers can only buy what's ON THE SHELF. If the
-                        # shelf is empty the sale is lost even when backroom
-                        # has stock — bots must replenish shelf faster.
-                        shelf_avail = self.shelf_stock.get((loc_id, prod["id"]), 0)
+                        # Shelf is the only store pool now — customers
+                        # buy directly from self.stock.
+                        shelf_avail = self.stock.get((loc_id, prod["id"]), 0)
                         qty_filled = min(qty_wanted, shelf_avail)
-                        self.shelf_stock[(loc_id, prod["id"])] = shelf_avail - qty_filled
-                        self.stock[(loc_id, prod["id"])] = self.stock.get((loc_id, prod["id"]), 0) - qty_filled
+                        self.stock[(loc_id, prod["id"])] = shelf_avail - qty_filled
                     else:
                         wh_avail = self.stock.get(("WH-01", prod["id"]), 0)
                         qty_filled = min(qty_wanted, wh_avail)
@@ -1580,36 +1585,13 @@ class SimulationEngine:
         self.total_cogs += day_cogs
         self.total_variable_costs += self.daily_variable_costs
 
-        # ── 4a. End-of-day shelf refill from backroom ──
-        # After sales, any product whose shelf is below its per-SKU cap
-        # gets restocked from the store's backroom. Backroom is the
-        # implicit gap between self.stock and self.shelf_stock.
-        for loc in self.cfg["physical_locs"]:
-            loc_id = loc["id"]
-            for p in products:
-                pid = p["id"]
-                total = self.stock.get((loc_id, pid), 0)
-                on_shelf = self.shelf_stock.get((loc_id, pid), 0)
-                backroom = total - on_shelf
-                if backroom <= 0:
-                    continue
-                cap = self.shelf_cap_for(pid, loc_id)
-                need = cap - on_shelf
-                if need <= 0:
-                    continue
-                moved = min(need, backroom)
-                self.shelf_stock[(loc_id, pid)] = on_shelf + moved
-                # self.stock is unchanged (total hasn't moved, just reallocated)
-
-        # ── 4b. Stock snapshots (month-end only, post-refill view) ──
-        # Per-day snapshots for 60+ months × 9 locations × 80 SKUs would
-        # blow past Mongo's 16MB BSON limit. Monthly is enough detail
-        # for the dashboard's stock view and the exported spreadsheet.
+        # ── 4. Stock snapshot at month-end (simple single-pool model) ──
+        # Per-day snapshots would blow past Mongo's 16MB BSON limit;
+        # monthly is enough detail for the dashboard + export.
         next_day = self.current_date + timedelta(days=1)
         is_month_end = (next_day.month != self.current_date.month)
         is_sim_end = (next_day > self.end_date)
         if is_month_end or is_sim_end:
-            month_str = self.current_date.strftime("%Y-%m")
             for p in products:
                 for wh in warehouses:
                     qty = self.stock.get((wh["id"], p["id"]), 0)
@@ -1617,16 +1599,14 @@ class SimulationEngine:
                         "date": self.current_date, "location_id": wh["id"],
                         "location_type": "warehouse",
                         "product_id": p["id"], "qty_on_hand": qty,
-                        "shelf_qty": 0, "backroom_qty": qty,
                     })
                 for loc in self.cfg["physical_locs"]:
                     qty = self.stock.get((loc["id"], p["id"]), 0)
-                    shelf = self.shelf_stock.get((loc["id"], p["id"]), 0)
                     self.daily_stock_log.append({
                         "date": self.current_date, "location_id": loc["id"],
                         "location_type": "store",
                         "product_id": p["id"], "qty_on_hand": qty,
-                        "shelf_qty": shelf, "backroom_qty": qty - shelf,
+                        "shelf_capacity": self.shelf_cap_for(p["id"], loc["id"]),
                     })
 
         # ── 7. Daily financials ──
