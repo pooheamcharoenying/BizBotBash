@@ -200,15 +200,26 @@ def load_config():
 
     num_stores = len(physical_locs)
     for p in cfg["products"]:
-        # Default bot uses ONLY public information (no hidden vars)
-        # Reorder qty = refill_num × num_physical_stores × 2
+        # Default bot uses ONLY public information. Order-up-to target
+        # is one full refill round (refill_num × num_stores). No fixed
+        # safety cushion — bots that layer demand-aware buffers on top
+        # will visibly beat this.
         refill = p.get("refill_num", 5)
-        reorder_qty = refill * num_stores * 2
-        store_need = refill * num_stores
-        initial_wh01 = int(store_need * 2)  # 1:1 WH:store ratio after stores draw
+        # Target WH = 1.75× one refill round — a measured buffer that
+        # covers supplier lead time (5-10 days) and the ~2% yield loss
+        # to partial deliveries, without the runaway 2× accumulation
+        # the old fixed rule caused under the new shelf mechanic.
+        base_round = refill * num_stores
+        target_wh = int(base_round * 1.75)
+        trigger_wh = max(refill, target_wh // 2)
+        initial_wh01 = target_wh
 
         inventory_params[p["id"]] = {
-            "reorder_qty": max(reorder_qty, 10),
+            "target_wh": max(target_wh, 10),
+            "trigger_wh": max(trigger_wh, 2),
+            # legacy field: keep for any caller that still reads reorder_qty;
+            # treat it as the target amount (order-up-to style)
+            "reorder_qty": max(target_wh, 10),
             "initial_wh01": max(initial_wh01, 10),
         }
     cfg["inventory_params"] = inventory_params
@@ -1107,8 +1118,10 @@ class SimulationEngine:
         inv_params = self.cfg["inventory_params"]
         product_supplier = self.cfg["product_supplier"]
 
-        # ── 1. WH-01 reorder: PO when stock < 20 ──
-        # Group by supplier, skip batch if total < ฿20,000 THB
+        # ── 1. WH-01 reorder: order-up-to target when stock drops below trigger ──
+        # Trigger = 1/3 of target (per product, not a flat "20 units" threshold).
+        # Qty = target - on_hand so POs taper as WH refills.
+        # Group by supplier, skip batch if total < ฿20,000 THB.
         pending_product_ids = set(
             po["product_id"] for po in self.pending_pos if not po["received"])
 
@@ -1117,13 +1130,16 @@ class SimulationEngine:
             pid = p["id"]
             if pid in pending_product_ids:
                 continue
+            params = inv_params[pid]
+            target = params.get("target_wh", params.get("reorder_qty", 40))
+            trigger = params.get("trigger_wh", max(2, target // 3))
             on_hand = self.stock.get(("WH-01", pid), 0)
-            if on_hand >= 20:
+            if on_hand >= trigger:
                 continue
             sup_id = product_supplier.get(pid)
             if not sup_id:
                 continue
-            qty = inv_params[pid]["reorder_qty"]
+            qty = max(1, target - on_hand)
             cost = qty * p["cost"]
             po_by_supplier[sup_id].append((pid, qty, cost))
 

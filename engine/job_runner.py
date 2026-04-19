@@ -135,11 +135,13 @@ def init_bot(bot, start_resp):
         bot.supplier_map = {s["id"]: s for s in bot.suppliers}
     if hasattr(bot, 'online_locs'):
         bot.online_locs = [l for l in bot.locations if l["type"] == "Online"]
+    # Legacy fallback: bots that still use the flat reorder_qty field.
+    # New rule: one full refill round, no 2× safety cushion.
     if hasattr(bot, 'reorder_qty'):
         num_stores = len(bot.physical_locs)
         for pid, p in bot.catalog.items():
             refill = p.get("refill_num", 5)
-            bot.reorder_qty[pid] = max(refill * num_stores * 2, 10)
+            bot.reorder_qty[pid] = max(refill * num_stores, 10)
 
 
 # ═══════════════════════════════════════════════════════════

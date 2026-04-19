@@ -11,12 +11,13 @@ using the observable data available through the API.
 
 ## Warehouse Reordering (PO from Suppliers)
 
-- **Trigger:** WH-01 stock for a product drops below **20 units**
+- **Target level** (order-up-to): `refill_num × num_physical_stores`
+  — one full refill round across every store, no safety cushion
+- **Trigger:** WH-01 stock drops below `max(refill_num, target / 3)`
+  — scales per product; small-refill products reorder at lower thresholds
 - **Skip if:** A pending (unreceived) PO already exists for that product
-- **Order quantity:** `refill_num × num_physical_stores × 2`
-  - `refill_num` is a public product attribute (how many units fit on one store's shelf)
-  - `num_physical_stores` = 8 (the physical retail locations)
-  - The `× 2` multiplier provides a buffer so the warehouse doesn't immediately run dry
+- **Order quantity:** `target − current_on_hand` — brings WH back up to target
+  (adaptive, not a fixed batch size)
 - **Supplier selection:** Each product is mapped to the supplier that covers its category
   with the shortest average lead time
 - **Minimum order value:** POs are grouped by supplier; if the total cost for a supplier's
@@ -70,8 +71,9 @@ using the observable data available through the API.
 
 | Parameter                | Value                                  |
 |--------------------------|----------------------------------------|
-| WH reorder trigger       | Stock < 20 units                       |
-| WH reorder quantity      | `refill_num × 8 stores × 2`           |
+| WH order-up-to target    | `refill_num × num_stores`              |
+| WH reorder trigger       | `max(refill_num, target / 3)`          |
+| WH reorder quantity      | `target − on_hand` (adaptive)          |
 | Min PO value per supplier| ฿20,000 THB                            |
 | Store refill trigger     | Stock = 0                              |
 | Store refill quantity    | `refill_num` (capped by shelf volume)  |

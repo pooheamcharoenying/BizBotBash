@@ -222,9 +222,9 @@ class SmartBot:
             refill = p.get("refill_num", 5)
 
             if self.day_count < 7:
-                # Not enough data yet — use baseline formula
-                reorder_qty = max(refill * num_stores * 2, 10)
-                reorder_point = 20
+                # Not enough data yet — use baseline formula (one full round)
+                reorder_qty = max(refill * num_stores, 10)
+                reorder_point = max(refill, reorder_qty // 3)
             else:
                 # Smart reorder: account for lead time demand
                 sup_id = self.product_supplier.get(pid)

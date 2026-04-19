@@ -81,10 +81,17 @@ class DemoBot:
                 best = min(candidates, key=lambda s: sum(s["lead_days"]) / 2)
                 self.product_supplier[pid] = best["id"]
 
-        # Reorder qty = refill_num × num_physical_stores × 2
+        # Order-up-to target: 1.75× one refill round per product.
+        # Trigger at 1/2 of target — covers lead-time demand + the ~2%
+        # yield loss on partial supplier deliveries without accumulating
+        # the way the old fixed 2× rule did under the shelf mechanic.
+        self.target_wh = {}
+        self.trigger_wh = {}
         for pid, p in self.catalog.items():
             refill = p.get("refill_num", 5)
-            self.reorder_qty[pid] = max(refill * num_stores * 2, 10)
+            target = max(int(refill * num_stores * 1.75), 10)
+            self.target_wh[pid] = target
+            self.trigger_wh[pid] = max(refill, target // 2)
 
         return resp["state"]
 
@@ -94,8 +101,9 @@ class DemoBot:
         stock = state.get("stock", {})
         wh_stock = stock.get("WH-01", {})
 
-        # ── 1. Warehouse reorder: PO when stock < 20 ──
-        # Group by supplier, skip batch if total < ฿20,000 THB
+        # ── 1. Warehouse reorder: order-up-to target when below trigger ──
+        # Trigger is 1/3 of target (per product). Qty brings WH back to
+        # target. Group by supplier, skip batch if total < ฿20,000 THB.
         pending_products = set()
         for po in state.get("pending_pos", []):
             if not po["received"]:
@@ -105,13 +113,15 @@ class DemoBot:
         for pid in self.catalog:
             if pid in pending_products:
                 continue
+            target = self.target_wh[pid]
+            trigger = self.trigger_wh[pid]
             on_hand = wh_stock.get(pid, 0)
-            if on_hand >= 20:
+            if on_hand >= trigger:
                 continue
             sup_id = self.product_supplier.get(pid)
             if not sup_id:
                 continue
-            qty = self.reorder_qty[pid]
+            qty = max(1, target - on_hand)
             cost = qty * self.catalog[pid]["cost"]
             po_by_supplier[sup_id].append((pid, qty, cost))
 
