@@ -224,6 +224,9 @@ def save_run(engine, label, compact_data, bot_slug=None, user_id=None):
         "shelf_assignments_initial": shelf_assign_initial,
         "shelf_assignments_final": shelf_assign_final,
         "shelf_map": shelf_map,
+        # End-of-month shelf snapshots — lets the monthly xlsx show how
+        # the bot's set_shelf commands reshaped the layout over time.
+        "monthly_shelf_log": _iso(getattr(engine, "monthly_shelf_log", [])),
         # Random trend events — hidden from bots, visible in post-mortem export
         "trend_events": _iso(getattr(engine, "trend_events_log", [])),
         "created_at": now,

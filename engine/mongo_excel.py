@@ -75,13 +75,23 @@ _MONTHLY_LOG_KEYS = (
 )
 
 def _group_by_month(raw):
-    months = defaultdict(lambda: {k: [] for k in _MONTHLY_LOG_KEYS})
+    months = defaultdict(lambda: {
+        **{k: [] for k in _MONTHLY_LOG_KEYS},
+        "shelf_state": [],
+    })
     for key in _MONTHLY_LOG_KEYS:
         for entry in raw.get(key, []) or []:
             date_str = str(entry.get("date", ""))
             if len(date_str) >= 7:
                 m = date_str[:7]
                 months[m][key].append(entry)
+    # Month-end shelf assignment snapshot — keyed explicitly on the
+    # "month" field (not derived from date) so we can't miss an entry
+    # because of a time-zone quirk.
+    for entry in raw.get("monthly_shelf_log", []) or []:
+        m = entry.get("month")
+        if m:
+            months[m]["shelf_state"].append(entry)
     return months
 
 
@@ -122,8 +132,10 @@ def _build_initial_state(raw, summary, cfg):
     return _wb_to_bytes(wb)
 
 
-def _build_monthly(logs, month_key):
-    """One month of activity — sales, POs, transfers, stock snapshot, P&L, actions."""
+def _build_monthly(logs, month_key, shelf_layout=None):
+    """One month of activity — sales, POs, transfers, stock snapshot, P&L,
+    actions, plus a month-end shelf snapshot showing the bot's current
+    grade assignments and shelf/backroom split."""
     wb = Workbook()
     ws = wb.active
     _write_sheet(ws, logs["order_log"], "Sales")
@@ -132,6 +144,12 @@ def _build_monthly(logs, month_key):
     _write_sheet(wb.create_sheet("Stock_Snapshot"),  logs["daily_stock_log"],"Stock_Snapshot")
     _write_sheet(wb.create_sheet("Financials"),      logs["financial_log"],  "Financials")
     _write_sheet(wb.create_sheet("Action_Log"),      logs["action_log"],     "Action_Log")
+    # Shelf sheets: per-month snapshot of current assignments, plus the
+    # static layout for reference inside the same file.
+    _write_sheet(wb.create_sheet("Shelf_State"),
+                 logs.get("shelf_state", []), "Shelf_State")
+    _write_sheet(wb.create_sheet("Shelf_Layout"),
+                 shelf_layout or [], "Shelf_Layout")
     return _wb_to_bytes(wb)
 
 
@@ -185,13 +203,14 @@ def run_to_zip_bytes(run_id):
         )
 
     months = _group_by_month(raw)
+    shelf_layout = raw.get("shelf_layout", []) or []
 
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("initial_state.xlsx", _build_initial_state(raw, summary, cfg))
         for month_key in sorted(months.keys()):
             zf.writestr(f"month_{month_key}.xlsx",
-                        _build_monthly(months[month_key], month_key))
+                        _build_monthly(months[month_key], month_key, shelf_layout))
         zf.writestr("final_state.xlsx", _build_final_state(raw, summary))
 
     label = str(summary.get("label", "run")).replace(" ", "_")

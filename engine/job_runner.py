@@ -250,6 +250,11 @@ def execute_bot_run(bot_name, module_name, class_name, months, seed, label,
         if not cont:
             break
 
+    # Capture the final month's shelf snapshot (engine.run() does this
+    # for auto mode; job_runner drives step_day manually so we mirror it).
+    if getattr(engine, "_last_month", None):
+        engine._snapshot_shelf_state(engine._last_month)
+
     # ── Build results ──
     compact = build_compact(engine)
     try:

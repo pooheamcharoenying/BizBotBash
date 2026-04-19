@@ -850,6 +850,7 @@ class SimulationEngine:
         self.financial_log = []
         self.event_log = []
         self.action_log = []  # tracks all bot + auto actions
+        self.monthly_shelf_log = []  # end-of-month shelf snapshots
         self.order_counter = 0
         self.day_count = 0
         self.total_revenue = 0
@@ -894,6 +895,24 @@ class SimulationEngine:
         if d is not None:
             return d
         return 0.0
+
+    def _snapshot_shelf_state(self, month_str):
+        """Append an end-of-month snapshot of every (location, product)
+        shelf assignment. Called from step_day when a new month starts
+        and at sim end — runs regardless of working-day status since
+        it only reads state."""
+        for (loc_id, pid), grade in self.product_shelf_grade.items():
+            shelf = self.shelf_stock.get((loc_id, pid), 0)
+            total = self.stock.get((loc_id, pid), 0)
+            self.monthly_shelf_log.append({
+                "month": month_str,
+                "location_id": loc_id,
+                "product_id": pid,
+                "shelf_grade": grade,
+                "shelf_qty": shelf,
+                "backroom_qty": max(0, total - shelf),
+                "total_qty": total,
+            })
 
     def shelf_cap_for(self, product_id, location_id):
         """Max units of product P that fit on shelf at store L, given
@@ -1389,9 +1408,11 @@ class SimulationEngine:
         # Reset daily variable costs (accumulated by _execute_commands)
         self.daily_variable_costs = 0
 
-        # Check for month boundary → write Excel
+        # Check for month boundary → snapshot previous month's shelf
+        # state (runs regardless of working-day status) + write Excel
         current_month_str = self.current_date.strftime("%Y-%m")
         if self._last_month and self._last_month != current_month_str:
+            self._snapshot_shelf_state(self._last_month)
             write_monthly_excel(self, self._last_month)
         self._last_month = current_month_str
 
@@ -1588,6 +1609,7 @@ class SimulationEngine:
         is_month_end = (next_day.month != self.current_date.month)
         is_sim_end = (next_day > self.end_date)
         if is_month_end or is_sim_end:
+            month_str = self.current_date.strftime("%Y-%m")
             for p in products:
                 for wh in warehouses:
                     qty = self.stock.get((wh["id"], p["id"]), 0)
@@ -1632,8 +1654,9 @@ class SimulationEngine:
         write_initial_state_excel(self)
         while self.step_day():
             pass
-        # Write final month
+        # Write final month + capture final shelf snapshot
         if self._last_month:
+            self._snapshot_shelf_state(self._last_month)
             write_monthly_excel(self, self._last_month)
 
         t_types = defaultdict(int)
