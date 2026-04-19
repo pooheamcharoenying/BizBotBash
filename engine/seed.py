@@ -35,38 +35,43 @@ CHALLENGE_DOC = {
     "location_count": 6,
 }
 
+# (filename, slug, display_name, type, description, display_order)
 BOT_REGISTRY = [
     (
         "demo_baseline_bot.py",
         "demo_baseline",
-        "Demo Baseline",
+        "Demo Baseline Bot",
         "default",
         "Mirrors the built-in auto operator. Fixed reorder threshold, "
         "no discounts, no learning. Deliberately simple.",
+        1,
     ),
     (
         "demo_smart_bot.py",
         "demo_smart",
-        "Demo Smart",
+        "Demo Smart Bot",
         "demo",
         "Ranks products by revenue per location and assigns top sellers "
         "to A-shelves.",
+        2,
     ),
     (
         "bizbotbash_champion.py",
         "bizbotbash_champion",
-        "BizBotBash Champion",
+        "Demo Champion Bot",
         "demo",
         "EWMA demand learning + supplier reliability tracking + revenue-"
         "maximizing shelf allocation.",
+        3,
     ),
     (
         "ai_genius_bot.py",
         "ai_genius",
-        "AI Genius",
+        "Demo AI Genius Bot",
         "demo",
         "Champion core + batch PO consolidation + faster shelf re-"
         "optimization.",
+        4,
     ),
 ]
 
@@ -137,7 +142,7 @@ def seed_challenge_config(db, challenge_id):
 def seed_bots(db, challenge_id):
     items = []
     inserted = updated = 0
-    for filename, slug, name, bot_type, description in BOT_REGISTRY:
+    for filename, slug, name, bot_type, description, order in BOT_REGISTRY:
         source = _load_bot_source(filename)
         res = db.bots.update_one(
             {"challenge_id": challenge_id, "slug": slug},
@@ -149,6 +154,7 @@ def seed_bots(db, challenge_id):
                     "description": description,
                     "type": bot_type,
                     "code": source,
+                    "display_order": order,
                     "author_user_id": None,
                     "status": "active",
                     "source_filename": filename,

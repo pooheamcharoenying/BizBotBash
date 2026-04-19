@@ -645,6 +645,17 @@
             padding-right: 20px;
             font-size: 12px;
         }
+        .run-card-bot {
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .run-card-meta {
             color: var(--text-dim);
             font-size: 10px;
@@ -1415,6 +1426,7 @@ async function loadRunsFromServer() {
                     folder: meta.folder,
                     timestamp: meta.timestamp || '',
                     mode: meta.mode || 'auto',
+                    bot_slug: meta.bot_slug || null,
                     data: data
                 });
             }
@@ -3308,16 +3320,32 @@ function renderRunCards() {
             revenue = run.data.sales.reduce((s, r) => s + (r.r || 0), 0);
         }
 
-        // Guess mode from label
-        let mode = 'dashboard';
-        const lbl = displayLabel.toLowerCase();
-        if (lbl.includes('bot') || lbl.includes('smart') || lbl.includes('baseline')) mode = 'bot';
-        else if (lbl.includes('auto')) mode = 'auto';
+        // Determine mode + bot display from run metadata (falls back to
+        // label guessing for legacy runs that lack bot_slug).
+        const BOT_DISPLAY = {
+            'auto': 'Auto',
+            'demo_baseline': 'Demo Baseline Bot',
+            'demo_smart': 'Demo Smart Bot',
+            'bizbotbash_champion': 'Demo Champion Bot',
+            'ai_genius': 'Demo AI Genius Bot',
+        };
+        let mode = run.mode || 'dashboard';
+        let botLabel = '';
+        if (run.bot_slug) {
+            botLabel = BOT_DISPLAY[run.bot_slug] || run.bot_slug.replace(/_/g, ' ');
+            mode = run.bot_slug === 'auto' ? 'auto' : 'bot';
+        } else {
+            // Legacy fallback: guess from label
+            const lbl = displayLabel.toLowerCase();
+            if (lbl.includes('bot') || lbl.includes('smart') || lbl.includes('baseline')) mode = 'bot';
+            else if (lbl.includes('auto')) mode = 'auto';
+        }
 
         const months = run.months || 12;
 
         card.innerHTML = `
             <div class="run-card-label" title="${label}">${displayLabel}</div>
+            ${botLabel ? '<div class="run-card-bot">' + botLabel + '</div>' : ''}
             <div class="run-card-meta">
                 <span class="run-card-mode ${mode}">${mode}</span>
                 <span>${months}mo</span>

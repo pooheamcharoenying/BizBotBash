@@ -218,7 +218,9 @@ def delete_all_runs():
 # ─────────────────────────────────────────────────────────────
 
 def list_bots():
-    """Return active bots for the ToyLand challenge, shaped for /bots."""
+    """Return active bots for the ToyLand challenge, shaped for /bots.
+    Sorted by display_order first (default bots), then by creation time
+    (user-submitted). 'id' is aliased to 'slug' for dashboard compat."""
     db = get_db()
     if db is None:
         return []
@@ -227,18 +229,21 @@ def list_bots():
         return []
     cursor = db.bots.find(
         {"challenge_id": challenge_id, "status": "active"},
-        {"slug": 1, "name": 1, "type": 1, "description": 1, "author_user_id": 1},
-    ).sort([("type", 1), ("slug", 1)])
-    return [
-        {
+        {"slug": 1, "name": 1, "type": 1, "description": 1,
+         "author_user_id": 1, "display_order": 1, "created_at": 1},
+    ).sort([("display_order", 1), ("created_at", 1)])
+    out = []
+    for d in cursor:
+        out.append({
+            # dashboard's modeSelector uses `id` as the option value
+            "id": d["slug"],
             "slug": d["slug"],
             "name": d.get("name", d["slug"]),
             "type": d.get("type", "user"),
             "description": d.get("description", ""),
             "submitted_by": str(d["author_user_id"]) if d.get("author_user_id") else None,
-        }
-        for d in cursor
-    ]
+        })
+    return out
 
 
 def get_bot_code(slug):
