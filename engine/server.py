@@ -544,11 +544,35 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 
+def auto_seed():
+    """Idempotent startup seed: syncs the repo's config + default bots
+    into Mongo and creates a welcome_baseline run if none exists yet.
+    Safe to re-run — all writes are upserts, the welcome run is
+    generated only on first boot. Skipped if Mongo isn't configured."""
+    db = get_db()
+    if db is None:
+        print("Skipping auto-seed: MONGODB_USER / MONGODB_PWD not set.")
+        return
+    try:
+        print("Auto-seed: syncing challenge/config/bots to Mongo...")
+        result = seed_all(db)
+        welcome = result.get("welcome_run", {})
+        print(f"  challenge:        {result['challenge']['status']}")
+        print(f"  challenge_config: {result['challenge_config']['status']}")
+        print(f"  bots:             {result['bots']['inserted']} new, {result['bots']['updated']} updated")
+        print(f"  welcome_run:      {welcome.get('status', 'unknown')}")
+    except Exception as e:
+        print(f"  WARN: auto-seed failed ({type(e).__name__}: {e}). "
+              f"Server will keep running; retry manually at /admin.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="ToyLand Simulation Server")
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5055)))
     parser.add_argument("--host", default=os.environ.get("HOST", "0.0.0.0"))
     args = parser.parse_args()
+
+    auto_seed()
 
     server = ThreadingHTTPServer((args.host, args.port), SimHandler)
     print(f"ToyLand Simulation Server running on http://{args.host}:{args.port}")
